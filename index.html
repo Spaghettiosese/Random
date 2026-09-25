@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MOONKAI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="stage">
+  <canvas id="view"></canvas>
+  <div id="grain"></div>
+  <div id="scanlines"></div>
+  <div id="vignette"></div>
+  <div id="hurt"></div>
+  <div id="letterbox"><div class="bar top"></div><div class="bar bottom"></div></div>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div id="objective"></div>
+    <div id="threads" class="hidden"><span class="thread-icon"></span><span id="thread-count">0/5</span></div>
+    <div id="crosshair"></div>
+    <div id="prompt"></div>
+    <div id="toast"></div>
+    <div id="score" class="hidden"></div>
+    <div id="charge" class="hidden"><div class="sweet"></div><div class="fill"></div></div>
+    <div id="hp" class="hidden"><div class="fill"></div></div>
+    <div id="stamina"><div class="fill"></div></div>
+    <div id="boss" class="hidden"><div class="name">MOONKAI, THE HUNGRY MOON</div><div class="bar"><div class="fill"></div></div></div>
+    <div id="hold-ball" class="hidden"></div>
+  </div>
+
+  <div id="dialogue" class="hidden">
+    <div class="name"></div>
+    <div class="text"></div>
+    <div class="hint">▼</div>
+  </div>
+  <div id="choices" class="hidden"></div>
+  <div id="card" class="hidden"><div class="big"></div><div class="small"></div></div>
+  <div id="phone" class="hidden"><div class="phone-top"><span class="who">Eric</span><span class="clock"></span></div><div class="msgs"></div></div>
+  <canvas id="scare" class="hidden" width="256" height="256"></canvas>
+  <div id="fade"></div>
+  <div id="flash"></div>
+  <div id="click-resume" class="hidden">Click to continue</div>
+
+  <!-- Menus -->
+  <div id="menu-title" class="menu">
+    <canvas id="title-moon" width="160" height="160"></canvas>
+    <h1>MOONKAI</h1>
+    <p class="tag">a Saint Joseph School horror story</p>
+    <div class="buttons">
+      <button data-act="continue" id="btn-continue">Continue</button>
+      <button data-act="new">New Game</button>
+      <button data-act="chapters">Chapters</button>
+      <button data-act="settings">Settings</button>
+      <button data-act="credits">Credits</button>
+    </div>
+    <div id="endings-seen"></div>
+    <p class="foot">Headphones recommended · WASD move · Mouse look · E interact · Shift run · F flashlight · J journal · Esc pause</p>
+  </div>
+
+  <div id="menu-pause" class="menu hidden">
+    <h2>PAUSED</h2>
+    <div class="buttons">
+      <button data-act="resume">Resume</button>
+      <button data-act="journal">Journal</button>
+      <button data-act="settings">Settings</button>
+      <button data-act="restart">Restart Checkpoint</button>
+      <button data-act="quit">Quit to Title</button>
+    </div>
+  </div>
+
+  <div id="menu-chapters" class="menu hidden">
+    <h2>CHAPTERS</h2>
+    <div class="buttons" id="chapter-list"></div>
+    <div class="buttons"><button data-act="back">Back</button></div>
+  </div>
+
+  <div id="menu-journal" class="menu hidden">
+    <h2>JOURNAL</h2>
+    <div id="journal-threads"></div>
+    <div id="journal-list"></div>
+    <div class="buttons"><button data-act="back">Close</button></div>
+  </div>
+
+  <div id="menu-settings" class="menu hidden">
+    <h2>SETTINGS</h2>
+    <div class="settings">
+      <label>Mouse sensitivity <input type="range" id="set-sens" min="0.2" max="3" step="0.05"></label>
+      <label>Volume <input type="range" id="set-vol" min="0" max="1" step="0.05"></label>
+      <label>Resolution (retro → sharp) <input type="range" id="set-res" min="180" max="720" step="45"></label>
+      <label class="check"><input type="checkbox" id="set-invert"> Invert mouse Y</label>
+      <label class="check"><input type="checkbox" id="set-tts"> Voice acting (browser text-to-speech)</label>
+      <label class="check"><input type="checkbox" id="set-grain"> Film grain &amp; scanlines</label>
+      <div class="face-box">
+        <div class="face-head">Eric's face</div>
+        <p class="small">Load a face photo from your computer. It stays in this browser only &mdash; it is never uploaded or saved anywhere else. Line the eyes and mouth up with the guides.</p>
+        <div class="face-row">
+          <canvas id="face-preview" width="128" height="160"></canvas>
+          <div class="face-ctl">
+            <input type="file" id="face-file" accept="image/*">
+            <label>Zoom <input type="range" id="face-zoom" min="0.4" max="3" step="0.01"></label>
+            <label>Left / right <input type="range" id="face-x" min="-0.5" max="0.5" step="0.005"></label>
+            <label>Up / down <input type="range" id="face-y" min="-0.5" max="0.5" step="0.005"></label>
+            <button id="face-clear" type="button">Use default face</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="buttons"><button data-act="back">Back</button></div>
+  </div>
+
+  <div id="menu-credits" class="menu hidden">
+    <h2>CREDITS</h2>
+    <div class="credits">
+      <p><b>MOONKAI</b></p>
+      <p>Story &amp; concept &mdash; Carlos's biggest fan</p>
+      <p>Built with three.js &middot; all sound synthesized live in your browser</p>
+      <p>Inspired by the lo-fi horror of the 616 Games era</p>
+      <p class="small">No monkeys were harmed. Several bananas were.</p>
+    </div>
+    <div class="buttons"><button data-act="back">Back</button></div>
+  </div>
+
+  <div id="menu-death" class="menu hidden">
+    <h2 id="death-title">YOU WERE CAUGHT</h2>
+    <p id="death-sub"></p>
+    <div class="buttons">
+      <button data-act="retry">Try Again</button>
+      <button data-act="quit">Quit to Title</button>
+    </div>
+  </div>
+
+  <div id="menu-ending" class="menu hidden">
+    <h2 id="ending-title"></h2>
+    <p id="ending-sub"></p>
+    <p id="ending-stats"></p>
+    <div class="buttons"><button data-act="quit">Return to Title</button></div>
+  </div>
+
+  <div id="loading" class="hidden">loading…</div>
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
