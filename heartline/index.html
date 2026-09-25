@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heartline Agency</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=Russo+One&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="game">
+  <div id="stage">
+    <div id="bgA" class="bg"></div><div id="bgB" class="bg"></div>
+    <div id="tint" class="layer"></div>
+    <canvas id="particles" class="layer" width="1280" height="720"></canvas>
+    <div id="chars" class="layer"></div>
+    <div id="cg" class="layer"></div>
+    <div id="speed" class="layer speedlines"></div>
+    <div id="letterbox"><i></i><i></i></div>
+    <div id="flash" class="layer"></div>
+    <div id="vignette" class="layer"></div>
+    <div id="eyefx" class="layer"></div>
+  </div>
+
+  <div id="hud"></div>
+  <div id="hub"></div>
+
+  <div id="textbox" class="hide">
+    <div id="nameplate"></div>
+    <div id="text"></div>
+    <div id="next">▼</div>
+    <div id="quick">
+      <button data-q="log">LOG</button><button data-q="auto">AUTO</button><button data-q="skip">SKIP</button>
+      <button data-q="save">SAVE</button><button data-q="load">LOAD</button><button data-q="qsave">Q.SAVE</button><button data-q="qload">Q.LOAD</button>
+      <button data-q="settings">CONFIG</button><button data-q="hide">HIDE</button><button data-q="menu">MENU</button>
+    </div>
+  </div>
+
+  <div id="choices"></div>
+  <div id="card"></div>
+  <div id="modal"></div>
+  <div id="viewer"></div>
+  <div id="toasts"></div>
+
+  <div id="title">
+    <div id="tchars"></div>
+    <div class="tlogo">
+      <div class="tsub">HALO AGENCY PRESENTS</div>
+      <h1><span>HEART</span><span>LINE</span></h1>
+      <div class="tag2">AGENCY <i>— hero handler romance —</i></div>
+      <div id="tbadge" class="tbadge"></div>
+    </div>
+    <nav class="tmenu">
+      <button class="tb" id="tnew">New Game</button>
+      <button class="tb" id="tcont">Continue</button>
+      <button class="tb" id="tload">Load</button>
+      <button class="tb" id="tgal">Gallery</button>
+      <button class="tb" id="tach">Achievements</button>
+      <button class="tb" id="tset">Settings</button>
+      <button class="tb" id="tcred">Credits</button>
+    </nav>
+    <div class="tfoot">SPACE/ENTER advance · CTRL skip · A auto · H hide UI · L log · F5/F9 quick save/load · ESC menu</div>
+  </div>
+
+  <div id="splash" class="on">
+    <div class="sring"></div>
+    <div class="slogo">HEARTLINE<br><small>AGENCY</small></div>
+    <div class="sclick">— click or press any key —</div>
+    <div class="snote">🎧 Sound on for the full experience</div>
+  </div>
+  <div id="fade" class="layer"></div>
+</div>
+<script src="js/art.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/story.js"></script>
+<script src="js/engine.js"></script>
+</body>
+</html>

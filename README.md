@@ -1,5 +1,7 @@
 # MOONKAI
 
+> **Also in this repo:** [`heartline/`](heartline/): *Heartline Agency*, an anime superpower-agency dating-sim tech demo (Prologue + Chapter 1). Open `heartline/index.html` in a browser.
+
 *A Saint Joseph School horror story.* A first-person, low-poly, PS1-style horror game that runs in the browser (three.js, no build step).
 
 Carlos is in 7th grade at Saint Joseph School. His best friend Eric is a grade below him. It starts as a normal week: dumb jokes in homeroom, "Monday Surprise" at lunch, one-on-one basketball in the gym, a parent picking you up after school. But each day Eric gets a little weirder, until one night Carlos dreams that Eric is possessed by **Moonkai**, a giant, fat moon-monkey demon.
