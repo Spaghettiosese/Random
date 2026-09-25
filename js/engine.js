@@ -90,6 +90,7 @@ export function initInput(canvas) {
   document.addEventListener('pointerlockchange', () => { input.locked = document.pointerLockElement === canvas; });
 }
 export function lockPointer() {
+  if (!G.renderer) return;
   const c = G.renderer.domElement;
   try { const p = c.requestPointerLock(); if (p && p.catch) p.catch(() => {}); } catch (e) { }
 }

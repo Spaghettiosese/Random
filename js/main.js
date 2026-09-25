@@ -217,7 +217,19 @@ function drawTitleMoon() {
 // ---------------------------------------------------------------------------
 loadSettings(); loadSave();
 try { const f = localStorage.getItem('moonkai_face'); if (f) setCustomFace(f, false); } catch (e) { }
-initRenderer($('view'));
+function fatal(title, msg) {
+  if (document.getElementById('fatal')) return;
+  const d = document.createElement('div'); d.id = 'fatal';
+  const h = document.createElement('h2'); h.textContent = title;
+  const p = document.createElement('p'); p.textContent = msg;
+  d.append(h, p); $('stage').appendChild(d);
+}
+try { initRenderer($('view')); }
+catch (e) {
+  fatal('3D GRAPHICS UNAVAILABLE', 'This browser could not start WebGL, which the game needs. Try Chrome, Edge or Firefox on a computer, and make sure "Use graphics acceleration / hardware acceleration" is turned on in the browser settings, then reload.');
+  throw e;
+}
+window.addEventListener('error', e => { if (G.mode === 'game') fatal('SOMETHING BROKE', 'The game hit an error: ' + (e.message || e) + '. Reload the page to try again; your progress is saved at the start of each chapter.'); });
 initInput($('view'));
 applyGrain();
 drawTitleMoon();
