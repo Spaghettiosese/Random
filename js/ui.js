@@ -7,7 +7,7 @@ export { $ };
 
 const SPEAKERS = {
   Carlos: ['#8fc1ff', 1.0], Eric: ['#ffd36a', 1.35], Mom: ['#ff9fb4', 1.2], Dad: ['#9fe39a', 0.8],
-  'Mr. Bautista': ['#d9b38c', 0.7], 'Sister Agnes': ['#e6e6ff', 1.1], 'Miss Gloria': ['#ffb870', 1.05],
+  'Ms. Rosebrook': ['#d9b38c', 1.05], 'Sister Agnes': ['#e6e6ff', 1.1], 'Miss Gloria': ['#ffb870', 1.05],
   Jaden: ['#c49fff', 1.15], Class: ['#aaaaaa', 1.3], MOONKAI: ['#ff3b30', 0.35], '???': ['#ff6b6b', 0.5],
   'Eric?': ['#ff5a3a', 0.6], TV: ['#8adfff', 0.9], Narrator: ['#bbbbbb', 0.9],
 };

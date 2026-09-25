@@ -194,7 +194,7 @@ async function day1() {
   const L = buildSchool({ time: 'day' });
   Audio.setAmbient('school');
   // classroom
-  const teacher = npc('bautista', -20.6, -10.5, Math.PI / 2);
+  const teacher = npc('rosebrook', -20.6, -10.5, Math.PI / 2);
   teacher.watch = true;
   const jaden = npc('jaden', -10.0, -10.5, -Math.PI / 2); sit(jaden);
   const students = [];
@@ -210,29 +210,29 @@ async function day1() {
   const snore = onUpdate(() => { if (Math.floor(G.time * 0.6) !== snore.t) { snore.t = Math.floor(G.time * 0.6); Audio.noise(0.9, { vol: 0.05, freq: 200, attack: 0.4 }); } });
   jaden.h.pose = (dt, t) => { jaden.h.legs.forEach(l => l.rotation.x = -1.45); jaden.h.arms.forEach(a => a.rotation.x = -1.4); jaden.h.head.rotation.x = 0.7; };
   await talk([
-    ['Mr. Bautista', 'So. If a train leaves Manila at three o\'clock going sixty kilometers an hour...'],
-    ['Mr. Bautista', '...and a second train leaves Cebu at four...'],
+    ['Ms. Rosebrook', 'So. If a train leaves Manila at three o\'clock going sixty kilometers an hour...'],
+    ['Ms. Rosebrook', '...and a second train leaves Cebu at four...'],
     ['Class', '(snoooooore)'],
-    ['Mr. Bautista', 'Jaden.'],
-    ['Mr. Bautista', 'JADEN.'],
+    ['Ms. Rosebrook', 'Jaden.'],
+    ['Ms. Rosebrook', 'JADEN.'],
   ]);
   snore();
   jaden.h.pose = null; sit(jaden);
   await talk([
     ['Jaden', 'I\'M AWAKE. The answer is... banana?'],
     [() => { Audio.laugh(14); return wait(0.6); }],
-    ['Mr. Bautista', '...Why is it always bananas with you kids lately.'],
-    ['Mr. Bautista', 'Carlos. Save this class. Where do the trains meet?'],
+    ['Ms. Rosebrook', '...Why is it always bananas with you kids lately.'],
+    ['Ms. Rosebrook', 'Carlos. Save this class. Where do the trains meet?'],
   ]);
   const a = await choice('Your answer:', ['"Forty-two."', '"They don\'t. Trains here are always late."', '"Can I go to the bathroom?"']);
-  if (a === 0) await talk([['Carlos', 'Forty-two?'], ['Mr. Bautista', 'That is... the answer to a different question, Carlos. But I respect the confidence.']]);
-  else if (a === 1) await talk([['Carlos', 'They don\'t. The trains here are always late.'], [() => { Audio.laugh(12); return wait(0.4); }], ['Mr. Bautista', '...Historically accurate. Half a point.']]);
-  else await talk([['Carlos', 'Can I go to the bathroom?'], ['Mr. Bautista', 'You can wait eleven seconds.'], ['Carlos', 'Why eleven—']]);
+  if (a === 0) await talk([['Carlos', 'Forty-two?'], ['Ms. Rosebrook', 'That is... the answer to a different question, Carlos. But I respect the confidence.']]);
+  else if (a === 1) await talk([['Carlos', 'They don\'t. The trains here are always late.'], [() => { Audio.laugh(12); return wait(0.4); }], ['Ms. Rosebrook', '...Historically accurate. Half a point.']]);
+  else await talk([['Carlos', 'Can I go to the bathroom?'], ['Ms. Rosebrook', 'You can wait eleven seconds.'], ['Carlos', 'Why eleven—']]);
   Audio.bell();
   await wait(0.6);
   await talk([
-    ['Mr. Bautista', 'LUNCH. Walk, don\'t run. Sister Agnes has eyes in the back of her veil.'],
-    ['Mr. Bautista', 'And somebody tell the sixth graders to stop leaving banana peels in my classroom!'],
+    ['Ms. Rosebrook', 'LUNCH. Walk, don\'t run. Sister Agnes has eyes in the back of her veil.'],
+    ['Ms. Rosebrook', 'And somebody tell the sixth graders to stop leaving banana peels in my classroom!'],
   ]);
   // everyone leaves
   students.forEach((s, i) => { stand(s); wait(i * 0.25).then(() => path(s, [[s.pos.x, -7.5], [-6, -7.5], [-6, -2], [-6 + (i % 2 ? 12 : -12), 0]], 1.6).then(() => s.remove())); });
@@ -244,7 +244,7 @@ async function day1() {
   chatter(jaden, 'Talk to Jaden', (n) => n === 0
     ? [['Jaden', 'zzz... five more minutes, Mom...'], ['Carlos', '...I\'ll let him sleep.']]
     : [['Jaden', 'zzz... banana...']]);
-  chatter(teacher, 'Talk to Mr. Bautista', [['Mr. Bautista', 'Eric was here before school asking me about the moon. Phases, craters, "can it get hungry." Odd kid.'], ['Mr. Bautista', 'Go eat, Carlos.']]);
+  chatter(teacher, 'Talk to Ms. Rosebrook', [['Ms. Rosebrook', 'Eric was here before school asking me about the moon. Phases, craters, "can it get hungry." Odd kid.'], ['Ms. Rosebrook', 'Go eat, Carlos.']]);
   examine(L.chalk, 'Read the chalkboard', [['Narrator', '"Moon phases quiz FRIDAY!" ...Great.']]);
   // hallway
   const agnes = npc('agnes', -1.5, 1.8, Math.PI); agnes.watch = true;
@@ -264,7 +264,7 @@ async function day1() {
   for (let i = 0; i < 5; i++) {
     const s = addNPC(makeHuman(randomStudent(i + 10)), -20 + i * 9, i % 2 ? 1.6 : -1.6, i % 2 ? Math.PI / 2 : -Math.PI / 2);
     s.watch = true; hallKids.push(s);
-    const lines = [['Kid', 'Your friend Eric ate a banana with the PEEL on in homeroom. It was sick.'], ['Kid', 'Did you hear the drums last night? My mom says it\'s the quarry.'], ['Kid', 'Falcons tryouts Friday! You trying out?'], ['Kid', 'Mr. Bautista gave me detention for yawning. Yawning!'], ['Kid', 'The moon was HUGE last night. Like, wrong-huge.']];
+    const lines = [['Kid', 'Your friend Eric ate a banana with the PEEL on in homeroom. It was sick.'], ['Kid', 'Did you hear the drums last night? My mom says it\'s the quarry.'], ['Kid', 'Falcons tryouts Friday! You trying out?'], ['Kid', 'Ms. Rosebrook gave me detention for yawning. Yawning!'], ['Kid', 'The moon was HUGE last night. Like, wrong-huge.']];
     chatter(s, 'Talk', [[ 'Class', lines[i][1] ]]);
   }
   const locker = new THREE.Mesh(new THREE.BoxGeometry(0.5, 2, 0.4), new THREE.MeshBasicMaterial({ visible: false })); put(locker, -10, 1, -2.6);
@@ -454,22 +454,22 @@ async function day2() {
   await fade(1, 1.2);
   // classroom
   placePlayer(-10.0, -8.5, Math.PI / 2, -0.25); player.pos.y = -0.35; applyPlayerCam();
-  const teacher = npc('bautista', -10.6, -7.6, -Math.PI / 2 - 0.4); teacher.watch = true;
+  const teacher = npc('rosebrook', -10.6, -7.6, -Math.PI / 2 - 0.4); teacher.watch = true;
   const jaden = npc('jaden', -10.0, -10.5, -Math.PI / 2); sit(jaden); jaden.watch = true;
   const drawing = new THREE.Mesh(new THREE.PlaneGeometry(0.25, 0.32), basic({ map: T.monkeyDrawing() }));
   drawing.rotation.x = -Math.PI / 2; drawing.rotation.z = Math.PI / 2; put(drawing, -10.5, 0.77, -8.5);
   await fade(0, 1);
   await talk([
-    ['Mr. Bautista', 'Quizzes back. Most of you did... fine. Jaden, you wrote "banana" for every answer.'],
+    ['Ms. Rosebrook', 'Quizzes back. Most of you did... fine. Jaden, you wrote "banana" for every answer.'],
     ['Jaden', 'It\'s a lifestyle.'],
-    ['Mr. Bautista', 'And Carlos—what is THIS?'],
+    ['Ms. Rosebrook', 'And Carlos—what is THIS?'],
   ]);
   await camTo([-10.0, 1.05, -8.5], [-10.5, 0.7, -8.5], 0.8);
   await wait(0.6);
   Audio.tone(60, 1.5, { vol: 0.2, attack: 0.3 });
   await talk([
     ['Narrator', 'A drawing. A fat monkey with a moon on its forehead. Over and over, pressed so hard the paper tore.'],
-    ['Mr. Bautista', 'It\'s... actually quite good. Disturbing. But good.'],
+    ['Ms. Rosebrook', 'It\'s... actually quite good. Disturbing. But good.'],
     ['Carlos', 'That\'s not mine.'],
     ['Jaden', 'Bro, that\'s Eric\'s. He was drawing that in the library all morning. Same monkey. Like forty times.'],
     ['Jaden', 'He kept saying "he\'s so loud, he\'s so loud."'],
@@ -704,7 +704,7 @@ async function day3() {
     ['Jaden', 'Dude. DUDE. Eric was in here before school. He wrote all that on the board.'],
     ['Jaden', 'Then he climbed out the window.'],
     ['Jaden', 'We\'re on the first floor, so. Not dramatic. But STILL.'],
-    ['Jaden', 'Mr. Bautista went home "sick." I think he got scared.'],
+    ['Jaden', 'Ms. Rosebrook went home "sick." I think she got scared.'],
   ] : [['Jaden', 'I\'m not going in the cafeteria. It smells like a thousand bananas.']]);
   examine(L.chalk, 'Read the chalkboard', [['Narrator', 'HE IS HUNGRY. Over and over, in Eric\'s handwriting. The chalk is ground down to nothing.']]);
   // lockers bang as you pass
@@ -1012,7 +1012,7 @@ async function day4() {
   doorHit.removeFromParent();
   toast('...It was unlocked.', 2);
   objective('Follow the banana peels');
-  threadAt('t5', -19.5, 1.05, -9, 'The last piece of the red thread—on Mr. Bautista\'s desk.');
+  threadAt('t5', -19.5, 1.05, -9, 'The last piece of the red thread—on Ms. Rosebrook\'s desk.');
   noteAt('gloria', 10, 0.02, 15);
   if (!SAVE.notes.includes('agnes')) noteAt('agnes', -12, 0.02, -2.2);
   examine(L.chalk, 'Read the chalkboard', [['Narrator', 'CARLOS CARLOS CARLOS. COME PLAY.']]);

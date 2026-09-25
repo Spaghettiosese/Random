@@ -31,7 +31,7 @@ Then open the printed URL (e.g. http://localhost:3000). Headphones recommended.
 
 | Chapter | Setting | What happens |
 | --- | --- | --- |
-| **Monday** | Homeroom 7B, hallway, cafeteria, gym, pickup, car, home | Funny intro: Mr. Bautista's train problem, Jaden's "banana", Eric "saving" your seat, a first-to-3 basketball game, Mom's car ride, Dad's monkey jokes |
+| **Monday** | Homeroom 7B, hallway, cafeteria, gym, pickup, car, home | Funny intro: Ms. Rosebrook's train problem, Jaden's "banana", Eric "saving" your seat, a first-to-3 basketball game, Mom's car ride, Dad's monkey jokes |
 | **Tuesday** | School (overcast), home at night | Eric hasn't slept and draws the same monkey forty times. The ball rolls into the dark equipment room (first jumpscare). Eric's red-string necklace goes missing. Late-night texts, and something is sitting on the neighbor's roof |
 | **Wednesday** | School (flickering), dusk pickup, home | "HE IS HUNGRY" on the chalkboard, a ring of banana peels in the cafeteria, a basketball that never comes down. Eric watches from the roof. Eric doesn't come home |
 | **The Dream** | Moonkai's red sky | Moonkai possesses Eric, followed by a chase to the door |

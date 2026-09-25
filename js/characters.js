@@ -293,7 +293,7 @@ export const LOOKS = {
   carlos: { kid: true, height: 1.48, skin: '#c48e66', hair: '#1b130e', hairStyle: 'short', shirt: '#a9c6e3', pants: '#1f2a44', iris: '#3a2414' },
   mom: { height: 1.62, skin: '#c99870', hair: '#2a1a12', hairStyle: 'long', shirt: '#7e3b4a', pants: '#2b2b33', lips: '#a8505a', longSleeve: true },
   dad: { height: 1.76, skin: '#bf8a62', hair: '#15100c', hairStyle: 'short', shirt: '#3b5b3a', pants: '#3a3228', stubble: true, mustache: true, build: 1.12, belly: true },
-  bautista: { height: 1.72, skin: '#c9966c', hair: '#1a1a1a', hairStyle: 'bald', shirt: '#e9e4d6', pants: '#4a4538', mustache: true, glasses: '#222', glasses3d: '#222', wrinkles: true, collar: '#8a2a2a', longSleeve: true },
+  rosebrook: { height: 1.66, skin: '#e3bb9c', hair: '#6b4a2a', hairStyle: 'long', shirt: '#7a8fb0', pants: '#3a3f4a', skirt: true, glasses: '#222', glasses3d: '#222', lips: '#b0606a', longSleeve: true },
   agnes: { height: 1.6, skin: '#e0b89a', hairStyle: 'nun', shirt: '#1a1a22', pants: '#1a1a22', robe: true, wrinkles: true, glasses: '#7a6a50', lips: '#b98a80', longSleeve: true },
   gloria: { height: 1.58, skin: '#a8714c', hair: '#3a2a22', hairStyle: 'bun', shirt: '#e8e2d2', pants: '#3a4a5a', apron: '#d8d8c8', build: 1.25, belly: true, lips: '#9a4a4a' },
   jaden: { kid: true, height: 1.5, skin: '#8a5a3c', hair: '#120c08', hairStyle: 'short', shirt: '#a9c6e3', pants: '#1f2a44' },

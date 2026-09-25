@@ -205,7 +205,7 @@ export const Audio = {
 // ---------- optional voice acting via speechSynthesis ----------
 const VOICES = {
   Carlos: { pitch: 1.15, rate: 1.05 }, Eric: { pitch: 1.5, rate: 1.1 }, Mom: { pitch: 1.3, rate: 1 },
-  Dad: { pitch: 0.8, rate: 0.95 }, 'Mr. Bautista': { pitch: 0.7, rate: 0.95 }, 'Sister Agnes': { pitch: 1.1, rate: 0.85 },
+  Dad: { pitch: 0.8, rate: 0.95 }, 'Ms. Rosebrook': { pitch: 1.15, rate: 0.95 }, 'Sister Agnes': { pitch: 1.1, rate: 0.85 },
   'Miss Gloria': { pitch: 1.2, rate: 1 }, Jaden: { pitch: 1.3, rate: 1.1 }, MOONKAI: { pitch: 0.1, rate: 0.7 },
   '???': { pitch: 0.3, rate: 0.8 },
 };

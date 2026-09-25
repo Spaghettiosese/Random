@@ -253,7 +253,7 @@ export function buildSchool(v = {}) {
   for (let x = -24; x <= 24; x += 8) L.lamps.push(lamp(x, 3.2, 0, 1.6, 0.4));
   for (const x of [-18, 0, 18]) L.lights.push(pointLight(x, 2.8, 0, 0xf4f1e0, night ? 0 : 3.5, 16));
   sign(T.sign('SAINT JOSEPH SCHOOL\n~ Home of the Falcons ~', '#6f2b2b', '#f2d45c', 256, 48, 14), 3.2, 0.6, -29.88, 2.55, 0, Math.PI / 2);
-  sign(T.sign('7B  Mr. Bautista', '#1d2d5c', '#fff', 128, 32, 13), 1.2, 0.3, -6, 2.55, -2.88, 0);
+  sign(T.sign('7B  Ms. Rosebrook', '#1d2d5c', '#fff', 128, 32, 12), 1.2, 0.3, -6, 2.55, -2.88, 0);
   sign(T.sign('6A  Ms. Reyes', '#1d2d5c', '#fff', 128, 32, 13), 1.2, 0.3, 8, 2.55, -2.88, 0);
   sign(T.sign('CAFETERIA', '#1d2d5c', '#fff', 128, 32, 14), 1.6, 0.4, 4, 2.6, 2.88, Math.PI);
   sign(T.sign('GYM →', '#1d2d5c', '#fff', 128, 32, 14), 1.2, 0.3, 22, 2.6, 2.88, Math.PI);
