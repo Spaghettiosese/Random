@@ -46,11 +46,18 @@ const Sound = (() => {
     romance: { bpm: 72, root: 64, prog: [[0, 'maj'], [4, 'min'], [9, 'min'], [5, 'maj'], [2, 'min'], [7, 'sus']], pad: 1, arp: 'up8', drums: 'none', mel: 'keys', bass: 'root', seed: 17 },
     mystery: { bpm: 90, root: 50, prog: [[0, 'min'], [1, 'maj'], [0, 'min'], [6, 'dim']], pad: 1, arp: 'up8', drums: 'soft', mel: 'bell', seed: 23 },
     sad: { bpm: 66, root: 57, prog: [[0, 'min'], [5, 'min'], [10, 'maj'], [3, 'maj']], pad: 1, arp: 'up8', drums: 'none', mel: 'keys', seed: 29 },
-    victory: { bpm: 120, root: 67, prog: [[0, 'maj'], [5, 'maj'], [7, 'maj'], [0, 'maj']], pad: 1, arp: 'pop', drums: 'pop', mel: 'square', bass: 'oct', seed: 31 }
+    victory: { bpm: 120, root: 67, prog: [[0, 'maj'], [5, 'maj'], [7, 'maj'], [0, 'maj']], pad: 1, arp: 'pop', drums: 'pop', mel: 'square', bass: 'oct', seed: 31 },
+    idol: { bpm: 128, root: 64, prog: [[0, 'maj'], [7, 'maj'], [9, 'min'], [5, 'maj']], pad: 1, arp: 'pop', drums: 'drive', mel: 'saw', bass: 'oct', seed: 41 },
+    date: { bpm: 96, root: 65, prog: [[0, 'maj'], [9, 'min'], [2, 'min'], [7, 'dom']], pad: 1, arp: 'lofi', drums: 'lofi', mel: 'pluck', bass: 'root', seed: 43 },
+    festival: { bpm: 104, root: 62, prog: [[0, 'maj'], [5, 'maj'], [9, 'min'], [7, 'sus']], pad: 1, arp: 'pop', drums: 'pop', mel: 'bell', bass: 'oct', seed: 47, penta: 1 },
+    snow: { bpm: 70, root: 69, prog: [[0, 'min'], [8, 'maj'], [3, 'maj'], [10, 'maj']], pad: 1, arp: 'up8', drums: 'none', mel: 'bell', bass: 'root', seed: 53 },
+    boss: { bpm: 164, root: 50, prog: [[0, 'min'], [1, 'maj'], [0, 'min'], [10, 'maj'], [8, 'maj'], [7, 'dom']], pad: 1, arp: 'up16', drums: 'drive', mel: 'saw', bass: 'eighth', seed: 59 },
+    board: { bpm: 84, root: 48, prog: [[0, 'min'], [6, 'dim'], [5, 'min'], [7, 'dom']], pad: 1, arp: 'up8', drums: 'soft', mel: 'keys', bass: 'pulse', seed: 61 },
+    finale: { bpm: 140, root: 62, prog: [[0, 'maj'], [9, 'min'], [5, 'maj'], [7, 'maj'], [0, 'maj'], [4, 'min'], [5, 'maj'], [7, 'sus']], pad: 1, arp: 'up16', drums: 'drive', mel: 'saw', bass: 'oct', seed: 67 }
   };
   function genMelody(tr) {
     let s = tr.seed * 9301 + 49297; const r = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
-    const scale = tr.prog.some(p => p[1] === 'min') && tr.prog[0][1] === 'min' ? [0, 2, 3, 5, 7, 8, 10] : [0, 2, 4, 5, 7, 9, 11];
+    const scale = tr.penta ? [0, 2, 4, 7, 9, 12, 14] : tr.prog.some(p => p[1] === 'min') && tr.prog[0][1] === 'min' ? [0, 2, 3, 5, 7, 8, 10] : [0, 2, 4, 5, 7, 9, 11];
     const bars = tr.prog.length, notes = []; let last = 7;
     const phrase = [];
     for (let b = 0; b < bars; b++) {
@@ -75,7 +82,7 @@ const Sound = (() => {
     if (!name || !TR[name]) return;
     const tr = TR[name], g = ctx.createGain(); g.gain.setValueAtTime(0, ctx.currentTime); g.gain.linearRampToValueAtTime(1, ctx.currentTime + 1.5); g.connect(mBus);
     const mel = tr.mel ? genMelody(tr) : [];
-    const me = { name, tr, g, step: 0, next: ctx.currentTime + .1, mel, loop: tr.prog.length * 32 };
+    const me = { name, tr, g, step: 0, next: ctx.currentTime + .1, t0: ctx.currentTime + .1, mel, loop: tr.prog.length * 32 };
     cur = me;
     timer = setInterval(() => sched(me), 25);
     me.timer = timer;
@@ -166,10 +173,17 @@ const Sound = (() => {
     coin: t => { tone(t, mtof(95), .05, { type: 'square', g: .05, cut: 5000 }); tone(t + .05, mtof(100), .2, { type: 'square', g: .05, cut: 5000, r: .2 }); },
     swoosh: t => noise(t, .25, { g: .12, type: 'bandpass', f: 1500, f2: 5000, q: 1.5, a: .08 }),
     heartbeat: t => { tone(t, 60, .12, { type: 'sine', g: .5 }); tone(t + .22, 55, .15, { type: 'sine', g: .4 }); },
-    snore: t => noise(t, 1, { g: .08, type: 'bandpass', f: 300, q: 3, a: .5 })
+    snore: t => noise(t, 1, { g: .08, type: 'bandpass', f: 300, q: 3, a: .5 }),
+    shutter: t => { noise(t, .04, { g: .35, type: 'highpass', f: 3000 }); tone(t, 2400, .02, { type: 'square', g: .05 }); noise(t + .09, .05, { g: .25, type: 'bandpass', f: 1800 }); },
+    hit: t => tone(t, 1600, .04, { type: 'triangle', g: .08, r: .05 })
   };
   function sfx(n) { init(); if (SFX[n]) SFX[n](ctx.currentTime + .005); }
   function blip(pitch) { if (!vol.voice) return; init(); const t = ctx.currentTime; tone(t, pitch * (0.92 + Math.random() * .16), .035, { type: 'square', g: .025, r: .02, cut: 2500 }); }
 
-  return { init, play, stop, sfx, blip, setVol, vol, get current() { return cur && cur.name; } };
+  // rhythm-game hooks: the live clock of the current track, a chart for any track, and a melodic hit sound
+  function sync(name) { if (!ctx || !cur || cur.name !== name || ctx.state !== 'running') return null; return { now: () => ctx.currentTime, t0: cur.t0, spb: 60 / cur.tr.bpm / 4, mel: cur.mel, loop: cur.loop, root: cur.tr.root }; }
+  function chart(name) { const tr = TR[name]; return tr && { spb: 60 / tr.bpm / 4, mel: tr.mel ? genMelody(tr) : [], loop: tr.prog.length * 32, root: tr.root }; }
+  function note(m, dur = .2, type = 'triangle') { init(); tone(ctx.currentTime + .005, mtof(m), dur, { type, g: .07, r: .2, wet: .4 }); }
+
+  return { init, play, stop, sfx, blip, setVol, vol, sync, chart, note, get current() { return cur && cur.name; } };
 })();
