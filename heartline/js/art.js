@@ -273,5 +273,5 @@ const Art = (() => {
   const CG_NAMES = { cg_strike: 'Thunder Goddess Stomp', cg_recruit: 'The Director', cg_shadow: 'From the Shadows', cg_leviathan: 'Glass Leviathan', cg_combo: 'Shadow & Lightning', cg_roof_hikari: 'Sunset Promise (Hikari)', cg_roof_rei: 'Twilight Confession (Rei)', cg_roof_mira: 'A Healer\'s Wish (Mira)', cg_glazier: 'The Glazier', cg_mall: 'Hall of Mirrors', cg_kaede_save: 'Catch!', cg_bit: 'System Breach', cg_reveal: 'Kyouya', cg_final: 'Operation Heartline', cg_roof_sora: 'Gravity of Love (Sora)', cg_end_hikari: 'Forever Partners (Hikari)', cg_end_rei: 'Out of the Shadows (Rei)', cg_end_mira: 'Healing Hearts (Mira)', cg_end_sora: 'Encore (Sora)', cg_end_kaede: 'Slow Down (Kaede)', cg_end_squad: 'Squad Zero, Forever' };
   function cg(name) { return `<div class="cgscene">${(CG[name] || CG.cg_strike)()}</div>`; }
 
-  return { char, bg, cg, CG_NAMES, CH, monster };
+  return { char, bg, cg, CG_NAMES, CH, monster, bit, _h: { svgWrap, grad, skyline, stars, rng, tree, shards, BG, CG, big, bolts, tendrils } };
 })();

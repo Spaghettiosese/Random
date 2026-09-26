@@ -29,7 +29,7 @@ const Game = (() => {
     route_sora: ['Gravity Heart', 'See Sora\'s rooftop scene'], fin_squad: ['Found Family', 'See the Squad ending'], veteran: ['Veteran', 'Raise a hero to Lv 5'],
     log: ['Rewind', 'Open the backlog'], deploy5: ['Dispatcher', 'Resolve 25 calls'], coach: ['Coach', 'Run 5 training sessions']
   };
-  let settings = { textSpeed: 45, autoDelay: 1.4, music: .55, sfx: .7, voice: true, hints: false, motion: true };
+  let settings = { textSpeed: 45, autoDelay: 1.4, music: .55, sfx: .7, voice: true, hints: false, motion: true, parallax: true };
   let meta = { ach: {}, gallery: {}, cleared: false };
   let G = null, R = {}, run = 0;
   let wait = null, typing = false, typeTimer = null, auto = false, skip = false, ctrlSkip = false, hidden = false, autoTimer = null;
@@ -115,6 +115,15 @@ const Game = (() => {
       case 'wait': wait = 'timer'; later(a); return WAIT;
       case 'cg': showCg(a); return NEXT;
       case 'cgoff': $('#cg').classList.remove('on'); return NEXT;
+      case 'zoom': zoom(a, b, d, e); return NEXT;
+      case 'blur': G.vis.blur = a || 0; $('#stage').style.setProperty('--bgblur', (a || 0) + 'px'); return NEXT;
+      case 'filter': setFilter(a); return NEXT;
+      case 'light': G.vis.light = a; applyLight(); return NEXT;
+      case 'vfx': setVfx(a); return NEXT;
+      case 'crack': crack(); return NEXT;
+      case 'impact': impact(); return NEXT;
+      case 'cutin': wait = 'timer'; cutin(a, b, d); later(1500); return WAIT;
+      case 'split': split(a); return NEXT;
       case 'letterbox': $('#letterbox').classList.toggle('on', !!a); return NEXT;
       case 'speed': $('#speed').classList.toggle('on', !!a); return NEXT;
       case 'eyefx': $('#game').classList.toggle('eyemode', !!a); return NEXT;
@@ -143,9 +152,13 @@ const Game = (() => {
     const A = $('#bgA'), B = $('#bgB'), front = A.classList.contains('show') ? A : B, back = front === A ? B : A;
     back.innerHTML = Art.bg(name);
     if (trans === 'flash') flash('#fff');
-    if (trans === 'cut' || skipping()) { back.style.transition = 'none'; front.style.transition = 'none'; }
+    if (trans === 'shatter' && !skipping()) shatterOut(front.innerHTML);
+    back.classList.remove('tr-iris', 'tr-wipe', 'tr-heart', 'tr-blur');
+    if (trans === 'cut' || trans === 'shatter' || skipping()) { back.style.transition = 'none'; front.style.transition = 'none'; }
     else { back.style.transition = ''; front.style.transition = ''; }
-    back.classList.add('show'); front.classList.remove('show');
+    if (['iris', 'wipe', 'heart', 'blur'].includes(trans) && !skipping()) { back.style.transition = 'none'; void back.offsetWidth; back.classList.add('tr-' + trans); setTimeout(() => front.classList.remove('show'), 900); back.classList.add('show'); }
+    else { back.classList.add('show'); front.classList.remove('show'); }
+    applyLight();
     back.classList.remove('kb'); void back.offsetWidth; back.classList.add('kb');
   }
   function setTint(t) { G.vis.tint = t; $('#tint').className = 'layer ' + (t || ''); }
@@ -174,10 +187,63 @@ const Game = (() => {
   function restoreVis() {
     const v = G.vis; $('#chars').innerHTML = ''; const cs = v.chars; v.chars = {};
     setBg(v.bg, 'cut'); setFx(v.fx); setTint(v.tint); v.music ? Sound.play(v.music) : Sound.stop();
-    Object.entries(cs).forEach(([id, s]) => showChar(id, s.emo, s.pose, s.pos));
+    Object.entries(cs).forEach(([id, s]) => { showChar(id, s.emo, s.pose, s.pos); if (s.of) { G.vis.chars[id].of = s.of; showChar(id); } });
     ['#cg', '#letterbox', '#speed'].forEach(s => $(s).classList.remove('on')); $('#game').classList.remove('eyemode');
+    zoom(v.zoom ? v.zoom[0] : 1, v.zoom && v.zoom[1], v.zoom && v.zoom[2], 0); setFilter(v.filter); setVfx(v.vfx); split(null); $('#stage').style.setProperty('--bgblur', (v.blur || 0) + 'px'); applyLight();
   }
 
+
+  // ---------- cinematic effects ----------
+  const LIGHT = { city_night: 'night', street_night: 'night', apartment: 'night', alley: 'night', harbor: 'dusk', rooftop: 'dusk', festival: 'night', snow_city: 'cold', aquarium: 'deep', glass_city: 'glass', rift: 'rift', ascension: 'rift', blacksite: 'alarm', lab: 'deep', boardroom: 'dark', konbini_hq: 'night', amusement: 'dusk', dome: 'stage', stage: 'stage', mountain: 'dusk', shrine: 'dusk' };
+  function applyLight() { if (!G) return; const l = G.vis.light || LIGHT[G.vis.bg] || ''; $('#chars').className = 'layer' + (l ? ' l-' + l : ''); }
+  function zoom(sc = 1, x = 50, y = 40, ms = 900) {
+    G.vis.zoom = sc === 1 ? null : [sc, x, y];
+    const st = $('#stage'); st.style.transition = ms && !skipping() ? `transform ${ms}ms cubic-bezier(.3,.1,.2,1)` : 'none';
+    st.style.transformOrigin = `${x || 50}% ${y || 40}%`; st.style.transform = sc === 1 ? '' : `scale(${sc})`;
+  }
+  function setFilter(f) { G.vis.filter = f || null; const st = $('#stage'); st.classList.remove('f-flashback', 'f-mono', 'f-glitch', 'f-dream', 'f-noir'); if (f) st.classList.add('f-' + f); }
+  function setVfx(v) {
+    G.vis.vfx = v || null; const el = $('#vfx'); el.className = 'layer' + (v ? ' v-' + v : '');
+    el.innerHTML = v === 'bokeh' ? [...Array(18)].map((_, i) => `<i style="left:${(i * 53) % 100}%;top:${(i * 37) % 90}%;width:${30 + (i * 17) % 60}px;height:${30 + (i * 17) % 60}px;animation-delay:${-i * .7}s;background:${['#ffd8a0', '#ff9ac8', '#9fdcff'][i % 3]}"></i>`).join('')
+      : v === 'rainlens' ? [...Array(26)].map((_, i) => `<i style="left:${(i * 41) % 100}%;top:${(i * 29) % 95}%;width:${6 + i % 14}px;height:${8 + i % 16}px;animation-delay:${-i * .9}s"></i>`).join('')
+      : v === 'godrays' ? [...Array(6)].map((_, i) => `<i style="left:${10 + i * 15}%;animation-delay:${-i * 1.3}s"></i>`).join('') : '';
+  }
+  function crack() {
+    if (!settings.motion) return; Sound.sfx('glass');
+    let d = ''; const cx = 540 + Math.random() * 200, cy = 280 + Math.random() * 160;
+    for (let i = 0; i < 14; i++) { let a = i / 14 * 6.283 + Math.random() * .3, x = cx, y = cy; d += `M${cx},${cy}`; for (let k = 0; k < 5; k++) { x += Math.cos(a) * (60 + Math.random() * 90); y += Math.sin(a) * (60 + Math.random() * 90); a += (Math.random() - .5) * .6; d += ` L${x | 0},${y | 0}`; } }
+    for (let r = 50; r < 260; r += 70) d += ` M${cx + r},${cy} A${r},${r * .9} 0 1 0 ${cx + r - .1},${cy - 1}`;
+    const el = $('#crack'); el.innerHTML = `<svg viewBox="0 0 1280 720"><path d="${d}" fill="none" stroke="#fff" stroke-width="2.5" opacity=".9"/><path d="${d}" fill="none" stroke="#9ff6ff" stroke-width="7" opacity=".25"/></svg>`;
+    el.classList.remove('go'); void el.offsetWidth; el.classList.add('go'); shake(10);
+  }
+  function impact() { const g = $('#stage'); g.classList.remove('impact'); void g.offsetWidth; g.classList.add('impact'); Sound.sfx('punch'); shake(8); setTimeout(() => g.classList.remove('impact'), 260); }
+  function cutin(who, text, emo) {
+    const c = $('#cutin'), info = WHO[who] || { c: '#fff', n: '' }, id = (info.art || who);
+    c.style.setProperty('--c', info.c);
+    c.innerHTML = `<div class="cdim"></div><div class="cband"><div class="cstreak"></div><div class="cface">${Art.char(id, emo || 'determined', 'default', true, G.vis.chars[who] && G.vis.chars[who].of || G.vis.of || 'hero')}</div><div class="ctext"><small>${info.n}</small><b>${T(text || '')}</b></div></div>`;
+    c.classList.remove('go'); void c.offsetWidth; c.classList.add('go'); Sound.sfx('whoosh'); setTimeout(() => Sound.sfx('punch'), 180);
+    setTimeout(() => c.classList.remove('go'), skipping() ? 100 : 1450);
+  }
+  function split(pair) {
+    const el = $('#split'); G.vis.split = pair || null;
+    if (!pair) { el.className = 'layer'; el.innerHTML = ''; return; }
+    el.innerHTML = pair.map(([id, emo], i) => { const info = WHO[id] || {}; return `<div class="sp sp${i}" style="--c:${info.c || '#fff'}"><div class="spin">${Art.char(info.art || id, emo || 'determined', 'default', true, G.vis.of || 'hero')}</div></div>`; }).join('') + '<div class="spline"></div>';
+    el.className = 'layer on'; Sound.sfx('swoosh');
+  }
+  function shatterOut(html) {
+    const el = document.createElement('div'); el.className = 'layer shatter'; Sound.sfx('shatter');
+    const pieces = [[0, 0, 50, 0, 30, 40, 0, 55], [50, 0, 100, 0, 100, 30, 60, 45, 30, 40], [0, 55, 30, 40, 45, 70, 20, 100, 0, 100], [30, 40, 60, 45, 70, 75, 45, 70], [60, 45, 100, 30, 100, 70, 70, 75], [20, 100, 45, 70, 70, 75, 80, 100], [70, 75, 100, 70, 100, 100, 80, 100]];
+    el.innerHTML = pieces.map((p, i) => { const pts = []; for (let k = 0; k < p.length; k += 2) pts.push(`${p[k]}% ${p[k + 1]}%`); const dx = (p[0] + p[2] - 100) * 6, dy = (p[1] + p[3] - 60) * 6; return `<div class="shard" style="clip-path:polygon(${pts.join(',')});--dx:${dx}px;--dy:${dy}px;--r:${(i % 2 ? 1 : -1) * (8 + i * 3)}deg">${html}</div>`; }).join('');
+    $('#stage').appendChild(el); setTimeout(() => el.remove(), 1300);
+  }
+  function fireworkDraw(x, p) {
+    if (p.l > p.max) return;
+    const k = 1 - p.l / p.max, r = p.s * Math.min(1, k * 2.2), a = Math.max(0, 1 - k * 1.1);
+    if (p.l === p.max && Math.random() < .5) Sound.sfx('boom');
+    x.save(); x.globalAlpha = a; x.fillStyle = p.c; x.shadowColor = p.c; x.shadowBlur = 10;
+    for (let i = 0; i < 26; i++) { const an = i / 26 * 6.283; x.beginPath(); x.arc(p.x + Math.cos(an) * r, p.y + Math.sin(an) * r + k * k * 30, 2.4, 0, 7); x.fill(); }
+    x.restore();
+  }
   // ---------- particles ----------
   const Fx = { type: null, parts: [] };
   function setFx(t) { G.vis.fx = t; Fx.type = t; Fx.parts = []; Fx.init = 0; }
@@ -185,17 +251,24 @@ const Game = (() => {
     const cv = $('#particles'), x = cv.getContext('2d'); x.clearRect(0, 0, 1280, 720);
     const t = Fx.type;
     if (t) {
-      const want = { rain: 160, petals: 40, sparks: 60, embers: 70, stars: 50, glass: 90, hearts: 26, dust: 40, shadow: 50 }[t] || 40;
+      const want = { rain: 160, petals: 40, sparks: 60, embers: 70, stars: 50, glass: 90, hearts: 26, dust: 40, shadow: 50, snow: 120, leaves: 34, fireflies: 40, bubbles: 40, confetti: 90, fireworks: 3 }[t] || 40;
       while (Fx.parts.length < want) Fx.parts.push(spawn(t, Fx.parts.length < want * .8 && !Fx.init));
       Fx.init = 1;
       Fx.parts.forEach((p, i) => {
         p.x += p.vx; p.y += p.vy; p.a += p.va || 0; p.l--;
-        if (t === 'petals' || t === 'glass') p.vx += Math.sin((p.y + p.x) / 60) * .02;
+        if (t === 'petals' || t === 'glass' || t === 'leaves' || t === 'snow' || t === 'confetti') p.vx += Math.sin((p.y + p.x) / 60) * .02;
+        if (t === 'fireflies') { p.vx += (Math.random() - .5) * .08; p.vy += (Math.random() - .5) * .08; p.o = .5 + Math.sin(p.l / 12) * .5; }
+        if (t === 'fireworks') { fireworkDraw(x, p); if (p.l <= 0) Fx.parts[i] = spawn(t); return; }
         x.save(); x.globalAlpha = Math.max(0, Math.min(1, p.o * Math.min(1, p.l / 40)));
         if (t === 'rain') { x.strokeStyle = '#bcd8ff'; x.lineWidth = 1.2; x.beginPath(); x.moveTo(p.x, p.y); x.lineTo(p.x - p.vx * 2, p.y - p.vy * 2); x.stroke(); }
         else if (t === 'petals') { x.translate(p.x, p.y); x.rotate(p.a); x.fillStyle = '#ffc1d8'; x.beginPath(); x.ellipse(0, 0, p.s, p.s * .55, 0, 0, 7); x.fill(); }
         else if (t === 'glass') { x.translate(p.x, p.y); x.rotate(p.a); x.fillStyle = `rgba(200,250,255,.9)`; x.beginPath(); x.moveTo(0, -p.s); x.lineTo(p.s * .6, 0); x.lineTo(0, p.s); x.lineTo(-p.s * .6, 0); x.fill(); }
         else if (t === 'hearts') { x.translate(p.x, p.y); x.fillStyle = '#ff7aa8'; x.font = `${p.s * 3}px sans-serif`; x.fillText('♥', 0, 0); }
+        else if (t === 'snow') { x.fillStyle = '#fff'; x.shadowColor = '#fff'; x.shadowBlur = 4; x.beginPath(); x.arc(p.x, p.y, p.s, 0, 7); x.fill(); }
+        else if (t === 'leaves') { x.translate(p.x, p.y); x.rotate(p.a); x.fillStyle = p.c; x.beginPath(); x.ellipse(0, 0, p.s * 1.4, p.s * .6, 0, 0, 7); x.fill(); x.strokeStyle = '#0003'; x.beginPath(); x.moveTo(-p.s * 1.4, 0); x.lineTo(p.s * 1.4, 0); x.stroke(); }
+        else if (t === 'confetti') { x.translate(p.x, p.y); x.rotate(p.a); x.fillStyle = p.c; x.fillRect(-p.s, -p.s * .4, p.s * 2, p.s * .8); }
+        else if (t === 'bubbles') { x.strokeStyle = '#cff6ff'; x.lineWidth = 1.2; x.beginPath(); x.arc(p.x, p.y, p.s, 0, 7); x.stroke(); x.fillStyle = '#fff'; x.beginPath(); x.arc(p.x - p.s * .35, p.y - p.s * .35, p.s * .2, 0, 7); x.fill(); }
+        else if (t === 'fireflies') { x.fillStyle = '#e8ff8a'; x.shadowColor = '#e8ff8a'; x.shadowBlur = 12; x.beginPath(); x.arc(p.x, p.y, p.s, 0, 7); x.fill(); }
         else { x.fillStyle = { sparks: '#fff27a', embers: '#ff8a3a', stars: '#fff', dust: '#ffffff', shadow: '#6a3ac0' }[t]; x.shadowColor = x.fillStyle; x.shadowBlur = t === 'dust' ? 0 : 8; x.beginPath(); x.arc(p.x, p.y, p.s, 0, 7); x.fill(); }
         x.restore();
         if (p.l <= 0 || p.y > 760 || p.y < -60 || p.x < -60 || p.x > 1340) Fx.parts[i] = spawn(t);
@@ -214,16 +287,23 @@ const Game = (() => {
       case 'shadow': return { x: r() * 1280, y: anywhere ? r() * 720 : 730, vx: (r() - .5) * .5, vy: -.4 - r(), s: 2 + r() * 5, o: .6, l: 300 };
       case 'hearts': return { x: r() * 1280, y: anywhere ? r() * 720 : 740, vx: (r() - .5) * .6, vy: -.6 - r(), s: 4 + r() * 5, o: .7, l: 700 };
       case 'dust': return { x: r() * 1280, y: r() * 720, vx: (r() - .5) * .3, vy: (r() - .5) * .3, s: r() * 1.5 + .5, o: .35, l: 400 + r() * 400 };
+      case 'snow': return { x: r() * 1400, y: y0, vx: -.3 - r() * .5, vy: .6 + r() * 1.4, s: 1 + r() * 2.8, o: .9, l: 1200 };
+      case 'leaves': return { x: r() * 1400, y: y0, vx: -1 - r(), vy: 1 + r(), s: 5 + r() * 4, o: .95, a: r() * 6, va: .04, l: 900, c: ['#e8742a', '#d8a02a', '#b8401a', '#f0c040'][(r() * 4) | 0] };
+      case 'confetti': return { x: r() * 1280, y: y0, vx: (r() - .5) * 1.5, vy: 1.5 + r() * 2, s: 4 + r() * 3, o: 1, a: r() * 6, va: .15, l: 700, c: ['#ff5d85', '#ffd24a', '#52e0ff', '#6fffb0', '#b58aff'][(r() * 5) | 0] };
+      case 'bubbles': return { x: r() * 1280, y: anywhere ? r() * 720 : 740, vx: (r() - .5) * .4, vy: -.6 - r() * 1.2, s: 2 + r() * 6, o: .7, l: 900 };
+      case 'fireflies': return { x: r() * 1280, y: 300 + r() * 420, vx: (r() - .5) * .5, vy: (r() - .5) * .5, s: 1.5 + r() * 1.5, o: .8, l: 600 + r() * 600 };
+      case 'fireworks': return { x: 150 + r() * 980, y: 80 + r() * 260, vx: 0, vy: 0, s: 60 + r() * 80, o: 1, l: 110 + ((r() * 90) | 0), max: 110, c: ['#ff5d85', '#ffd24a', '#52e0ff', '#b58aff', '#6fffb0'][(r() * 5) | 0] };
       default: return { x: r() * 1280, y: r() * 500, vx: 0, vy: 0, s: r() * 1.5 + .3, o: r(), l: 200 + r() * 600 };
     }
   }
 
   // ---------- text ----------
   function parse(text) {
-    const out = []; let em = 0, shk = 0, big = 0;
+    const out = []; let em = 0, shk = 0, big = 0, wav = 0, whi = 0, rb = 0;
     for (const ch of T(text)) {
       if (ch === '*') { em ^= 1; continue; } if (ch === '~') { shk ^= 1; continue; } if (ch === '^') { big ^= 1; continue; }
-      out.push({ ch, cls: (em ? 'em ' : '') + (shk ? 'shk ' : '') + (big ? 'big' : '') });
+      if (ch === '%') { wav ^= 1; continue; } if (ch === '|') { whi ^= 1; continue; } if (ch === '$') { rb ^= 1; continue; }
+      out.push({ ch, cls: (em ? 'em ' : '') + (shk ? 'shk ' : '') + (big ? 'big ' : '') + (wav ? 'wav ' : '') + (whi ? 'whi ' : '') + (rb ? 'rb' : '') });
     }
     return out;
   }
@@ -704,6 +784,7 @@ const Game = (() => {
     $('#tcred').onclick = () => modal(`<h2>Credits</h2><div class="log">${STORY.credits.map(l => l.startsWith('#') ? `<h3>${l.slice(1)}</h3>` : `<p>${l.replace('{name}', 'You')}</p>`).join('')}</div>`, { small: 1 });
     $$('#title .tb').forEach(b => b.addEventListener('mouseenter', () => Sound.sfx('hover')));
     $('#splash').onclick = startSplash;
+    $('#game').addEventListener('mousemove', e => { if (!settings.parallax) return; const r = $('#game').getBoundingClientRect(); $('#game').style.setProperty('--px', ((e.clientX - r.left) / r.width - .5).toFixed(3)); $('#game').style.setProperty('--py', ((e.clientY - r.top) / r.height - .5).toFixed(3)); });
     const fit = () => { const k = Math.min(innerWidth / 1280, innerHeight / 720); $('#game').style.transform = `translate(-50%,-50%) scale(${k})`; };
     addEventListener('resize', fit); fit();
     const g = $('#game'); g.addEventListener('scroll', () => { g.scrollTop = 0; g.scrollLeft = 0; });
@@ -717,6 +798,7 @@ const Game = (() => {
     loadPrefs(); bind(); requestAnimationFrame(fxLoop);
     $('#bgA').innerHTML = Art.bg('city_night'); $('#bgA').classList.add('show'); Fx.type = 'stars';
   }
-  return { boot, get G() { return G; }, WHO };
+  const dev = { play(arr) { run++; hideTitle(); closeModal(); R.__dev = arr; reg(arr, '__dev'); if (!G) G = newState(); G.stack = [{ id: '__dev', i: 0 }]; restoreVis(); step(); } };
+  return { boot, get G() { return G; }, WHO, dev };
 })();
 window.addEventListener('DOMContentLoaded', Game.boot);
