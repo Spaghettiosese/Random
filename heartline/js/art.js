@@ -6,7 +6,7 @@ const Art = (() => {
   const rng = seed => { let s = seed >>> 0 || 1; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; };
 
   // ---------- characters (see chars.js) ----------
-  const char = (id, emo = 'neutral', pose = 'default', portrait = false) => id === 'bit' ? bit(emo, portrait) : CharArt.char(id, emo, pose, portrait);
+  const char = (id, emo = 'neutral', pose = 'default', portrait = false, of = 'hero') => id === 'bit' ? bit(emo, portrait) : CharArt.char(id, emo, pose, portrait, of);
   const CH = CharArt.CH;
 
   function bit(emo, portrait) {
@@ -245,7 +245,7 @@ const Art = (() => {
   function bg(name) { return (BG[name] || BG.black)(); }
 
   // ---------- CGs / special scenes ----------
-  const big = (id, emo, pose, style) => `<div class="cgchar" style="${style}">${char(id, emo, pose)}</div>`;
+  const big = (id, emo, pose, style, of) => `<div class="cgchar" style="${style}">${char(id, emo, pose, false, of)}</div>`;
   const bolts = n => { let s = ''; const r = rng(n); for (let k = 0; k < 3; k++) { let x = 700 + k * 120 + r() * 80, y = -20, d = `M${x},${y}`; while (y < 780) { y += 40 + r() * 60; x += (r() - .5) * 140; d += ` L${x | 0},${y | 0}`; } s += `<path d="${d}" stroke="#fff" stroke-width="${10 - k * 2}" fill="none" class="bolt" style="animation-delay:${k * .12}s"/><path d="${d}" stroke="#7fd8ff" stroke-width="${30 - k * 6}" fill="none" opacity=".4" filter="url(#bl8)" class="bolt" style="animation-delay:${k * .12}s"/>`; } return `<svg class="cgfx" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"><defs><filter id="bl8"><feGaussianBlur stdDeviation="8"/></filter></defs>${s}</svg>`; };
   const tendrils = () => `<svg class="cgfx" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">${[...Array(9)].map((_, i) => `<path class="tendril" style="animation-delay:${i * .15}s" d="M${400 + i * 90},900 C${300 + i * 110},${600 - i * 20} ${700 + i * 40},${500 - i * 30} ${780 + i * 30},${220 + i * 30}" stroke="#3a1a6a" stroke-width="${26 - i}" fill="none" stroke-linecap="round" opacity=".9"/>`).join('')}</svg>`;
   const CG = {

@@ -10,6 +10,8 @@ const Game = (() => {
     hikari: { n: 'Hikari', c: '#ffcf3f', p: 880 }, rei: { n: 'Rei', c: '#b99bff', p: 480 }, mira: { n: 'Mira', c: '#ff8fb8', p: 700 },
     kaede: { n: 'Kaede', c: '#5ef0a0', p: 760 }, tetsu: { n: 'Tetsu', c: '#e0a060', p: 220 }, sora: { n: 'Sora', c: '#c9b6ff', p: 960 },
     kyouya: { n: 'Kyouya', c: '#7ff6ff', p: 300 }, glazier: { n: 'The Glazier', c: '#7ff6ff', p: 300, art: 'kyouya' },
+    rin: { n: 'Rin', c: '#9ff0ff', p: 1040 }, echo: { n: 'Echo', c: '#9ff0ff', p: 1040, art: 'rin' }, shiori: { n: 'Shiori', c: '#f2c14e', p: 560 },
+    kuroda: { n: 'Chairman Kuroda', c: '#b8bcc8', p: 170 }, saeki: { n: 'Deputy Saeki', c: '#b58aff', p: 290 }, natsuki: { n: 'Natsuki', c: '#ffb45a', p: 780 },
     aya: { n: 'Director Takamine', c: '#ff5a5a', p: 360 }, bit: { n: 'B.I.T.', c: '#52e0ff', p: 1300 }, me: { n: '', c: '#8fd3ff', p: 250 }
   };
   const POS = { ll: 12, l: 25, c: 50, r: 75, rr: 88 };
@@ -89,6 +91,8 @@ const Game = (() => {
       case 'tint': setTint(a); return NEXT;
       case 'show': showChar(a, b, d, e); return NEXT;
       case 'emo': if (G.vis.chars[a]) showChar(a, b, d || G.vis.chars[a].pose); return NEXT;
+      case 'outfit': { const st = G.vis.chars[a]; if (st) { st.of = b; showChar(a); } else { G.vis.pre = G.vis.pre || {}; G.vis.pre[a] = b; } } return NEXT;
+      case 'wear': G.vis.of = a || null; Object.keys(G.vis.chars).forEach(k => showChar(k)); return NEXT;
       case 'move': if (G.vis.chars[a]) showChar(a, null, null, b); return NEXT;
       case 'hide': hideChar(a); return NEXT;
       case 'hideall': Object.keys(G.vis.chars).forEach(hideChar); return NEXT;
@@ -146,13 +150,13 @@ const Game = (() => {
   }
   function setTint(t) { G.vis.tint = t; $('#tint').className = 'layer ' + (t || ''); }
   function showChar(id, emo, pose, pos) {
-    const st = G.vis.chars[id] || { emo: 'neutral', pose: 'default', pos: 'c' };
+    const st = G.vis.chars[id] || { emo: 'neutral', pose: 'default', pos: 'c', of: G.vis.pre && G.vis.pre[id] };
     let d = $(`#chars .char[data-id="${id}"]`), fresh = !d;
     if (fresh) { d = document.createElement('div'); d.className = 'char enter' + (id === 'bit' ? ' isbit' : ''); d.dataset.id = id; $('#chars').appendChild(d); setTimeout(() => d.classList.remove('enter'), 600); }
     const changed = emo && emo !== st.emo;
     if (emo) st.emo = emo; if (pose) st.pose = pose; if (pos) st.pos = pos;
     G.vis.chars[id] = st;
-    d.innerHTML = Art.char((WHO[id] && WHO[id].art) || id, st.emo, st.pose);
+    d.innerHTML = Art.char((WHO[id] && WHO[id].art) || id, st.emo, st.pose, false, st.of || G.vis.of || 'hero');
     d.style.left = POS[st.pos] + '%';
     if (changed && !fresh) { d.classList.remove('hop'); void d.offsetWidth; d.classList.add('hop'); }
     d.querySelectorAll('.blink').forEach(b => b.style.animationDelay = (-Math.random() * 5).toFixed(2) + 's');
@@ -359,7 +363,7 @@ const Game = (() => {
       <div class="chip">💴 ${G.credits}</div><div class="chip">⭐ ${G.rep}</div></div>`;
   }
   function renderHub() {
-    wait = 'hub'; $('#textbox').classList.add('hide');
+    wait = 'hub'; $('#textbox').classList.add('hide'); G.vis.of = null; G.vis.pre = null;
     Object.keys(G.vis.chars).forEach(hideChar); ['#cg', '#letterbox', '#speed'].forEach(s => $(s).classList.remove('on'));
     if (G.vis.bg !== 'hq_lobby') setBg('hq_lobby'); if (G.vis.fx !== 'dust') setFx('dust'); if (G.vis.music !== 'daily') { G.vis.music = 'daily'; Sound.play('daily'); }
     const hud = $('#hud'); hud.innerHTML = hudHtml(); hud.classList.add('on');
@@ -421,7 +425,7 @@ const Game = (() => {
         if (n <= sceneCount(h) && G.aff[h] >= NEED[n]) { G.seen[h] = n; label = `hang_${h}_${n}`; }
         G.today[h] = (G.today[h] || 0) + 1;
         if (MET().every(k => G.seen[k])) unlock('social');
-        G.slot++; closeModal(); hideHub();
+        G.slot++; closeModal(); hideHub(); G.vis.of = 'casual';
         G.stack.push({ id: label, i: 0 }); step();
       }, { list: MET(), sub: 'Who do you want to spend the evening with?', extra: h => { const n = (G.seen[h] || 0) + 1, max = sceneCount(h); return `<small>${heart(G.aff[h])}</small><small>${tier(G.aff[h])}</small><small class="nextscene">${n > max ? 'All scenes seen' : G.aff[h] >= NEED[n] ? '✨ New scene available' : `Next scene at ♥${NEED[n]}`}</small>`; } });
     },
