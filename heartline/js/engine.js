@@ -8,21 +8,24 @@ const Game = (() => {
   const NEXT = 1, WAIT = 2, CONT = 3;
   const WHO = {
     hikari: { n: 'Hikari', c: '#ffcf3f', p: 880 }, rei: { n: 'Rei', c: '#b99bff', p: 480 }, mira: { n: 'Mira', c: '#ff8fb8', p: 700 },
+    kaede: { n: 'Kaede', c: '#5ef0a0', p: 760 }, tetsu: { n: 'Tetsu', c: '#e0a060', p: 220 }, sora: { n: 'Sora', c: '#c9b6ff', p: 960 },
+    kyouya: { n: 'Kyouya', c: '#7ff6ff', p: 300 }, glazier: { n: 'The Glazier', c: '#7ff6ff', p: 300, art: 'kyouya' },
     aya: { n: 'Director Takamine', c: '#ff5a5a', p: 360 }, bit: { n: 'B.I.T.', c: '#52e0ff', p: 1300 }, me: { n: '', c: '#8fd3ff', p: 250 }
   };
   const POS = { ll: 12, l: 25, c: 50, r: 75, rr: 88 };
-  const SLOTS = ['Morning', 'Afternoon', 'Evening'];
-  const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
+  const SLOTS = ['Evening', 'Night'];
+  const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
   const WEATHER = ['☀️ Clear', '🌤️ Breezy', '🌧️ Rain', '⛈️ Storm'];
-  const STAT = { pow: 'Power', ctl: 'Control', team: 'Teamwork' };
   const ACH = {
     prologue: ['First Spark', 'Complete the Prologue'], perfect: ['Perfect Timing', 'Land a PERFECT strike in training'],
-    srank: ['S-Rank Handler', 'Earn an S rank on a mission'], shopper: ['Big Spender', 'Buy 3 gifts'], gift: ['Thoughtful', 'Give a hero a gift they love'],
-    bond: ['Heartline', 'Reach 20 affection with anyone'], rest: ['Self-Care', 'Take a rest'], social: ['Social Butterfly', 'Hang out with all three heroines'],
+    srank: ['S-Rank Shift', 'Finish a dispatch shift with an S grade'], shopper: ['Big Spender', 'Buy 3 gifts'], gift: ['Thoughtful', 'Give a hero a gift they love'],
+    bond: ['Heartline', 'Reach 20 affection with anyone'], rest: ['Self-Care', 'Take a rest'], social: ['Social Butterfly', 'Hang out with everyone you\'ve met'],
     eye: ['Handler\'s Eye', 'Call every Handler\'s Eye moment correctly'], cert: ['Squad Zero', 'Pass Field Certification'],
     cert_s: ['Flawless', 'Pass certification with a top score'], night: ['Night Owl', 'Reply to 3 late-night messages'],
     route_hikari: ['Lightning Heart', 'See Hikari\'s rooftop scene'], route_rei: ['Shadow Heart', 'See Rei\'s rooftop scene'], route_mira: ['Healing Heart', 'See Mira\'s rooftop scene'],
-    ch1: ['To Be Continued', 'Clear Chapter 1'], log: ['Rewind', 'Open the backlog'], deploy5: ['Dispatcher', 'Complete 5 missions'], coach: ['Coach', 'Run 5 training sessions']
+    ch1: ['Squad Zero', 'Clear Chapter 1'], ch2: ['Glass Hearts', 'Clear Chapter 2'], ch3: ['Fractures', 'Clear Chapter 3'], ch4: ['Shattered City', 'Clear Chapter 4'], finale: ['Heartline', 'Finish the story'], goodend: ['Nobody Left Behind', 'Bring Kyouya home'],
+    route_sora: ['Gravity Heart', 'See Sora\'s rooftop scene'], fin_squad: ['Found Family', 'See the Squad ending'], veteran: ['Veteran', 'Raise a hero to Lv 5'],
+    log: ['Rewind', 'Open the backlog'], deploy5: ['Dispatcher', 'Resolve 25 calls'], coach: ['Coach', 'Run 5 training sessions']
   };
   let settings = { textSpeed: 45, autoDelay: 1.4, music: .55, sfx: .7, voice: true, hints: false, motion: true };
   let meta = { ach: {}, gallery: {}, cleared: false };
@@ -36,12 +39,13 @@ const Game = (() => {
   const saveMeta = () => LS.set('hl_meta', meta), saveSettings = () => LS.set('hl_settings', settings);
   function applySettings() { Sound.setVol('music', settings.music); Sound.setVol('sfx', settings.sfx); Sound.vol.voice = settings.voice; document.body.classList.toggle('nomotion', !settings.motion); }
 
+  const HB = (com, vig, mob, cha, int) => ({ lvl: 1, xp: 0, sp: 0, st: { com, vig, mob, cha, int }, fat: 0, hurt: 0 });
   function newState() {
     return {
-      name: 'Haru', flags: {}, aff: { hikari: 0, rei: 0, mira: 0, aya: 0 }, known: { bit: 0 },
-      heroes: { hikari: { pow: 38, ctl: 14, team: 22, morale: 70, fat: 0 }, rei: { pow: 30, ctl: 44, team: 8, morale: 40, fat: 0 } },
-      day: 1, slot: 0, energy: 100, credits: 300, rep: 10, inv: {}, gifted: {}, seen: { hikari: 0, rei: 0, mira: 0 }, ev: {},
-      missions: [], done: 0, trains: 0, bought: 0, replies: 0, eyes: 0, eyesOk: 0, today: {}, weather: 0, score: 0,
+      name: 'Haru', flags: {}, aff: { hikari: 0, rei: 0, mira: 0, aya: 0, kaede: 0, tetsu: 0, sora: 0 }, known: { bit: 0 },
+      heroes: { hikari: HB(6, 5, 4, 4, 2), rei: HB(5, 3, 6, 1, 6), kaede: HB(3, 3, 8, 4, 3), tetsu: HB(5, 8, 2, 4, 3), sora: HB(4, 4, 3, 8, 4) }, roster: ['hikari', 'rei'],
+      day: 1, slot: 0, energy: 100, credits: 300, rep: 10, inv: {}, gifted: {}, seen: {}, ev: {}, texts: {}, chap: 0, chapT: 'Prologue', goal: null,
+      calls: 0, trains: 0, bought: 0, replies: 0, eyes: 0, eyesOk: 0, today: {}, weather: 0, score: 0, shifts: [],
       stack: [], vis: { bg: 'black', fx: null, music: null, chars: {}, tint: null }
     };
   }
@@ -73,7 +77,7 @@ const Game = (() => {
   function jump(label) { G.stack = [{ id: label, i: 0 }]; }
   function push(arr) { G.stack.push({ id: idOf(arr), i: 0 }); }
   const skipping = () => skip || ctrlSkip;
-  const T = s => String(s).replace(/\{name\}/g, G.name);
+  const T = s => String(s).replace(/\{name\}/g, G.name).replace(/\{grade\}/g, G.last ? G.last.grade : '').replace(/\{ok\}/g, G.last ? G.last.ok : '');
 
   function exec(c, f) {
     const [op, a, b, d, e] = c;
@@ -114,10 +118,15 @@ const Game = (() => {
       case 'daycard': dayCard(); return WAIT;
       case 'name': nameEntry(); return WAIT;
       case 'phone': phone(a, b, false); return WAIT;
-      case 'hub': if (G.slot >= 3) { hideHub(); return NEXT; } autosave(); renderHub(); return WAIT;
+      case 'hub': if (G.slot >= SLOTS.length) { hideHub(); return NEXT; } autosave(); renderHub(); return WAIT;
+      case 'shift': startShift(a); return WAIT;
+      case 'recruit': if (b === 0) G.roster = G.roster.filter(x => x !== a); else if (!G.roster.includes(a)) G.roster.push(a); return NEXT;
+      case 'jumpf': jump(a + (G.flags[b] || 'squad')); return CONT;
+      case 'chapter': G.chap = a; G.chapT = b; G.goal = d ? { n: d, day: e } : null; if (a > 1) unlock('ch' + (a - 1)); autosave(); return NEXT;
+      case 'goal': G.goal = a ? { n: a, day: b } : null; return NEXT;
       case 'night': night(); return WAIT;
       case 'nextday': nextDay(); return NEXT;
-      case 'route': { const k = ['hikari', 'rei', 'mira'].reduce((m, x) => G.aff[x] > G.aff[m] ? x : m, 'hikari'); jump('end_' + k); } return CONT;
+      case 'route': { const pool = (b || ['hikari', 'rei', 'mira']).filter(x => G.known[x] !== undefined); let k = pool.reduce((m, x) => G.aff[x] > G.aff[m] ? x : m, pool[0]); if (d && G.aff[k] < d) k = 'squad'; jump(a + k); } return CONT;
       case 'end': theEnd(); return WAIT;
       case 'autosave': autosave(); return NEXT;
     }
@@ -143,7 +152,7 @@ const Game = (() => {
     const changed = emo && emo !== st.emo;
     if (emo) st.emo = emo; if (pose) st.pose = pose; if (pos) st.pos = pos;
     G.vis.chars[id] = st;
-    d.innerHTML = Art.char(id, st.emo, st.pose);
+    d.innerHTML = Art.char((WHO[id] && WHO[id].art) || id, st.emo, st.pose);
     d.style.left = POS[st.pos] + '%';
     if (changed && !fresh) { d.classList.remove('hop'); void d.offsetWidth; d.classList.add('hop'); }
     d.querySelectorAll('.blink').forEach(b => b.style.animationDelay = (-Math.random() * 5).toFixed(2) + 's');
@@ -314,7 +323,7 @@ const Game = (() => {
   function dayCard() {
     wait = 'card'; Sound.sfx('page');
     const c = $('#card'); c.className = 'on day';
-    c.innerHTML = `<div class="dc"><div class="dcal"><div class="dtop">${DAYS[(G.day - 1) % 5]}</div><div class="dnum">${G.day}</div></div><div class="dinfo"><b>DAY ${G.day}</b><span>${WEATHER[G.weather]}</span><em>${G.day === 4 ? 'Field Certification' : `${4 - G.day} day${4 - G.day > 1 ? 's' : ''} until Certification`}</em></div></div>`;
+    c.innerHTML = `<div class="dc"><div class="dcal"><div class="dtop">${DAYS[(G.day - 1) % 7]}</div><div class="dnum">${G.day}</div></div><div class="dinfo"><small class="dch">${G.chapT}</small><b>DAY ${G.day}</b><span>${WEATHER[G.weather]}</span><em>${G.goal ? (G.goal.day > G.day ? `${G.goal.day - G.day} day${G.goal.day - G.day > 1 ? 's' : ''} until ${G.goal.n}` : G.goal.n) : G.chapT}</em></div></div>`;
     later(2600, () => { c.className = ''; later(300); });
   }
   function nameEntry() {
@@ -337,11 +346,15 @@ const Game = (() => {
   function closeModal() { const m = $('#modal'); m.className = ''; m.innerHTML = ''; }
   const modalOpen = () => $('#modal').classList.contains('on');
 
-  // ---------- HUB (daily planner) ----------
+  // ---------- HUB (evening free time) ----------
+  const ROMANCE = ['hikari', 'rei', 'mira', 'sora', 'kaede'];
+  const MET = () => ['hikari', 'rei', 'mira', 'kaede', 'tetsu', 'sora'].filter(h => G.known[h] !== undefined);
+  const NEED = [0, 0, 5, 11, 18, 26];
+  const sceneCount = h => { let n = 0; while (STORY.scripts[`hang_${h}_${n + 1}`]) n++; return n; };
   function hudHtml() {
     const seg = SLOTS.map((s, i) => `<div class="seg ${i < G.slot ? 'used' : i === G.slot ? 'now' : ''}"><span>${s}</span></div>`).join('');
-    return `<div class="hudday"><b>DAY ${G.day}</b><span>${DAYS[(G.day - 1) % 5]} · ${WEATHER[G.weather]}</span></div>
-      <div class="timebar">${seg}<div class="sun" style="left:${(G.slot + .5) / 3 * 100}%">${G.slot < 2 ? '☀️' : '🌙'}</div></div>
+    return `<div class="hudday"><b>DAY ${G.day}</b><span>${G.chapT || ''} · ${DAYS[(G.day - 1) % 7]} ${WEATHER[G.weather].split(' ')[0]}</span></div>
+      <div class="timebar">${seg}<div class="sun" style="left:${(G.slot + .5) / SLOTS.length * 100}%">${G.slot < 1 ? '🌆' : '🌙'}</div></div>
       <div class="hudstats"><div class="energy"><label>ENERGY</label><div class="bar"><i style="width:${G.energy}%"></i></div><small>${G.energy}</small></div>
       <div class="chip">💴 ${G.credits}</div><div class="chip">⭐ ${G.rep}</div></div>`;
   }
@@ -350,85 +363,72 @@ const Game = (() => {
     Object.keys(G.vis.chars).forEach(hideChar); ['#cg', '#letterbox', '#speed'].forEach(s => $(s).classList.remove('on'));
     if (G.vis.bg !== 'hq_lobby') setBg('hq_lobby'); if (G.vis.fx !== 'dust') setFx('dust'); if (G.vis.music !== 'daily') { G.vis.music = 'daily'; Sound.play('daily'); }
     const hud = $('#hud'); hud.innerHTML = hudHtml(); hud.classList.add('on');
-    setTint(['morning', 'noon', 'evening'][G.slot]);
+    setTint(['evening', 'night'][G.slot]);
     const acts = [
-      ['train', '🥊', 'Train', 'Raise a hero\'s stats', 20], ['deploy', '🚨', 'Deploy', 'Send heroes on missions', 15],
-      ['hang', '💗', 'Hang Out', 'Spend time together', 10], ['rest', '🛏️', 'Rest', 'Recover energy & fatigue', 0],
-      ['shop', '🛍️', 'Shop', 'Gifts & goods · free', -1], ['dossier', '📁', 'Dossier', 'Profiles & gifting · free', -1], ['heronet', '📱', 'HeroNet', 'Feed & news · free', -1]
+      ['hang', '💗', 'Hang Out', 'Spend the evening together', 10], ['train', '🥊', 'Train', 'Timing drill · earn hero XP', 20],
+      ['rest', '🛏️', 'Rest', 'Squad recovers fatigue', 0], ['dossier', '📁', 'Dossier', 'Stats · skill points · gifts', -1],
+      ['shop', '🛍️', 'Shop', 'Gifts & goods · free', -1], ['heronet', '📱', 'HeroNet', 'Feed & news · free', -1]
     ];
-    const mini = (l, v, c = '') => `<div class="mini ${c}"><label>${l}</label><span><i style="width:${v}%"></i></span><em>${v}</em></div>`;
-    const squad = ['hikari', 'rei'].map(h => { const s = G.heroes[h]; return `<div class="sq" style="--c:${WHO[h].c}"><div class="pt">${Art.char(h, s.fat > 70 ? 'sad' : s.morale > 60 ? 'smile' : 'neutral', 'default', true)}</div><div class="sqs"><b>${WHO[h].n}</b>
-      ${mini('POW', s.pow)}${mini('CTL', s.ctl)}${mini('TEAM', s.team)}${mini('FTG', s.fat, 'fat')}</div></div>`; }).join('')
-      + `<h3 class="bh">BONDS</h3>` + ['hikari', 'rei', 'mira'].map(h => `<div class="bond" style="--c:${WHO[h].c}"><b>${WHO[h].n}</b>${heart(G.aff[h])}<small>${tier(G.aff[h])}</small></div>`).join('')
-      + `<div class="countdown"><b>${Math.max(0, 4 - G.day)}</b><span>day${4 - G.day === 1 ? '' : 's'} until<br>Field Certification</span></div>`;
-    const tip = hubTip();
+    const squad = G.roster.map(h => { const s = G.heroes[h]; return `<div class="sq" style="--c:${WHO[h].c}"><div class="pt">${Art.char(h, s.hurt ? 'sad' : s.fat > 70 ? 'sweat' : 'smile', 'default', true)}</div><div class="sqs"><b>${WHO[h].n} <small>Lv ${s.lvl}</small>${s.sp ? `<em class="spb">+${s.sp} SP</em>` : ''}</b>
+      <div class="mini fat"><label>FTG</label><span><i style="width:${s.fat}%"></i></span><em>${s.fat}</em></div>${s.hurt ? '<div class="hurtb">🩹 injured</div>' : ''}</div></div>`; }).join('')
+      + `<h3 class="bh">BONDS</h3>` + MET().filter(h => h !== 'tetsu').map(h => `<div class="bond" style="--c:${WHO[h].c}"><b>${WHO[h].n}</b>${heart(G.aff[h])}<small>${tier(G.aff[h])}</small></div>`).join('')
+      + (G.goal && G.goal.day >= G.day ? `<div class="countdown"><b>${Math.max(0, G.goal.day - G.day)}</b><span>day${G.goal.day - G.day === 1 ? '' : 's'} until<br>${G.goal.n}</span></div>` : '');
     $('#hub').innerHTML = `<div class="squad"><h3>SQUAD ZERO</h3>${squad}</div>
-      <div class="acts">${acts.map(([k, ic, n, d, cost]) => `<button class="act ${cost > 0 && G.energy < cost ? 'off' : ''}" data-a="${k}"><div class="ic">${ic}</div><b>${n}</b><small>${d}</small>${cost > 0 ? `<em>-${cost} ⚡</em>` : cost === 0 ? '<em>+45 ⚡</em>' : ''}</button>`).join('')}</div>
-      <div class="bittip"><div class="bitface">${Art.char('bit', 'happy', '', true)}</div><p>${tip}</p></div>`;
+      <div class="acts">${acts.map(([k, ic, n, d, cost]) => `<button class="act ${cost > 0 && G.energy < cost ? 'off' : ''}" data-a="${k}"><div class="ic">${ic}</div><b>${n}</b><small>${d}</small>${cost > 0 ? `<em>-${cost} ⚡</em>` : cost === 0 ? '<em>uses slot</em>' : ''}</button>`).join('')}</div>
+      <div class="bittip"><div class="bitface">${Art.char('bit', 'happy', '', true)}</div><p>${hubTip()}</p></div>`;
     $('#hub').classList.add('on');
     $$('#hub .act').forEach(b => { b.onmouseenter = () => Sound.sfx('hover'); b.onclick = () => { if (b.classList.contains('off')) { Sound.sfx('fail'); toast('Too tired!', 'Rest to recover energy.'); return; } Sound.sfx('click'); ACTS[b.dataset.a](); }; });
   }
   function hideHub(keepHud) { $('#hub').classList.remove('on'); if (!keepHud) $('#hud').classList.remove('on'); }
   function hubTip() {
-    const h = G.heroes, tips = [];
-    if (G.energy < 25) tips.push('Your energy is low, Handler! Consider resting. Beep.');
-    ['hikari', 'rei'].forEach(k => { if (h[k].fat > 65) tips.push(`${WHO[k].n} looks exhausted. Tired heroes fail missions!`); });
-    if (h.hikari.ctl < 25) tips.push('Hikari\'s Control is very low. Control training widens her strike window!');
-    if (h.rei.team < 20) tips.push('Rei\'s Teamwork is critical. Squad deployments and Teamwork drills help!');
-    if (G.day === 3) tips.push('Tomorrow is Certification Day! Balanced stats and strong bonds will matter!');
+    const tips = [];
+    G.roster.forEach(k => { const h = G.heroes[k]; if (h.sp) tips.push(`${WHO[k].n} has ${h.sp} unspent skill point${h.sp > 1 ? 's' : ''}! Open the Dossier to boost a stat.`); });
+    G.roster.forEach(k => { if (G.heroes[k].fat > 60) tips.push(`${WHO[k].n} is worn out. Fatigue lowers success odds and slows recovery during shifts. Rest helps!`); });
+    if (G.last && G.last.miss > 1) tips.push(`We missed ${G.last.miss} calls today. Tip: use ▶▶ when heroes are busy, and ❚❚ to plan!`);
     if (tips.length) return tips[(G.day + G.slot) % tips.length];
-    const gen = ['Gifts a hero LOVES give big affection boosts. Check their Dossier for hints!', 'Evening is great for hanging out. Just saying. Beep boop.', 'Squad deployments train Teamwork for both heroes at once!', 'Higher affection unlocks new Hang Out scenes. Bonds are power!', 'Hold CTRL to skip text you\'ve read. Press H to hide the UI and admire the view.'];
+    const gen = ['Match the red outline on a call! Heroes stack their stats when you send a team.', 'Some pairs work better together. Watch the synergy notes when building a team!', 'Mobility gets heroes there faster. Vigor gets them back on their feet sooner.', 'Gifts a hero LOVES give big affection boosts. Check their Dossier for hints!', 'Higher affection unlocks new Hang Out scenes. Bonds are power!', 'Hold CTRL to skip text you\'ve read. Press H to hide the UI and admire the view.'];
     return gen[(G.day * 3 + G.slot) % gen.length];
   }
   function useSlot(evChance = .3) {
     G.slot++; closeModal();
     const hud = $('#hud'); hud.innerHTML = hudHtml(); Sound.sfx('swoosh');
-    setTint(['morning', 'noon', 'evening', 'night'][G.slot]);
-    const pool = Object.keys(STORY.events).filter(k => !G.ev[k] && STORY.events[k].day <= G.day);
-    if (G.slot < 3 && pool.length && Math.random() < evChance) { const k = pool[(Math.random() * pool.length) | 0]; G.ev[k] = 1; hideHub(true); G.stack.push({ id: k, i: 0 }); setTimeout(step, 500); return; }
+    const pool = Object.keys(STORY.events).filter(k => !G.ev[k] && STORY.events[k].day <= G.day && (!STORY.events[k].need || G.known[STORY.events[k].need] !== undefined));
+    if (G.slot < SLOTS.length && pool.length && Math.random() < evChance) { const k = pool[(Math.random() * pool.length) | 0]; G.ev[k] = 1; hideHub(true); G.stack.push({ id: k, i: 0 }); setTimeout(step, 500); return; }
     setTimeout(step, 450);
   }
   const heroPick = (title, cb, opts = {}) => {
-    const hs = opts.list || ['hikari', 'rei'];
+    const hs = opts.list || G.roster;
     modal(`<h2>${title}</h2><p class="sub">${opts.sub || 'Choose a hero'}</p><div class="picks">${hs.map(h => {
       const s = G.heroes[h];
-      return `<button class="pick" data-h="${h}" style="--c:${h === 'squad' ? '#7fe8ff' : WHO[h].c}"><div class="pp">${h === 'squad' ? `<div class="duo">${Art.char('hikari', 'happy', 'default', true)}${Art.char('rei', 'cold', 'default', true)}</div>` : Art.char(h, s && s.fat > 70 ? 'sad' : 'smile', 'default', true)}</div>
-      <b>${h === 'squad' ? 'Squad Deploy' : WHO[h].n}</b>${opts.extra ? opts.extra(h) : s ? `<small>POW ${s.pow} · CTL ${s.ctl} · TEAM ${s.team}</small><small>Fatigue ${s.fat}% · Morale ${s.morale}</small>` : `<small>♥ ${G.aff[h]}</small>`}</button>`;
-    }).join('')}</div>`);
+      return `<button class="pick" data-h="${h}" style="--c:${WHO[h].c}"><div class="pp">${Art.char(h, s && s.fat > 70 ? 'sad' : 'smile', 'default', true)}</div>
+      <b>${WHO[h].n}</b>${opts.extra ? opts.extra(h) : `<small>Lv ${s.lvl} · XP ${s.xp}/${s.lvl * 40 + 40}</small><small>Fatigue ${s.fat}%</small>`}</button>`;
+    }).join('')}</div>`, { wide: hs.length > 3 });
     $$('#modal .pick').forEach(b => b.onclick = () => { Sound.sfx('confirm'); cb(b.dataset.h); });
   };
+  function giveXP(id, amt) {
+    const h = G.heroes[id]; h.xp += amt; let n = 0;
+    while (h.lvl < 10 && h.xp >= h.lvl * 40 + 40) { h.xp -= h.lvl * 40 + 40; h.lvl++; h.sp++; n++; }
+    if (n) { Sound.sfx('levelup'); toast(`⬆ ${WHO[id].n} reached Lv ${h.lvl}!`, '+1 skill point'); } if (h.lvl >= 5) unlock('veteran');
+    return n;
+  }
 
   const ACTS = {
-    train() {
-      heroPick('Training', h => {
-        const s = G.heroes[h];
-        modal(`<h2>Train ${WHO[h].n}</h2><p class="sub">Pick a focus. Higher Control widens the strike zone.</p><div class="picks three">${Object.entries(STAT).map(([k, n]) => `<button class="pick stat" data-k="${k}"><div class="big">${{ pow: '💥', ctl: '🎯', team: '🤝' }[k]}</div><b>${n}</b><small>Current: ${s[k]}</small></button>`).join('')}</div>`);
-        $$('#modal .stat').forEach(b => b.onclick = () => { Sound.sfx('confirm'); minigame(h, b.dataset.k); });
-      }, { sub: 'Training costs 20 energy and adds fatigue.' });
-    },
-    deploy() {
-      if (!G.missions.length) genMissions();
-      modal(`<h2>Mission Board</h2><p class="sub">HALO Dispatch · ${G.missions.filter(m => !m.done).length} open requests</p><div class="missions">${G.missions.map((m, i) => `<button class="mission ${m.done ? 'done' : ''}" data-i="${i}"><div class="tier">${'★'.repeat(m.tier)}<span>${'★'.repeat(3 - m.tier)}</span></div><b>${m.n}</b><p>${m.d}</p><div class="mfoot"><span class="tag">${STAT[m.stat]}</span><span>💴 ${m.cr}</span><span>⭐ +${m.rep}</span>${m.done ? `<span class="res ${m.ok ? 'ok' : 'bad'}">${m.ok ? 'CLEARED' : 'FAILED'}</span>` : ''}</div></button>`).join('')}</div>`, { wide: 1 });
-      $$('#modal .mission').forEach(b => b.onclick = () => {
-        const m = G.missions[+b.dataset.i]; if (m.done) return Sound.sfx('fail'); Sound.sfx('confirm');
-        heroPick(m.n, h => runMission(m, h), { list: ['hikari', 'rei', 'squad'], sub: `Requires ${STAT[m.stat]} · Difficulty ${m.diff}`, extra: h => `<small class="chance">Success ${Math.round(chance(m, h) * 100)}%</small><small>${h === 'squad' ? 'Both heroes · uses Teamwork' : `${STAT[m.stat]} ${G.heroes[h][m.stat]} · Fatigue ${G.heroes[h].fat}%`}</small>` });
-      });
-    },
+    train() { heroPick('Training', h => minigame(h), { sub: 'Timing drill. Better strikes = more XP. Costs 20 energy, adds fatigue.' }); },
     hang() {
       heroPick('Hang Out', h => {
-        G.energy -= 10; const n = G.seen[h] + 1, need = [0, 0, 6, 14][n];
+        G.energy -= 10; const n = (G.seen[h] || 0) + 1;
         let label = `hang_${h}_x`;
-        if (n <= 3 && G.aff[h] >= need) { G.seen[h] = n; label = `hang_${h}_${n}`; }
+        if (n <= sceneCount(h) && G.aff[h] >= NEED[n]) { G.seen[h] = n; label = `hang_${h}_${n}`; }
         G.today[h] = (G.today[h] || 0) + 1;
-        if (G.seen.hikari && G.seen.rei && G.seen.mira) unlock('social');
+        if (MET().every(k => G.seen[k])) unlock('social');
         G.slot++; closeModal(); hideHub();
         G.stack.push({ id: label, i: 0 }); step();
-      }, { list: ['hikari', 'rei', 'mira'], sub: 'Who do you want to spend time with?', extra: h => `<small>${heart(G.aff[h])}</small><small>${tier(G.aff[h])}</small><small class="nextscene">${G.seen[h] >= 3 ? 'All scenes seen' : G.aff[h] >= [0, 0, 6, 14][G.seen[h] + 1] ? '✨ New scene available' : `Next scene at ♥${[0, 0, 6, 14][G.seen[h] + 1]}`}</small>` });
+      }, { list: MET(), sub: 'Who do you want to spend the evening with?', extra: h => { const n = (G.seen[h] || 0) + 1, max = sceneCount(h); return `<small>${heart(G.aff[h])}</small><small>${tier(G.aff[h])}</small><small class="nextscene">${n > max ? 'All scenes seen' : G.aff[h] >= NEED[n] ? '✨ New scene available' : `Next scene at ♥${NEED[n]}`}</small>`; } });
     },
     rest() {
-      modal(`<h2>Rest</h2><div class="rest"><div class="zzz">Z<span>z</span><span>z</span></div><p>You grab a nap on the break-room couch. B.I.T. hums a lullaby at 40 decibels.</p><p class="gain">+45 Energy · Heroes −30 Fatigue · +5 Morale</p></div>`, { noclose: 1 });
+      modal(`<h2>Rest</h2><div class="rest"><div class="zzz">Z<span>z</span><span>z</span></div><p>You order takeout for the whole squad and call it an early night. B.I.T. hums a lullaby at 40 decibels.</p><p class="gain">+45 Energy · Squad −35 Fatigue</p></div>`, { noclose: 1 });
       Sound.sfx('snore'); unlock('rest');
-      G.energy = clamp(G.energy + 45, 0, 100); ['hikari', 'rei'].forEach(h => { const s = G.heroes[h]; s.fat = clamp(s.fat - 30, 0, 100); s.morale = clamp(s.morale + 5, 0, 100); });
+      G.energy = clamp(G.energy + 45, 0, 100); G.roster.forEach(h => { const s = G.heroes[h]; s.fat = clamp(s.fat - 35, 0, 100); });
       setTimeout(() => useSlot(.45), 2200);
     },
     shop() {
@@ -438,75 +438,20 @@ const Game = (() => {
       };
       draw();
     },
-    dossier(sel = 'hikari') { dossier(sel); },
+    dossier(sel) { dossier(typeof sel === 'string' ? sel : MET()[0]); },
     heronet() {
       const posts = STORY.feed(G);
       modal(`<div class="phone feed"><div class="phead">📱 HeroNet <small>#NeoTokyo</small></div><div class="pbody">${posts.map(p => `<div class="post"><div class="pav" style="background:${p.c}">${p.a}</div><div><b>${p.u}</b> <small>${p.h}</small><p>${T(p.t)}</p><small class="likes">♥ ${p.l} · ↻ ${Math.round(p.l / 7)}</small></div></div>`).join('')}</div></div>`, { cls: 'phonewrap' });
     }
   };
   const heart = v => { const n = clamp(Math.floor(v / 5), 0, 6); return '<span class="hearts">' + '♥'.repeat(n) + '<span>' + '♥'.repeat(6 - n) + '</span></span>'; };
-  const tier = v => v < 3 ? 'Stranger' : v < 8 ? 'Acquaintance' : v < 14 ? 'Friend' : v < 22 ? 'Close Friend' : 'Something More…';
+  const tier = v => v < 3 ? 'Stranger' : v < 8 ? 'Acquaintance' : v < 14 ? 'Friend' : v < 22 ? 'Close Friend' : v < 30 ? 'Something More…' : 'Heartline ♥';
 
-  function genMissions() {
-    const pool = STORY.missions.filter(m => !m.min || G.day >= m.min).sort(() => Math.random() - .5);
-    G.missions = pool.slice(0, 3).map(m => Object.assign({}, m, { done: 0 }));
-  }
-  function chance(m, h) {
-    const H = G.heroes;
-    let st, mor, fat;
-    if (h === 'squad') { st = (H.hikari[m.stat] + H.rei[m.stat]) / 2 * .6 + (H.hikari.team + H.rei.team) / 2 * .6 + 6; mor = (H.hikari.morale + H.rei.morale) / 2; fat = Math.max(H.hikari.fat, H.rei.fat); }
-    else { st = H[h][m.stat]; mor = H[h].morale; fat = H[h].fat; }
-    return clamp(.5 + (st - m.diff) / 55 + (mor - 50) / 400 - fat / 260, .05, .97);
-  }
-  function runMission(m, h) {
-    G.energy -= 15;
-    const p = chance(m, h), roll = Math.random(), ok = roll < p, margin = p - roll;
-    const who = h === 'squad' ? ['hikari', 'rei'] : [h];
-    const lines = STORY.missionLog(m, who, ok);
-    modal(`<h2>Deploying: ${m.n}</h2><div class="deploy"><svg class="map" viewBox="0 0 600 300">${[...Array(12)].map((_, i) => `<path d="M${i * 50},0 v300" stroke="#3dd8ff" stroke-opacity=".15"/>`).join('')}${[...Array(6)].map((_, i) => `<path d="M0,${i * 50} h600" stroke="#3dd8ff" stroke-opacity=".15"/>`).join('')}
-      <path id="route" d="M60,240 C160,240 180,80 300,120 S460,60 530,70" stroke="#7fe8ff" stroke-width="4" fill="none" stroke-dasharray="10 8" class="dash"/>
-      <circle cx="60" cy="240" r="10" fill="#7fe8ff"/><text x="60" y="275" fill="#7fe8ff" font-size="14" text-anchor="middle">HALO</text>
-      <circle cx="530" cy="70" r="12" fill="#ff3355" class="pulse"/><circle cx="530" cy="70" r="30" fill="none" stroke="#ff3355" stroke-width="3" class="ping"/>
-      <g id="unit"><circle r="16" fill="#fff" stroke="${WHO[who[0]].c}" stroke-width="4"/><text y="6" text-anchor="middle" font-size="16">${h === 'squad' ? '⚡' : h === 'rei' ? '🌑' : '⚡'}</text></g></svg>
-      <div class="dlog" id="dlog"></div><div class="dprog"><i id="dprog"></i></div></div>`, { noclose: 1, wide: 1 });
-    Sound.sfx('siren');
-    const path = $('#route'), L = path.getTotalLength(), unit = $('#unit'), t0 = performance.now(), dur = skipping() ? 800 : 4200, my = run;
-    const anim = now => {
-      if (my !== run || !$('#unit')) return;
-      const k = clamp((now - t0) / dur, 0, 1), pt = path.getPointAtLength(L * k); unit.setAttribute('transform', `translate(${pt.x},${pt.y})`);
-      $('#dprog').style.width = k * 100 + '%';
-      const li = Math.floor(k * lines.length);
-      const dl = $('#dlog'); while (dl.children.length < Math.min(li + 1, lines.length)) { const d = document.createElement('div'); d.innerHTML = T(lines[dl.children.length]); dl.appendChild(d); Sound.sfx(dl.children.length === lines.length ? (ok ? 'punch' : 'miss') : 'type'); dl.scrollTop = 1e4; }
-      if (k < 1) requestAnimationFrame(anim); else setTimeout(() => missionResult(m, h, who, ok, margin), 600);
-    };
-    requestAnimationFrame(anim);
-  }
-  function missionResult(m, h, who, ok, margin) {
-    m.done = 1; m.ok = ok;
-    const rank = !ok ? 'C' : margin > .35 ? 'S' : margin > .15 ? 'A' : 'B';
-    const cr = ok ? Math.round(m.cr * (rank === 'S' ? 1.5 : rank === 'A' ? 1.2 : 1)) : Math.round(m.cr * .2), rep = ok ? m.rep : -1;
-    G.credits += cr; G.rep = Math.max(0, G.rep + rep); if (ok) G.done++;
-    const gains = [];
-    who.forEach(w => {
-      const s = G.heroes[w], g = ok ? 2 + (rank === 'S' ? 2 : 0) : 1; s[m.stat] = clamp(s[m.stat] + g, 0, 100); if (h === 'squad') s.team = clamp(s.team + 3, 0, 100);
-      s.fat = clamp(s.fat + (ok ? 22 : 30), 0, 100); s.morale = clamp(s.morale + (ok ? 6 : -8), 0, 100); gains.push(`${WHO[w].n}: ${STAT[m.stat]} +${g}${h === 'squad' ? ', Teamwork +3' : ''}`);
-    });
-    if (rank === 'S') unlock('srank'); if (G.done >= 5) unlock('deploy5');
-    Sound.sfx(ok ? 'success' : 'fail');
-    const w0 = who[who.length === 2 ? (Math.random() < .5 ? 0 : 1) : 0], line = STORY.missionQuip(w0, ok, h === 'squad');
-    modal(`<div class="result ${ok ? 'ok' : 'bad'}"><div class="stamp">${ok ? 'MISSION CLEAR' : 'MISSION FAILED'}</div><div class="rank">RANK <b>${rank}</b></div>
-      <div class="rgrid"><div>💴 +${cr}</div><div>⭐ ${rep >= 0 ? '+' : ''}${rep}</div>${gains.map(g => `<div>${g}</div>`).join('')}</div>
-      <div class="quip" style="--c:${WHO[w0].c}"><div class="qp">${Art.char(w0, ok ? 'happy' : 'sad', 'default', true)}</div><p><b>${WHO[w0].n}</b>${T(line)}</p></div>
-      <button class="btn primary" id="rok">Continue</button></div>`, { noclose: 1 });
-    if (ok) who.forEach(w => addAff(w, 1));
-    $('#rok').onclick = () => { Sound.sfx('confirm'); useSlot(); };
-  }
-
-  function minigame(h, stat) {
-    const s = G.heroes[h], zone = clamp(70 + s.ctl * 1.1 - s.fat * .5, 50, 190), W = 600;
+  function minigame(h) {
+    const s = G.heroes[h], zone = clamp(70 + s.st.int * 6 + s.st.mob * 4 - s.fat * .5, 50, 190), W = 600;
     let round = 0, score = 0, pos = 0, dir = 1, speed = 5.2, running = true, zx = 0;
     const my = run;
-    modal(`<h2>${STAT[stat]} Training · ${WHO[h].n}</h2><p class="sub">Press <kbd>SPACE</kbd> or click <b>STRIKE</b> when the needle is in the zone. 3 rounds.</p>
+    modal(`<h2>Training · ${WHO[h].n}</h2><p class="sub">Press <kbd>SPACE</kbd> or click <b>STRIKE</b> when the needle is in the zone. 3 rounds. Intellect & Mobility widen the zone.</p>
       <div class="mg"><div class="mgport" style="--c:${WHO[h].c}">${Art.char(h, 'determined', 'fist', true)}</div>
       <div class="mgbar" id="mgbar"><div class="zone" id="zone"><div class="perf"></div></div><div class="needle" id="needle"></div></div>
       <div class="mgres" id="mgres">Round 1 / 3</div><div class="mgdots" id="mgdots"><i></i><i></i><i></i></div>
@@ -527,42 +472,46 @@ const Game = (() => {
       const res = $('#mgres'); res.textContent = t; res.className = 'mgres pop r' + r; $('#mgdots').children[round].className = 'r' + r;
       Sound.sfx(r === 3 ? 'perfect' : r ? 'punch' : 'miss'); if (r === 3) { unlock('perfect'); flash('#fff6a0'); } if (r) shake(3);
       round++; speed += 1.6;
-      if (round >= 3) { running = false; document.removeEventListener('keydown', key, true); setTimeout(() => trainResult(h, stat, score), 700); }
+      if (round >= 3) { running = false; document.removeEventListener('keydown', key, true); setTimeout(() => trainResult(h, score), 700); }
       else setTimeout(() => { place(); }, 250);
     };
     const key = e => { if (e.code === 'Space') { e.preventDefault(); e.stopPropagation(); hit(); } };
     document.addEventListener('keydown', key, true);
     $('#strike').onclick = hit;
   }
-  function trainResult(h, stat, score) {
-    const s = G.heroes[h], before = s[stat], gain = Math.round(2 + score * .9 * (s.morale > 60 ? 1.15 : 1));
-    s[stat] = clamp(s[stat] + gain, 0, 100); s.fat = clamp(s.fat + 18, 0, 100); s.morale = clamp(s.morale + (score >= 6 ? 4 : -3), 0, 100);
-    G.energy -= 20; G.trains++; if (G.trains >= 5) unlock('coach');
-    const line = STORY.trainQuip(h, score);
+  function trainResult(h, score) {
+    const s = G.heroes[h], xp = 20 + score * 8, before = s.xp, lvl0 = s.lvl;
+    s.fat = clamp(s.fat + 15, 0, 100); G.energy -= 20; G.trains++; if (G.trains >= 5) unlock('coach');
+    const ups = giveXP(h, xp), line = STORY.trainQuip(h, score), need = s.lvl * 40 + 40;
     Sound.sfx(score >= 6 ? 'levelup' : 'confirm');
-    modal(`<div class="result ok"><div class="stamp small">TRAINING COMPLETE</div><div class="statup"><label>${STAT[stat]}</label><div class="bar big"><i style="width:${before}%"></i><i class="gain" style="left:${before}%;width:0"></i></div><b>${before} → ${s[stat]} <em>+${gain}</em></b></div>
+    modal(`<div class="result ok"><div class="stamp small">TRAINING COMPLETE</div><div class="statup"><label>Experience · Lv ${lvl0}${ups ? ` → ${s.lvl}` : ''}</label><div class="bar big"><i style="width:${ups ? 0 : before / need * 100}%"></i><i class="gain" style="left:${ups ? 0 : before / need * 100}%;width:0"></i></div><b>+${xp} XP ${ups ? '<em>LEVEL UP! +1 SP</em>' : ''}</b></div>
       <div class="quip" style="--c:${WHO[h].c}"><div class="qp">${Art.char(h, score >= 6 ? 'happy' : score >= 3 ? 'smile' : 'pout', 'default', true)}</div><p><b>${WHO[h].n}</b>${T(line)}</p></div>
       <button class="btn primary" id="rok">Continue</button></div>`, { noclose: 1 });
-    setTimeout(() => { const g = $('#modal .gain'); if (g) g.style.width = gain + '%'; }, 100);
+    setTimeout(() => { const g = $('#modal .gain'); if (g) g.style.width = Math.min(100, s.xp / need * 100 - (ups ? 0 : before / need * 100)) + '%'; }, 100);
     addAff(h, score >= 6 ? 2 : 1);
     $('#rok').onclick = () => { Sound.sfx('confirm'); useSlot(); };
   }
 
   function dossier(sel) {
-    const list = ['hikari', 'rei', 'mira'], P = STORY.profiles[sel], s = G.heroes[sel];
+    const list = MET(), P = STORY.profiles[sel], s = G.heroes[sel] && G.roster.includes(sel) ? G.heroes[sel] : null, ST = Dispatch.ST;
     const radar = s ? (() => {
-      const k = ['pow', 'ctl', 'team', 'morale'], pts = k.map((x, i) => { const a = -Math.PI / 2 + i * Math.PI / 2, r = s[x] / 100 * 80; return `${100 + Math.cos(a) * r},${100 + Math.sin(a) * r}`; }).join(' ');
-      return `<svg viewBox="-18 0 236 200" class="radar">${[.25, .5, .75, 1].map(f => `<polygon points="${[0, 1, 2, 3].map(i => { const a = -Math.PI / 2 + i * Math.PI / 2; return `${100 + Math.cos(a) * 80 * f},${100 + Math.sin(a) * 80 * f}`; }).join(' ')}" fill="none" stroke="#ffffff22"/>`).join('')}
-        <polygon points="${pts}" fill="${WHO[sel].c}55" stroke="${WHO[sel].c}" stroke-width="2" class="radarpoly"/>${['POW', 'CTL', 'TEAM', 'MOR'].map((l, i) => { const a = -Math.PI / 2 + i * Math.PI / 2; return `<text x="${100 + Math.cos(a) * 94}" y="${104 + Math.sin(a) * 94}" text-anchor="middle" font-size="11" fill="#cde">${l}</text>`; }).join('')}</svg>`;
-    })() : `<div class="mirastat">Medical Officer<br><small>Not deployable · Support</small></div>`;
+      const pt = (i, r) => { const a = -Math.PI / 2 + i * 2 * Math.PI / 5; return [100 + Math.cos(a) * r, 100 + Math.sin(a) * r]; };
+      const pts = ST.map((k, i) => pt(i, s.st[k] / 10 * 78).join(',')).join(' ');
+      return `<svg viewBox="-20 -4 240 212" class="radar">${[.25, .5, .75, 1].map(f => `<polygon points="${ST.map((k, i) => pt(i, 78 * f).join(',')).join(' ')}" fill="none" stroke="#ffffff22"/>`).join('')}
+        <polygon points="${pts}" fill="${WHO[sel].c}55" stroke="${WHO[sel].c}" stroke-width="2" class="radarpoly"/>${ST.map((k, i) => { const [x, y] = pt(i, 96); return `<text x="${x}" y="${y + 4}" text-anchor="middle" font-size="15">${Dispatch.SI[k]}</text>`; }).join('')}</svg>
+        <div class="lvl">Lv <b>${s.lvl}</b> <small>XP ${s.xp}/${s.lvl * 40 + 40}</small>${s.sp ? `<em class="spb">${s.sp} SP</em>` : ''}</div>
+        <div class="skills">${ST.map(k => `<div class="sk"><span>${Dispatch.SI[k]} ${Dispatch.SN[k]}</span><div class="skb"><i style="width:${s.st[k] * 10}%"></i></div><b>${s.st[k]}</b>${s.sp && s.st[k] < 10 ? `<button class="spp" data-k="${k}">+</button>` : ''}</div>`).join('')}</div>
+        <div class="fatm">Fatigue <div class="bar"><i style="width:${s.fat}%;background:#ff6b6b"></i></div></div>`;
+    })() : `<div class="mirastat">${P.role || 'Support'}<br><small>${P.roleNote || 'Not deployable'}</small></div>`;
     const inv = Object.entries(G.inv).filter(([, n]) => n > 0);
     modal(`<div class="dossier"><div class="dtabs">${list.map(h => `<button class="dtab ${h === sel ? 'on' : ''}" data-h="${h}" style="--c:${WHO[h].c}">${WHO[h].n}</button>`).join('')}</div>
       <div class="dbody"><div class="dport" style="--c:${WHO[sel].c}">${Art.char(sel, 'smile', 'hip')}</div>
       <div class="dsinfo"><h2 style="color:${WHO[sel].c}">${P.full}</h2><div class="dtag">${P.tag}</div><table>${P.rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table><p>${P.bio}</p>
       <div class="aff">${heart(G.aff[sel])} <b>${tier(G.aff[sel])}</b> <small>(♥ ${G.aff[sel]})</small></div><div class="likes">Likes: ${G.aff[sel] >= 4 ? P.likes : '??? — get closer to find out'}</div>
       <div class="gifts"><h4>Give a Gift ${G.gifted[sel] ? '<small>(already gifted today)</small>' : ''}</h4>${inv.length ? inv.map(([k, n]) => `<button class="btn gift" data-k="${k}" ${G.gifted[sel] ? 'disabled' : ''}>${STORY.items[k].icon} ${STORY.items[k].n} ×${n}</button>`).join('') : '<small>Inventory empty — visit the Shop.</small>'}</div></div>
-      <div class="dradar">${radar}${s ? `<div class="fatm">Fatigue <div class="bar"><i style="width:${s.fat}%;background:#ff6b6b"></i></div></div>` : ''}</div></div></div>`, { wide: 1 });
+      <div class="dradar">${radar}</div></div></div>`, { wide: 1 });
     $$('#modal .dtab').forEach(b => b.onclick = () => { Sound.sfx('page'); dossier(b.dataset.h); });
+    $$('#modal .spp').forEach(b => b.onclick = () => { s.st[b.dataset.k]++; s.sp--; Sound.sfx('levelup'); dossier(sel); });
     $$('#modal .gift').forEach(b => b.onclick = () => {
       const k = b.dataset.k, it = STORY.items[k]; G.inv[k]--; G.gifted[sel] = 1;
       const lv = it.love === sel ? 4 : (it.like || []).includes(sel) ? 2 : 1; if (lv === 4) unlock('gift');
@@ -570,6 +519,18 @@ const Game = (() => {
       dossier(sel); addAff(sel, lv);
       const q = document.createElement('div'); q.className = 'giftq'; q.style.setProperty('--c', WHO[sel].c); q.innerHTML = `<div class="qp">${Art.char(sel, lv === 4 ? 'love' : lv === 2 ? 'happy' : 'smile', 'default', true)}</div><p><b>${WHO[sel].n}</b>${T(line)}</p>`;
       $('#modal .panel').appendChild(q);
+    });
+  }
+
+  // ---------- dispatch shift ----------
+  function startShift(cfg) {
+    wait = 'shift'; hideHub(); $('#textbox').classList.add('hide'); Object.keys(G.vis.chars).forEach(hideChar); autosave();
+    const my = run;
+    Dispatch.start(cfg, {
+      G, WHO, T, toast, unlock, sfx: n => Sound.sfx(n), music: m => { G.vis.music = m; Sound.play(m); },
+      calls: STORY.calls, events: STORY.callEvents, quips: STORY.quips, synergy: (a, b) => STORY.synergy(G, a, b),
+      portrait: id => Art.char(id, G.heroes[id] && G.heroes[id].hurt ? 'sad' : 'smile', 'default', true), bit: Art.char('bit', 'happy', '', true),
+      onDone: res => { if (my !== run) return; G.last = res; setBg('hq_lobby', 'cut'); later(200); }
     });
   }
 
@@ -582,7 +543,7 @@ const Game = (() => {
     const add = (t, mine) => { const d = document.createElement('div'); d.className = 'bub ' + (mine ? 'me' : 'them'); d.innerHTML = T(t); body.appendChild(d); body.scrollTop = 1e4; Sound.sfx('msg'); };
     const typingDots = () => { const d = document.createElement('div'); d.className = 'bub them dots'; d.innerHTML = '<i></i><i></i><i></i>'; body.appendChild(d); body.scrollTop = 1e4; return d; };
     const seq = async (msgs) => { for (const m of msgs) { if (my !== run) return; const d = typingDots(); await sleep(skipping() ? 60 : 500 + m.length * 18); d.remove(); add(m); } };
-    const finish = () => { const pr = $('#preply'); pr.innerHTML = '<button class="btn primary" id="pdone">Close Phone</button>'; $('#pdone').onclick = () => { closeModal(); Sound.sfx('cancel'); if (isNight) sleepThen(); else advance(); }; };
+    const finish = () => { const pr = $('#preply'); if (!pr) return; pr.innerHTML = '<button class="btn primary" id="pdone">Close Phone</button>'; $('#pdone').onclick = () => { closeModal(); Sound.sfx('cancel'); if (isNight) sleepThen(); else advance(); }; };
     (async () => {
       await seq(convo.msgs);
       if (!convo.replies) return finish();
@@ -597,8 +558,9 @@ const Game = (() => {
   function night() {
     wait = 'modal'; hideHub(); setBg('apartment'); setTint('night'); Sound.play('night'); G.vis.music = 'night';
     Object.keys(G.vis.chars).forEach(hideChar);
-    const cand = ['hikari', 'rei', 'mira'].sort((a, b) => ((G.today[b] || 0) * 3 + G.aff[b]) - ((G.today[a] || 0) * 3 + G.aff[a]));
-    const who = cand[0], convo = STORY.phone[who][Math.min(G.day, 3) - 1];
+    const cand = MET().sort((a, b) => ((G.today[b] || 0) * 3 + G.aff[b]) - ((G.today[a] || 0) * 3 + G.aff[a]));
+    const who = cand[0], i = G.texts[who] || 0, convo = STORY.phone[who] && STORY.phone[who][i] || STORY.phoneFallback(who, G);
+    G.texts[who] = i + 1;
     setTimeout(() => phone(who, convo, true), skipping() ? 50 : 900);
   }
   function sleepThen() {
@@ -606,19 +568,19 @@ const Game = (() => {
     later(1800, () => { c.className = ''; advance(); });
   }
   function nextDay() {
-    G.day++; G.slot = 0; G.energy = 100; G.gifted = {}; G.today = {}; G.missions = []; G.weather = [0, 1, 2, 0][G.day % 4];
-    ['hikari', 'rei'].forEach(h => { const s = G.heroes[h]; s.fat = clamp(s.fat - 40, 0, 100); });
+    G.day++; G.slot = 0; G.energy = 100; G.gifted = {}; G.today = {}; G.weather = [0, 1, 2, 0, 1, 3, 0][G.day % 7];
+    Object.values(G.heroes).forEach(s => { s.fat = clamp(s.fat - 45, 0, 100); s.hurt = 0; });
     setTint(null);
   }
 
   // ---------- save / load ----------
   function snapshot(desc) { return { G: JSON.parse(JSON.stringify(G)), t: Date.now(), desc: desc || describe(), bg: G.vis.bg }; }
-  function describe() { const f = top(); const ch = f && f.id.startsWith('prologue') ? 'Prologue' : 'Chapter 1'; return G.slot !== undefined && f && R[f.id] && R[f.id][f.i] && R[f.id][f.i][0] === 'hub' ? `${ch} · Day ${G.day} · ${SLOTS[G.slot] || 'Night'}` : `${ch} · Day ${G.day}` + (log.length ? ` — “${log[log.length - 1].t.slice(0, 40)}…”` : ''); }
-  const canSave = () => G && ['text', 'choice', 'hub'].includes(wait) && !modalOpen();
-  function saveTo(k, silent) { if (!G) return; LS.set('hl_save_' + k, snapshot()); if (!silent) { toast('💾 Saved', k === 'q' ? 'Quick save' : 'Slot ' + k); Sound.sfx('confirm'); } }
-  function autosave() { if (G) LS.set('hl_save_a', snapshot()); }
+  function describe() { const f = top(); const ch = G.chapT || 'Prologue'; return G.slot !== undefined && f && R[f.id] && R[f.id][f.i] && R[f.id][f.i][0] === 'hub' ? `${ch} · Day ${G.day} · ${SLOTS[G.slot] || 'Night'}` : `${ch} · Day ${G.day}` + (log.length ? ` — “${log[log.length - 1].t.slice(0, 40)}…”` : ''); }
+  const canSave = () => G && ['text', 'choice', 'hub'].includes(wait) && !modalOpen() && !Dispatch.active;
+  function saveTo(k, silent) { if (!G) return; LS.set('hl2_save_' + k, snapshot()); if (!silent) { toast('💾 Saved', k === 'q' ? 'Quick save' : 'Slot ' + k); Sound.sfx('confirm'); } }
+  function autosave() { if (G) LS.set('hl2_save_a', snapshot()); }
   function loadFrom(k) {
-    const d = LS.get('hl_save_' + k); if (!d) return false;
+    const d = LS.get('hl2_save_' + k); if (!d) return false;
     run++; closeModal(); hideTitle(); clearInterval(typeTimer); typing = false; auto = skip = false; updateQuick();
     G = Object.assign(newState(), d.G); $('#choices').className = ''; $('#card').className = ''; hideHub(); $('#textbox').classList.add('hide');
     Sound.init(); restoreVis(); wait = null; step(); toast('📂 Loaded', d.desc); return true;
@@ -626,7 +588,7 @@ const Game = (() => {
   function slotsModal(mode) {
     const keys = ['a', 'q', 1, 2, 3, 4, 5, 6];
     modal(`<h2>${mode === 'save' ? 'Save Game' : 'Load Game'}</h2><div class="slots">${keys.map(k => {
-      const d = LS.get('hl_save_' + k), lock = mode === 'save' && (k === 'a');
+      const d = LS.get('hl2_save_' + k), lock = mode === 'save' && (k === 'a');
       return `<button class="slot ${d ? '' : 'empty'} ${lock ? 'lock' : ''}" data-k="${k}"><div class="sthumb">${d ? Art.bg(d.bg) : ''}</div><div class="stxt"><b>${k === 'a' ? 'AUTO' : k === 'q' ? 'QUICK' : 'SLOT ' + k}</b><small>${d ? d.desc : '— empty —'}</small><small>${d ? new Date(d.t).toLocaleString() : ''}</small></div></button>`;
     }).join('')}</div>`, { wide: 1 });
     $$('#modal .slot').forEach(b => b.onclick = () => {
@@ -694,17 +656,17 @@ const Game = (() => {
     const t = $('#title'); t.classList.add('on');
     $('#tcont').classList.toggle('dis', !latestSave());
     $('#tchars').innerHTML = `<div class="tch h">${Art.char('hikari', 'happy', 'wave')}</div><div class="tch r">${Art.char('rei', 'smug', 'cross')}</div><div class="tch m">${Art.char('mira', 'smile', 'shy')}</div>`;
-    $('#tbadge').textContent = meta.cleared ? '★ Chapter 1 Cleared' : 'Tech Demo · Prologue + Chapter 1';
+    $('#tbadge').textContent = meta.cleared ? '★ Story Cleared — Thank you!' : 'Prologue + 5 Chapters';
   }
   function hideTitle() { $('#title').classList.remove('on'); }
-  const latestSave = () => ['a', 'q', 1, 2, 3, 4, 5, 6].map(k => [k, LS.get('hl_save_' + k)]).filter(x => x[1]).sort((a, b) => b[1].t - a[1].t)[0];
+  const latestSave = () => ['a', 'q', 1, 2, 3, 4, 5, 6].map(k => [k, LS.get('hl2_save_' + k)]).filter(x => x[1]).sort((a, b) => b[1].t - a[1].t)[0];
   function newGame() {
     Sound.sfx('confirm'); hideTitle(); run++; log = [];
     G = newState(); G.stack = [{ id: 'prologue', i: 0 }];
     $('#fade').classList.add('on'); setTimeout(() => { $('#fade').classList.remove('on'); restoreVis(); step(); }, 700);
   }
   function theEnd() {
-    wait = 'card'; skip = ctrlSkip = false; meta.cleared = true; saveMeta(); unlock('ch1');
+    wait = 'card'; skip = ctrlSkip = false; meta.cleared = true; saveMeta(); unlock('finale');
     hideHub(); $('#textbox').classList.add('hide'); Object.keys(G.vis.chars).forEach(hideChar); Sound.play('title');
     const c = $('#card'); c.className = 'on credits';
     c.innerHTML = `<div class="roll">${STORY.credits.map(l => l.startsWith('#') ? `<h3>${l.slice(1)}</h3>` : l === '' ? '<br>' : `<p>${T(l)}</p>`).join('')}</div><button class="btn skipc" id="skipc">Skip ▸</button>`;
@@ -744,7 +706,7 @@ const Game = (() => {
   }
   function startSplash() { const s = $('#splash'); if (!s.classList.contains('on')) return; s.classList.remove('on'); Sound.init(); Sound.sfx('chime'); toTitle(); }
 
-  const api = { toast, unlock, addAff, flash, shake, setTint, get G() { return G; } };
+  const api = { toast, unlock, addAff, flash, shake, setTint, giveXP, get G() { return G; } };
   function boot() {
     Object.entries(STORY.scripts).forEach(([k, v]) => reg(v, k));
     Object.entries(STORY.events).forEach(([k, v]) => reg(v.s, k));

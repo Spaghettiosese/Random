@@ -170,19 +170,25 @@ const STORY = (() => {
       { t: '"You\'re both stuck with me for three days. Let\'s make them count."', aff: { hikari: 1, rei: 1 }, set: 'diplomat', then: [['say', R, '…Hmph. Three days, then.', 'neutral'], ['say', H, 'Three days! We\'re gonna crush it!', 'happy', 'fist']] }
     ]],
     ['music', 'hq'], ['sfx', 'beep'], ['show', B, 'happy', '', 'c'],
-    ['say', B, 'BEEP! Tutorial time! Handler {name}, allow me to explain your schedule!'],
-    ['say', B, 'Each day has three time slots: *Morning*, *Afternoon*, and *Evening*. Every action uses one.', 'neutral'],
-    ['say', B, '*TRAIN* heroes to raise Power, Control, and Teamwork. Time your strikes for bonus gains!', 'happy'],
-    ['say', B, '*DEPLOY* them on missions for credits and reputation. Squad deployments build Teamwork!', 'neutral'],
-    ['say', B, '*HANG OUT* to deepen bonds. Happy heroes fight better! …And other things. Beep.', 'smug'],
-    ['say', B, 'Watch your *Energy* and their *Fatigue*. Tired heroes make mistakes. *REST* when needed!', 'neutral'],
-    ['say', B, 'Shop, Dossier, and HeroNet are free — they don\'t use time. Good luck, Handler!', 'happy'],
+    ['say', B, 'BEEP! Tutorial time! Handler {name}, welcome to your new desk!'],
+    ['bg', 'ops'],
+    ['say', B, 'Every morning you run a *Dispatch Shift* from 09:00 to 17:00. Calls come in from all over Neo-Tokyo in real time.', 'neutral'],
+    ['say', B, 'Each call needs certain stats — *Combat, Vigor, Mobility, Charisma, Intellect*. Send heroes whose stats cover the shape!', 'happy'],
+    ['say', B, 'Heroes travel, work, return, then *rest*. If nobody answers a call in time… it\'s missed. Civilians get grumpy. Beep.', 'sad'],
+    ['say', B, 'Evenings are yours: *Hang Out*, *Train* for XP, *Rest*, shop, and spend *skill points* in the Dossier.', 'smug'],
+    ['say', B, 'Your first shift starts now! I\'ll hold your hand. Metaphorically. I don\'t have hands.', 'happy'],
     ['hideall'],
+    ['chapter', 1, 'Ch.1 Squad Zero', 'Field Certification', 4],
     ['daycard'],
+    ['shift', { title: 'Day 1 · Tutorial Shift', calls: 5, tiers: [1, 1], diff: .9, real: 240, tutorial: true }],
+    ['call', 'ch1_after1'],
     ['hub'], ['night'], ['nextday'], ['daycard'],
     ['call', 'ch1_day2'],
+    ['shift', { title: 'Day 2 · Rift Watch', calls: 7, tiers: [1, 2], diff: 1, special: [{ at: 200, t: 'Rift Spores — Harbor Vents', d: 'Glowing spores leaking from a harbor vent. Someone needs to seal it carefully.', r: '2 2 2 0 5', n: 2, tier: 2, dist: 'harbor', flag: 'c1_spores', ev: 'spores' }] }],
+    ['call', 'ch1_after2'],
     ['hub'], ['night'], ['nextday'], ['daycard'],
     ['call', 'ch1_day3'],
+    ['shift', { title: 'Day 3 · Final Prep', calls: 8, tiers: [1, 2], diff: 1.05 }],
     ['hub'], ['night'], ['nextday'], ['daycard'],
     ['jump', 'ch1_climax']
   ];
@@ -218,16 +224,16 @@ const STORY = (() => {
         ['me', 'Like a partner.'],
         ['say', R, '……Fine. Left flank. Next time.', 'shy', 'cross'],
         ['say', H, 'Then I\'ll aim right! …Right? Right.', 'happy', 'fist'],
-        ['do', G => { G.heroes.hikari.team += 5; G.heroes.rei.team += 5; }],
-        ['n', '*Teamwork +5 for both heroes.*'] ] },
+        ['do', G => { G.heroes.hikari.st.cha++; G.heroes.rei.st.cha++; }],
+        ['n', '*Hikari and Rei: Charisma +1.*'] ] },
       { t: '"Hikari, Rei has a point. Watch her movement."', aff: { rei: 2, hikari: -1 }, then: [
         ['say', H, '…Fine. Fiiine. I\'ll watch her stupid cool movement.', 'pout', 'cross'],
         ['say', R, '…Thank you.', 'surprised', 'default'], ['t', 'Rei looks genuinely startled that someone agreed with her.'],
-        ['do', G => { G.heroes.hikari.ctl += 3; }], ['n', '*Hikari Control +3.*'] ] },
+        ['do', G => { G.heroes.hikari.st.int++; }], ['n', '*Hikari Intellect +1.*'] ] },
       { t: '"Rei, Hikari was trying to protect you. That counts for something."', aff: { hikari: 2, rei: -1 }, then: [
         ['say', R, '…Protect me.', 'surprised', 'default'], ['say', R, 'Nobody\'s tried that in a long time.', 'sad'],
         ['say', H, 'W-well, get used to it!', 'blush', 'shy'],
-        ['do', G => { G.heroes.rei.team += 4; }], ['n', '*Rei Teamwork +4.*'] ] }
+        ['do', G => { G.heroes.rei.st.cha++; }], ['n', '*Rei Charisma +1.*'] ] }
     ]],
     ['hideall']
   ];
@@ -293,8 +299,9 @@ const STORY = (() => {
     ['n', 'The serpent sings one last, impossibly high note — and bursts into a trillion glittering fragments that fall like snow.'],
     ['cgoff'], ['speed', 0], ['letterbox', 0], ['music', 'victory'],
     ['do', G => {
-      const h = G.heroes, st = (h.hikari.pow + h.hikari.ctl + h.rei.pow + h.rei.ctl) / 4 + (h.hikari.team + h.rei.team) / 2;
-      G.score = Math.round(st + (G.flags.t1 ? 15 : 0) + (G.flags.t2 ? 15 : 0) + (G.flags.team_talk ? 5 : 0) + Math.min(G.rep, 30) / 2);
+      const sh = G.shifts.slice(-3), ok = sh.reduce((s, x) => s + x.ok, 0) / Math.max(1, sh.reduce((s, x) => s + x.total, 0));
+      G.score = Math.round(ok * 50 + (G.flags.t1 ? 15 : 0) + (G.flags.t2 ? 15 : 0) + (G.flags.team_talk ? 5 : 0) + (G.flags.c1_spores > 0 ? 5 : 0) + Math.min(G.rep, 40) / 4);
+      G.flags.hr_bond = 1;
     }],
     ['show', H, 'cry', 'default', 'l'], ['show', R, 'sad', 'default', 'r'],
     ['say', H, 'We… we did it… WE DID IT!!', 'happy', 'wave'],
@@ -393,8 +400,8 @@ const STORY = (() => {
     ['n', '"A Handler with no Spark. How *interesting*."'],
     ['n', '"Let\'s see how long his little heroes last… when the whole city turns to glass."'],
     ['cgoff'], ['sfx', 'shatter'], ['flash', '#9ff'],
-    ['title', 'NEXT TIME', 'Chapter 2 — Glass Hearts'],
-    ['end']
+    ['ach', 'ch1'],
+    ['jump', 'ch2']
   ];
 
   // ======================= HANG OUTS =======================
@@ -424,7 +431,7 @@ const STORY = (() => {
     ]],
     ['say', H, 'You know, I used to come here alone every day after the Agency rejected me the first time.', 'sad', 'default'],
     ['say', H, 'It\'s nice to have a player two.', 'tender', 'shy'],
-    ['do', G => { G.heroes.hikari.morale = Math.min(100, G.heroes.hikari.morale + 10); }], ['n', '*Hikari Morale +10.*']
+    ['do', G => { G.heroes.hikari.st.cha++; }], ['n', '*Hikari Charisma +1.*']
   ];
   S.hang_hikari_3 = [
     ['bg', 'park'], ['music', 'romance'], ['fx', 'petals'], ['tint', null],
@@ -438,7 +445,7 @@ const STORY = (() => {
       { t: 'Say nothing. Just sit with her.', aff: { hikari: 3 }, then: [['n', 'We watch the petals fall for a long time. Eventually, she leans her head on my shoulder.'], ['say', H, '…Thanks for not saying anything dumb.', 'tender', 'shy']] }
     ]],
     ['say', H, 'You\'re the first person I\'ve told. Don\'t make it weird, okay?', 'blush', 'shy'],
-    ['do', G => { G.heroes.hikari.ctl = Math.min(100, G.heroes.hikari.ctl + 6); }], ['n', '*Hikari feels steadier. Control +6.*']
+    ['do', G => { G.heroes.hikari.st.int++; G.heroes.hikari.st.vig++; }], ['n', '*Hikari feels steadier. Intellect +1, Vigor +1.*']
   ];
   S.hang_hikari_x = [
     ['bg', 'hq_lobby'], ['music', 'daily'], ['tint', null], ['show', H, 'happy', 'wave', 'c'],
@@ -472,7 +479,7 @@ const STORY = (() => {
       { t: 'Crouch down and offer the cat your hand.', aff: { rei: 4 }, then: [['n', 'The black cat sniffs my fingers… then headbutts my palm.'], ['say', R, '…She doesn\'t do that for anyone. Not even me, the first month.', 'surprised'], ['say', R, 'Hmph. Traitor cat.', 'smile', 'shy']] }
     ]],
     ['say', R, 'Animals are easier. They don\'t flinch when the shadows move.', 'sad', 'default'],
-    ['do', G => { G.heroes.rei.morale = Math.min(100, G.heroes.rei.morale + 12); }], ['n', '*Rei Morale +12.*']
+    ['do', G => { G.heroes.rei.st.vig++; }], ['n', '*Rei Vigor +1.*']
   ];
   S.hang_rei_3 = [
     ['bg', 'medbay'], ['tint', null], ['music', 'sad'], ['fx', null],
@@ -487,7 +494,7 @@ const STORY = (() => {
       { t: '"Your control is the best I\'ve ever seen. You\'re not that girl anymore."', aff: { rei: 4 }, then: [['say', R, '…You really think so. You, the guy with the notebook.', 'tender'], ['say', R, 'Then… I\'ll try to believe it too.', 'smile', 'shy']] },
       { t: '"If it happens again, we\'ll handle it. Together. That\'s what a squad is for."', aff: { rei: 3 }, then: [['say', R, '…Together.', 'surprised'], ['say', R, 'That word sounds strange coming from your mouth. …Not bad. Just strange.', 'tender', 'shy']] }
     ]],
-    ['do', G => { G.heroes.rei.team = Math.min(100, G.heroes.rei.team + 8); }], ['n', '*Rei opens up. Teamwork +8.*']
+    ['do', G => { G.heroes.rei.st.cha += 2; }], ['n', '*Rei opens up. Charisma +2.*']
   ];
   S.hang_rei_x = [
     ['bg', 'training'], ['music', 'night'], ['tint', null], ['show', R, 'cold', 'cross', 'c'],
@@ -517,7 +524,7 @@ const STORY = (() => {
       { t: 'Take a photo of her happy face.', aff: { mira: 2 }, then: [['say', M, 'Delete that. {name}. Delete that right now.', 'pout', 'fist'], ['say', M, '……Send it to me first, though.', 'shy']] }
     ]],
     ['say', M, 'Thank you. I don\'t get to just… be a person very often.', 'tender', 'default'],
-    ['do', G => { ['hikari', 'rei'].forEach(h => G.heroes[h].fat = Math.max(0, G.heroes[h].fat - 15)); }], ['n', '*Mira\'s good mood spreads. Both heroes −15 Fatigue.*']
+    ['do', G => { G.roster.forEach(h => G.heroes[h].fat = Math.max(0, G.heroes[h].fat - 20)); }], ['n', '*Mira\'s good mood spreads. Squad −20 Fatigue.*']
   ];
   S.hang_mira_3 = [
     ['bg', 'rooftop'], ['tint', 'evening'], ['music', 'sad'], ['fx', null],
@@ -572,97 +579,9 @@ const STORY = (() => {
       ['n', 'A group of kids spots the squad outside HQ.'], ['say', H, 'They want… autographs? From US?!'],
       ['say', R, 'I don\'t do autographs.', 'cold'], ['n', 'A small girl holds up a drawing of Rei. It\'s very bad. It has a lot of glitter.'],
       ['say', R, '……Where do I sign.', 'shy', 'shy'],
-      ['do', G => { G.rep += 3; G.heroes.hikari.morale += 5; G.heroes.rei.morale += 8; }], ['n', '*Reputation +3. Squad morale up!*']
+      ['do', G => { G.rep += 3; G.heroes.rei.st.cha++; }], ['n', '*Reputation +3. Rei Charisma +1.*']
     ] }
   };
 
-  // ======================= DATA =======================
-  const items = {
-    volt: { n: 'Voltage MAX', p: 60, icon: '⚡', d: 'Hikari\'s fuel of choice. Tastes like a battery.', love: 'hikari' },
-    cat: { n: 'Black Cat Keychain', p: 90, icon: '🐈‍⬛', d: 'A tiny sleepy black cat. Suspiciously cute.', love: 'rei' },
-    cake: { n: 'Strawberry Mille-feuille', p: 80, icon: '🍰', d: 'Twelve layers of happiness from Café Lumière.', love: 'mira' },
-    flower: { n: 'Sunflower Bouquet', p: 70, icon: '🌻', d: 'Bright and cheerful. Most people like flowers.', like: ['hikari', 'rei', 'mira'] },
-    manga: { n: 'Captain Justice Vol.1', p: 50, icon: '📘', d: 'A classic hero manga.', like: ['hikari'] },
-    tea: { n: 'Premium Matcha Set', p: 75, icon: '🍵', d: 'Calming. Bitter. Elegant.', like: ['rei', 'mira'] },
-    ramen: { n: 'Instant Ramen Mega-Pack', p: 30, icon: '🍜', d: 'Emergency rations. 24 servings.', like: ['hikari'] }
-  };
-  const profiles = {
-    hikari: { full: 'Hikari Amane', tag: '⚡ Electrokinetic · Trainee (Suspended)', rows: [['Age', '19'], ['Codename', 'Thunder Goddess (self-given)'], ['Rank', 'Trainee'], ['Birthday', 'August 8']], bio: 'Loud, brave, and perpetually hungry. Raw output rivals S-rank heroes, but her aim is… a work in progress. Has destroyed four training rooms and one vending machine.', likes: 'Energy drinks, ramen, hero manga, being called "reliable"' },
-    rei: { full: 'Rei Kurogane', tag: '🌑 Umbrakinetic · Rookie Hero', rows: [['Age', '20'], ['Codename', 'Nightveil'], ['Rank', 'C-Rank'], ['Birthday', 'November 30']], bio: 'Flawless technique and zero patience for people. Transferred out of three squads. Can step through any shadow within 50 meters. Keeps a secret she guards very closely.', likes: 'Black cats, quiet rooftops, matcha, not being asked questions' },
-    mira: { full: 'Mira Solace', tag: '✚ Restorative · Medical Officer', rows: [['Age', '24'], ['Codename', 'Halo Nurse'], ['Role', 'Ops Support'], ['Birthday', 'April 2']], bio: 'The gentle heart of HALO\'s operations floor. Can close almost any wound with a touch. Always reminding others to eat and sleep, never follows her own advice.', likes: 'Sweets (strawberry anything), tea, people who take care of themselves' }
-  };
-  const missions = [
-    { id: 'cat', n: 'Cat Stuck on a Billboard', tier: 1, stat: 'ctl', diff: 14, cr: 80, rep: 2, d: 'A very judgmental cat is 40 meters up. Gentle hands required.' },
-    { id: 'purse', n: 'Rollerblade Purse Snatcher', tier: 1, stat: 'pow', diff: 20, cr: 100, rep: 3, d: 'He\'s fast. He\'s rude. He\'s wearing knee pads.' },
-    { id: 'kinder', n: 'Kindergarten Hero Day', tier: 1, stat: 'team', diff: 12, cr: 60, rep: 4, d: '40 children. 40 questions each. The hardest mission of all.' },
-    { id: 'spore', n: 'Rift Spore Cleanup', tier: 2, stat: 'ctl', diff: 30, cr: 160, rep: 4, d: 'Glowing spores in a subway vent. Precision burns only.' },
-    { id: 'idol', n: 'Idol Concert Security', tier: 2, stat: 'team', diff: 24, cr: 180, rep: 5, d: 'A crowd of 8,000. One suspicious guy in a penguin suit.' },
-    { id: 'beast', n: 'Tier-2 Rift-beast Sighting', tier: 2, stat: 'pow', diff: 32, cr: 200, rep: 6, d: 'A small glass-type beast in Ueno Park. Sound familiar?' },
-    { id: 'glue', n: 'Villain: Mr. Adhesive', tier: 3, stat: 'pow', diff: 44, cr: 260, rep: 8, d: 'Glued a bank shut. Also glued himself to it. Also the police.', min: 2 },
-    { id: 'tunnel', n: 'Collapsed Tunnel Rescue', tier: 3, stat: 'team', diff: 36, cr: 240, rep: 8, d: 'Six workers trapped. Coordination beats raw power.', min: 2 },
-    { id: 'maglev', n: 'Runaway Maglev Car', tier: 3, stat: 'ctl', diff: 46, cr: 300, rep: 9, d: 'No brakes. 300 km/h. Stop it without derailing it.', min: 3 }
-  ];
-  const N = { hikari: 'Hikari', rei: 'Rei' };
-  function missionLog(m, who, ok) {
-    const nm = who.map(w => N[w]).join(' & ');
-    const mid = { pow: `${nm} engage${who.length > 1 ? '' : 's'} head-on!`, ctl: `${nm} move${who.length > 1 ? '' : 's'} in carefully…`, team: `${nm} coordinate${who.length > 1 ? '' : 's'} with local responders.` }[m.stat];
-    return [`<b>[HALO]</b> Dispatch confirmed. ${nm} en route.`, `<b>[BIT]</b> ETA 90 seconds. Beep!`, `<b>[FIELD]</b> Arrived on scene: ${m.n}.`, mid,
-      who.includes('hikari') ? `<b>[FIELD]</b> Hikari: "Leave it to meee!" ⚡` : `<b>[FIELD]</b> Rei vanishes into a shadow…`,
-      ok ? `<b style="color:#6fffb0">[RESULT]</b> Target secured. Nice work, Squad Zero!` : `<b style="color:#ff6b6b">[RESULT]</b> Situation escalated. Backup called in.`];
-  }
-  function missionQuip(w, ok, squad) {
-    const Q = {
-      hikari: ok ? (squad ? ['We make a pretty good team, huh? Don\'t tell Rei I said that!', 'Squad Zero, best squad! Wooo!'] : ['Did you see that?! Textbook! …Mostly!', 'Easy peasy! Can we get ramen now?']) : ['Ugh… I zapped the wrong thing. Sorry, {name}…', 'I\'ll do better next time. Promise!'],
-      rei: ok ? (squad ? ['…She didn\'t get in my way. Much.', 'Acceptable coordination. …Good work, Amane.'] : ['Done. Obviously.', 'Too easy. Give me something harder.']) : ['…Tch. That shouldn\'t have happened.', 'Don\'t look at me like that. I know.']
-    };
-    const a = Q[w]; return a[(Math.random() * a.length) | 0];
-  }
-  function trainQuip(h, sc) {
-    const Q = {
-      hikari: [['Aaargh! The target keeps MOVING!', 'That… could\'ve gone better.'], ['Getting there! I felt something click!', 'Not bad, right? Right?!'], ['PERFECT! Did you see that?! I\'m amazing!!', 'Whoa! My lightning actually went where I wanted!']],
-      rei: [['…Don\'t say anything.', 'Off day. It happens. Rarely.'], ['Adequate.', 'Hm. Your drills aren\'t useless.'], ['…Flawless. As expected.', '…That felt good. Don\'t tell anyone I said that.']]
-    };
-    const a = Q[h][sc >= 7 ? 2 : sc >= 4 ? 1 : 0]; return a[(Math.random() * a.length) | 0];
-  }
-  function giftLine(h, lv) {
-    const L = {
-      hikari: { 4: 'VOLTAGE MAX?! You remembered!! I\'m gonna drink it RIGHT NOW— okay no, I\'m saving it forever!!', 2: 'For me? Ehehe… thanks, {name}!', 1: 'Oh! Um, thanks! That\'s… nice!' },
-      rei: { 4: '…A cat. A little black cat. …I\'m keeping it. Obviously. Don\'t watch me put it on my bag.', 2: '…Thank you. It\'s tasteful.', 1: '…Hm. Thanks, I suppose.' },
-      mira: { 4: 'Is that— from Café Lumière?! {name}, you absolute saint. I\'m eating it in front of everyone.', 2: 'How thoughtful! You\'re sweet, you know that?', 1: 'Aww, thank you, {name}.' }
-    };
-    return L[h][lv];
-  }
-  const phone = {
-    hikari: [
-      { msgs: ['{name}!!! are u awake', 'i cant sleep i keep replaying the store fight', 'u were SO COOL. like movie cool', 'ok thats all goodnight!!! ⚡'], replies: [{ t: 'You were the cool one. Goodnight, Hikari.', aff: 2, resp: ['!!!!!!', 'ok now i REALLY cant sleep', '😳⚡'] }, { t: 'Go to sleep, Thunder Goddess.', aff: 1, resp: ['yes sir handler sir 🫡'] }] },
-      { msgs: ['hey', 'do u think im a good hero', 'like. for real', 'u can be honest'], replies: [{ t: 'You run toward danger when everyone else runs away. That\'s a hero.', aff: 3, resp: ['…', 'ok im not crying ur crying', 'thank u {name}. really.'] }, { t: 'You will be. We\'re working on it together.', aff: 2, resp: ['together!! i like that', 'goodnight partner ⚡'] }] },
-      { msgs: ['tomorrows the big day', 'im scared', 'but also not? bc ur gonna be there', 'is that weird'], replies: [{ t: 'Not weird. I\'ll be right there on comms.', aff: 3, resp: ['ok. ok ok ok', 'then i\'m not scared anymore', 'night {name} ♥', 'WAIT that heart was an accident', 'dont look at it'] }, { t: 'Get some sleep. You\'ll need it.', aff: 1, resp: ['ur right. night!!'] }] }
-    ],
-    rei: [
-      { msgs: ['This is Kurogane.', 'The Director forced me to add you. For "operational reasons."', 'Do not send me stickers.'], replies: [{ t: '(Send a cat sticker.)', aff: 2, resp: ['…', '……', 'Where did you get that sticker.', 'Send the rest of the pack.'] }, { t: 'Understood. Goodnight, Rei.', aff: 1, resp: ['…Goodnight.'] }] },
-      { msgs: ['Are you awake.', 'The shadows are loud tonight. It happens sometimes.', 'Talk to me about something boring.'], replies: [{ t: 'Onigiri restocking procedure, step one: rotate by expiration date…', aff: 3, resp: ['…', 'Continue.', '…', 'It\'s quiet now. Thank you, {name}.'] }, { t: 'Want me to call?', aff: 2, resp: ['No.', '…Maybe. Just for a minute.'] }] },
-      { msgs: ['Tomorrow.', 'If I lose control out there. You pull everyone back. Understood?', 'Even me. Especially me.'], replies: [{ t: 'You won\'t lose control. And I don\'t leave people behind.', aff: 3, resp: ['…', 'Stubborn.', '…Goodnight, {name}.'] }, { t: 'Understood. But I trust you.', aff: 2, resp: ['That\'s your mistake to make.', '…Thank you.'] }] }
-    ],
-    mira: [
-      { msgs: ['Medical Officer Solace here! 🩺', 'Did you eat dinner? Real dinner? Not a konbini sandwich?', 'Be honest. I will know.'], replies: [{ t: '…It was a konbini sandwich.', aff: 2, resp: ['{name}!!!', 'I\'m bringing you a bento tomorrow. No arguments.', 'Goodnight 💕'] }, { t: 'Yes, doctor. Vegetables and everything.', aff: 1, resp: ['Hmm. Suspicious. But good!', 'Sleep well!'] }] },
-      { msgs: ['Long day in the med bay.', 'Hikari sprained her wrist punching a door. Don\'t ask.', 'How are YOU holding up?'], replies: [{ t: 'Tired, but good. How about you, Mira?', aff: 3, resp: ['Oh.', 'Nobody asks me that.', '…I\'m tired too. But talking to you helps. Goodnight, {name}.'] }, { t: 'All good! Thanks for checking in.', aff: 1, resp: ['Anytime! That\'s my job ☺️'] }] },
-      { msgs: ['Can\'t sleep. Pre-certification jitters. Not mine — I\'m just worried about all of you.', 'Promise me you\'ll all come back in one piece?'], replies: [{ t: 'Promise. And you promise to rest after.', aff: 3, resp: ['…Deal.', 'You\'re a good handler, {name}. And a good person.', 'Goodnight 🌙'] }, { t: 'We\'ll be fine. Try to sleep.', aff: 1, resp: ['Okay. I\'ll try. Goodnight!'] }] }
-    ]
-  };
-  function feed(G) {
-    const d = G.day, all = [
-      { u: 'HALO Official', h: '@HALO_Agency', a: '◎', c: '#1f5fd6', t: 'Reminder: Field Certification for new squads begins this Thursday. Stay safe, Neo-Tokyo!', l: 12400 },
-      { u: 'Hikari ⚡', h: '@thundergoddess', a: '⚡', c: '#ffcf3f', t: 'NEW HANDLER JUST DROPPED!!! his name is {name} and he is a GENIUS. squad zero is BACK baby', l: 88 },
-      { u: 'NeoTokyo News', h: '@NTNews', a: '📰', c: '#444', t: 'Convenience store destroyed in overnight Rift incident. Unlicensed trainee credited with the takedown. HALO "reviewing the matter."', l: 5320 },
-      { u: 'HeroStan_2009', h: '@herostan', a: '🌟', c: '#ff7aa8', t: 'wait is HandlerZero actually working for HALO now?? his last post was about Rift-beast conductivity and then NOTHING', l: 2103 },
-      { u: 'B.I.T.', h: '@bit_official', a: '🤖', c: '#52e0ff', t: 'Beep! Today\'s weather forecast: 90% chance of Squad Zero causing property damage.', l: 4410 }
-    ];
-    if (d >= 2) all.unshift({ u: 'NeoTokyo News', h: '@NTNews', a: '📰', c: '#444', t: 'Unusual Rift activity reported near Harbor District. Residents advised to stay alert.', l: 9901 }, { u: 'Mira Solace', h: '@halo_nurse', a: '✚', c: '#ff8fb8', t: 'PSA: drink water. yes, you. yes, even you, {name}.', l: 640 });
-    if (d >= 3) all.unshift({ u: '???', h: '@glass_and_mirrors', a: '◇', c: '#7ff', t: 'Everything beautiful is fragile. Let\'s find out how fragile this city is.', l: 3 }, { u: 'Rei', h: '@nightveil', a: '🌑', c: '#b99bff', t: '[photo of a black cat]', l: 21000 });
-    if (G.done) all.unshift({ u: 'HALO Dispatch', h: '@HALO_Dispatch', a: '🚨', c: '#ff3355', t: `Squad Zero has completed ${G.done} civilian request${G.done > 1 ? 's' : ''} this week. Handler: {name}.`, l: 300 + G.done * 211 });
-    return all;
-  }
-  const credits = ['#HEARTLINE AGENCY', 'Chapter 1 — Squad Zero', '', '#Starring', 'Hikari Amane — The Thunder Goddess', 'Rei Kurogane — Nightveil', 'Mira Solace — Halo Nurse', 'Director Aya Takamine', 'B.I.T.', 'and {name} — Handler', '', '#Art', 'Procedural SVG anime sprites & backgrounds', '', '#Music & Sound', 'Procedural WebAudio compositions', 'Ten original generative tracks', '', '#Engine', 'Heartline VN Engine — handmade', '', '#Thank you for playing!', 'Squad Zero will return in', 'Chapter 2 — Glass Hearts', '', '♥'];
-
-  return { scripts: S, events, items, profiles, missions, missionLog, missionQuip, trainQuip, giftLine, phone, feed, credits };
+  return { scripts: S, events };
 })();

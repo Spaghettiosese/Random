@@ -208,6 +208,40 @@ const Art = (() => {
         <rect y="680" width="1600" height="220" fill="#12081e"/>${[...Array(30)].map(() => `<rect x="${r() * 1600}" y="${700 + r() * 180}" width="18" height="18" fill="hsl(${(r() * 360) | 0},80%,50%)" opacity=".25"/>`).join('')}`);
     }
   };
+  const shards = (r, n, x0, x1, y0, y1, col = '#9ff6ff') => { let o = ''; for (let i = 0; i < n; i++) { const x = x0 + r() * (x1 - x0), y = y0 + r() * (y1 - y0), h = 40 + r() * 160, w = 12 + r() * 30; o += `<polygon points="${x | 0},${(y - h) | 0} ${(x + w) | 0},${y | 0} ${x | 0},${(y + h * .25) | 0} ${(x - w) | 0},${y | 0}" fill="${col}" opacity="${(.35 + r() * .5).toFixed(2)}" stroke="#e8ffff" stroke-width="1.5"/>`; } return o; };
+  Object.assign(BG, {
+    mall() {
+      const r = rng(51);
+      return svgWrap(grad('ml', ['#dff4ff', '#bfe0f4', '#f4efe8']),
+        `<rect width="1600" height="900" fill="url(#ml)"/>${[...Array(9)].map((_, i) => `<path d="M${i * 200},0 L800,-200" stroke="#9cc4dc" stroke-width="3"/>`).join('')}
+        <path d="M0,120 Q800,-80 1600,120" fill="none" stroke="#8fb4cc" stroke-width="10"/>${[...Array(16)].map((_, i) => `<path d="M${i * 100},${120 - Math.sin(i / 15 * Math.PI) * 170} L${i * 100},380" stroke="#a9c9dc" stroke-width="4"/>`).join('')}
+        ${[0, 1].map(k => `<rect x="0" y="${380 + k * 170}" width="1600" height="26" fill="#e8eef2"/><rect x="0" y="${406 + k * 170}" width="1600" height="8" fill="#b8c6d0"/>${[...Array(8)].map((_, i) => `<rect x="${40 + i * 200}" y="${414 + k * 170}" width="150" height="120" fill="hsl(${(i * 47 + k * 90) % 360},60%,${80 - k * 6}%)"/><rect x="${55 + i * 200}" y="${430 + k * 170}" width="120" height="16" fill="#fff" opacity=".8"/>`).join('')}`).join('')}
+        <rect y="720" width="1600" height="180" fill="#e6e0d6"/><ellipse cx="800" cy="780" rx="260" ry="40" fill="#bfe8ff" opacity=".6"/>${shards(r, 14, 100, 1500, 600, 880)}
+        <rect x="0" y="0" width="1600" height="900" fill="#fff" opacity=".12"/>`);
+    },
+    stage() {
+      const r = rng(61);
+      return svgWrap(grad('st', ['#0a0420', '#2a0a4a', '#4a1060']),
+        `<rect width="1600" height="900" fill="url(#st)"/>${[...Array(7)].map((_, i) => `<path d="M${200 + i * 200},0 L${60 + i * 240},760 L${340 + i * 180},760Z" fill="hsl(${[300, 190, 50, 330, 260, 170, 20][i]},100%,70%)" opacity=".13" class="glowpulse" style="animation-delay:${i * .3}s"/>`).join('')}
+        <rect x="200" y="560" width="1200" height="60" fill="#1a0a2a"/><rect x="200" y="556" width="1200" height="8" fill="#ff6fae"/>
+        <text x="800" y="200" text-anchor="middle" font-size="120" font-family="sans-serif" font-weight="900" fill="none" stroke="#ffd6ea" stroke-width="4" opacity=".6">STELLAR ★</text>
+        <rect y="620" width="1600" height="280" fill="#07030f"/>${[...Array(160)].map(() => `<circle cx="${r() * 1600}" cy="${660 + r() * 240}" r="${3 + r() * 5}" fill="hsl(${(r() * 360) | 0},100%,70%)" opacity=".8" class="twinkle"/>`).join('')}`);
+    },
+    glass_city() {
+      const r = rng(71);
+      return svgWrap(grad('gc', ['#03101a', '#0a2a3a', '#1a4a5a']),
+        `<rect width="1600" height="900" fill="url(#gc)"/>${stars(r, 60, 300)}${skyline(r, 720, 150, 420, '#0b2230', '#7ff6ff', .12)}${shards(r, 26, 0, 1600, 400, 760)}
+        ${skyline(r, 840, 60, 260, '#061620', '#9ff6ff', .15)}<rect y="840" width="1600" height="60" fill="#030a10"/>${shards(r, 12, 0, 1600, 800, 900, '#bff')}
+        <rect width="1600" height="900" fill="#5fe6ff" opacity=".06"/>`);
+    },
+    rift() {
+      const r = rng(81);
+      let bld = ''; for (let i = 0; i < 14; i++) { const x = r() * 1600, y = 100 + r() * 500, w = 40 + r() * 80, h = 80 + r() * 200, a = (r() - .5) * 60; bld += `<g transform="rotate(${a | 0} ${x | 0} ${y | 0})" class="drift"><rect x="${x | 0}" y="${y | 0}" width="${w | 0}" height="${h | 0}" fill="#1a0a2a" stroke="#ff6fd8" stroke-width="2" opacity=".85"/>${[...Array(6)].map(() => `<rect x="${(x + 6 + r() * (w - 16)) | 0}" y="${(y + 6 + r() * (h - 16)) | 0}" width="6" height="8" fill="#9ff6ff"/>`).join('')}</g>`; }
+      return svgWrap('<radialGradient id="rf" cx=".5" cy=".45"><stop offset="0" stop-color="#fff"/><stop offset=".08" stop-color="#ff9ae8"/><stop offset=".35" stop-color="#5a1a8a"/><stop offset="1" stop-color="#05020f"/></radialGradient>',
+        `<rect width="1600" height="900" fill="url(#rf)"/>${[...Array(18)].map((_, i) => `<path d="M800,400 L${800 + Math.cos(i / 18 * 6.28) * 1400},${400 + Math.sin(i / 18 * 6.28) * 1400}" stroke="#ff9ae8" stroke-width="${1 + (i % 3)}" opacity=".35"/>`).join('')}
+        ${bld}${shards(r, 30, 0, 1600, 0, 900, '#e8ccff')}<ellipse cx="800" cy="400" rx="140" ry="220" fill="none" stroke="#fff" stroke-width="6" class="glowpulse"/>`);
+    }
+  });
   function bg(name) { return (BG[name] || BG.black)(); }
 
   // ---------- CGs / special scenes ----------
@@ -225,7 +259,18 @@ const Art = (() => {
     cg_roof_mira: () => bg('rooftop') + big('mira', 'blush', 'shy', 'left:50%;bottom:-112%;height:210%;transform:translateX(-50%)') + `<div class="cgtint" style="background:linear-gradient(0deg,rgba(255,150,190,.25),transparent)"></div>`,
     cg_glazier: () => bg('black') + `<div class="glazier"><svg viewBox="0 0 400 600"><defs><linearGradient id="gz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9ff"/><stop offset="1" stop-color="#206"/></linearGradient></defs><path d="M200,60 C150,60 130,120 140,170 C100,190 60,260 50,600 L350,600 C340,260 300,190 260,170 C270,120 250,60 200,60Z" fill="#05030a" stroke="url(#gz)" stroke-width="3"/><path d="M160,140 l30,8 l-30,6z M240,140 l-30,8 l30,6z" fill="#7ff"/>${[...Array(10)].map((_, i) => `<polygon points="${60 + i * 30},${320 + (i % 3) * 60} ${75 + i * 30},${290 + (i % 3) * 60} ${90 + i * 30},${330 + (i % 3) * 60}" fill="#9ff" opacity=".5" class="twinkle"/>`).join('')}</svg></div>`
   };
-  const CG_NAMES = { cg_strike: 'Thunder Goddess Stomp', cg_recruit: 'The Director', cg_shadow: 'From the Shadows', cg_leviathan: 'Glass Leviathan', cg_combo: 'Shadow & Lightning', cg_roof_hikari: 'Sunset Promise (Hikari)', cg_roof_rei: 'Twilight Confession (Rei)', cg_roof_mira: 'A Healer\'s Wish (Mira)', cg_glazier: 'The Glazier' };
+  const endCg = (id, bgn, tint) => () => bg(bgn) + (tint ? `<div class="cgtint" style="background:${tint}"></div>` : '') + big(id, 'love', 'shy', 'left:50%;bottom:-112%;height:210%;transform:translateX(-50%)');
+  Object.assign(CG, {
+    cg_mall: () => bg('mall') + `<div class="cgtint" style="background:radial-gradient(circle at 50% 40%,transparent,rgba(0,40,60,.6))"></div>` + big('kyouya', 'smug', 'point', 'left:50%;bottom:-70%;height:165%;transform:translateX(-50%)') + `<div class="cgtint" style="background:linear-gradient(0deg,rgba(95,230,255,.25),transparent 50%)"></div>`,
+    cg_kaede_save: () => bg('glass_city') + `<div class="speedlines on"></div>` + big('kaede', 'surprised', 'shy', 'left:8%;bottom:-40%;height:140%;transform:rotate(-12deg)') + big('hikari', 'determined', 'point', 'right:4%;bottom:-62%;height:160%') + `<div class="cgflash"></div>`,
+    cg_bit: () => bg('ops') + `<div class="cgtint" style="background:rgba(120,0,20,.55)"></div><div class="cgchar" style="left:50%;bottom:-6%;height:80%;transform:translateX(-50%);filter:hue-rotate(160deg) saturate(2) drop-shadow(0 0 30px red)">${bit('angry')}</div><div class="speedlines on" style="filter:hue-rotate(300deg)"></div>`,
+    cg_reveal: () => bg('rift') + big('kyouya', 'sad', 'default', 'left:50%;bottom:-112%;height:210%;transform:translateX(-50%)') + `<div class="cgtint" style="background:linear-gradient(0deg,rgba(40,0,60,.5),transparent)"></div>`,
+    cg_final: () => bg('rift') + ['tetsu', 'rei', 'hikari', 'sora', 'kaede'].map((id, i) => big(id, 'determined', i === 2 ? 'fist' : i % 2 ? 'cross' : 'hip', `left:${[-4, 14, 34, 54, 72][i]}%;bottom:-58%;height:${i === 2 ? 150 : 130}%;z-index:${i === 2 ? 3 : 1}`)).join('') + `<div class="speedlines on"></div>`,
+    cg_roof_sora: endCg('sora', 'rooftop', 'linear-gradient(0deg,rgba(180,140,255,.3),transparent)'),
+    cg_end_hikari: endCg('hikari', 'park'), cg_end_kaede: endCg('kaede', 'park', 'linear-gradient(0deg,rgba(94,240,160,.2),transparent)'), cg_end_rei: endCg('rei', 'rooftop', 'rgba(20,10,60,.5)'), cg_end_mira: endCg('mira', 'cafe'), cg_end_sora: endCg('sora', 'stage'),
+    cg_end_squad: () => bg('park') + ['tetsu', 'kaede', 'hikari', 'rei', 'sora', 'mira'].map((id, i) => big(id, i === 3 ? 'smile' : 'happy', ['cross', 'hip', 'wave', 'cross', 'wave', 'shy'][i], `left:${-6 + i * 16}%;bottom:-62%;height:135%;z-index:${i === 2 ? 3 : 1}`)).join('')
+  });
+  const CG_NAMES = { cg_strike: 'Thunder Goddess Stomp', cg_recruit: 'The Director', cg_shadow: 'From the Shadows', cg_leviathan: 'Glass Leviathan', cg_combo: 'Shadow & Lightning', cg_roof_hikari: 'Sunset Promise (Hikari)', cg_roof_rei: 'Twilight Confession (Rei)', cg_roof_mira: 'A Healer\'s Wish (Mira)', cg_glazier: 'The Glazier', cg_mall: 'Hall of Mirrors', cg_kaede_save: 'Catch!', cg_bit: 'System Breach', cg_reveal: 'Kyouya', cg_final: 'Operation Heartline', cg_roof_sora: 'Gravity of Love (Sora)', cg_end_hikari: 'Forever Partners (Hikari)', cg_end_rei: 'Out of the Shadows (Rei)', cg_end_mira: 'Healing Hearts (Mira)', cg_end_sora: 'Encore (Sora)', cg_end_kaede: 'Slow Down (Kaede)', cg_end_squad: 'Squad Zero, Forever' };
   function cg(name) { return `<div class="cgscene">${(CG[name] || CG.cg_strike)()}</div>`; }
 
   return { char, bg, cg, CG_NAMES, CH, monster };
