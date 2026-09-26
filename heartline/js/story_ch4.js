@@ -1,6 +1,6 @@
 /* HEARTLINE AGENCY — Chapter 4, Final Chapter, endings, and hang-out scenes. */
 Object.assign(STORY.scripts, (() => {
-  const H = 'hikari', R = 'rei', M = 'mira', A = 'aya', B = 'bit', K = 'kaede', T = 'tetsu', SO = 'sora', GZ = 'glazier', KY = 'kyouya';
+  const H = 'hikari', R = 'rei', M = 'mira', A = 'aya', B = 'bit', K = 'kaede', T = 'tetsu', SO = 'sora', GZ = 'glazier', KY = 'kyouya', RI = 'rin', KU = 'kuroda';
   const S = {};
 
   // ======================= CHAPTER 4 =======================
@@ -121,14 +121,14 @@ Object.assign(STORY.scripts, (() => {
     ['say', A, "Eight years ago, I let the Board send a squad in and I never went after them. I'm not doing that again.", 'determined', 'point'],
     ['say', A, "*Operation Heartline*. Every agency in the city holds the streets. Squad Zero goes in. And you — you run it.", 'determined', 'cross'],
     ['ach', 'ch4'], ['hideall'],
-    ['jump', 'ch5']
+    ['recap'], ['jump', 'ch5']
   ];
 
-  // ======================= FINAL CHAPTER =======================
+  // ======================= CHAPTER 5 (Arc One finale) =======================
   S.ch5 = [
     ['music', null], ['bg', 'black'], ['fx', null], ['tint', null], ['nextday'],
-    ['title', 'FINAL CHAPTER', 'Heartline'],
-    ['chapter', 5, 'Final · Heartline', 'Operation Heartline', 18],
+    ['title', 'CHAPTER 5', 'Operation Heartline'],
+    ['chapter', 5, 'Chapter 5 · Operation Heartline', 'Operation Heartline', 18],
     ['bg', 'rooftop'], ['tint', 'evening'], ['music', 'romance'], ['fx', 'petals'],
     ['n', "The night before Operation Heartline. Someone dragged a grill onto the HALO Tower roof. Nobody asked permission."],
     ['if', G => !G.roster.includes('sora'), [
@@ -167,68 +167,68 @@ Object.assign(STORY.scripts, (() => {
       { t: 'Find Kaede.', if: G => G.aff.kaede >= 10, then: [['set', 'route', 'kaede']] },
       { t: 'Stay on the roof with whoever is left. The whole squad matters.', then: [['set', 'route', 'squad']] }
     ]],
-    ['jumpf', 'eve_', 'route']
+    ['jumpf', 'promise_', 'route']
   ];
+  // Midnight before Operation Heartline: a promise, not a confession (those come in Chapter 12).
   const toOp = [['nextday'], ['daycard'], ['jump', 'ch5_op']];
-  S.eve_hikari = [
+  S.promise_hikari = [
     ['show', H, 'tender', 'shy', 'c'],
     ['say', H, "You came to find me. …I was hoping you would."],
     ['say', H, "Tomorrow I'm going to look the man my mom saved in the eye. I'm scared I'll hate him. I'm scared I won't.", 'sad'],
     ['say', H, "But when I'm scared, I think about your voice on comms. Calm. Like you already know I'll make it.", 'blush'],
-    ['say', H, "{name}… I like you. Not partner-like. Like-like. Ramen-alone-at-night like. Okay I said it I'm going to go explode now—", 'love', 'shy'],
-    ['choice', [{ t: "“Don't explode. I like you too, Hikari.”", aff: { hikari: 5 } }, { t: 'Take her hand instead of answering.', aff: { hikari: 4 } }]],
-    ['say', H, "…Then we're both coming home tomorrow. That's an order, Handler.", 'love', 'wave'],
+    ['say', H, "So promise me something. Pinky promise. We BOTH come home tomorrow. No heroic sacrifices. Not you, not me.", 'determined', 'point'],
+    ['choice', [{ t: 'Hook your pinky around hers. “Promise.”', aff: { hikari: 3 }, set: 'promise' }, { t: "“I'll bring you home even if I have to carry you.”", aff: { hikari: 3 } }]],
+    ['say', H, "…Okay. Then there's something I want to tell you. After. When it's over. Remind me, okay?", 'love', 'shy'],
     ...toOp
   ];
-  S.eve_rei = [
+  S.promise_rei = [
     ['sfx', 'shadow'], ['show', R, 'neutral', 'cross', 'c'],
     ['say', R, "I felt you coming. Your shadow walks differently when you're nervous."],
     ['say', R, "Tomorrow, the Rift will pull on the shadows harder than anything. If I lose control in there…", 'sad', 'default'],
-    ['say', R, "…I wrote to Jun. My old partner. I told him about you. I told him I'm not alone anymore.", 'tender', 'shy'],
-    ['say', R, "I've never said this to anyone, so I'm going to say it badly. I love you, {name}. Don't make it a big deal.", 'blush', 'cross'],
-    ['choice', [{ t: "“It's a huge deal. I love you too, Rei.”", aff: { rei: 5 } }, { t: "“Say it badly again. I want to remember it.”", aff: { rei: 4 } }]],
-    ['say', R, "…Idiot. …Mine, though.", 'love', 'shy'],
+    ['say', R, "…If I lose control, say my name. Not my codename. Mine. I think I'd hear it through anything.", 'tender', 'shy'],
+    ['choice', [{ t: '“Rei.” Say it now, so she remembers how it sounds.', aff: { rei: 3 }, set: 'promise' }, { t: "“I won't let you lose control.”", aff: { rei: 2 } }]],
+    ['say', R, "…Yes. Like that. …There's more I want to say. It can wait until we're both alive to hear it.", 'blush', 'cross'],
     ...toOp
   ];
-  S.eve_mira = [
+  S.promise_mira = [
     ['bg', 'medbay'], ['music', 'sad'],
     ['n', "The med bay. Her mug is still on the desk. There's a sticky note on your chair in her handwriting: *EAT SOMETHING. — M.*"],
     ['t', "She left this before the field hospital. She was still taking care of me."],
     ['show', B, 'sad', '', 'c'],
     ['say', B, "Handler. Mira asked me to save a message for you, “only if things got bad.” I have decided things are bad."],
     ['n', "*“Hi. If you're hearing this, I did something reckless, which is your job, not mine. Please sleep. Please eat. And please… come get me. I'd like to have that date. Medically. — Mira.”*"],
-    ['choice', [{ t: "“I'm coming, Mira. I promise.”", aff: { mira: 5 } }, { t: 'Eat the onigiri she left. Every bite.', aff: { mira: 4 } }]],
+    ['choice', [{ t: "“I'm coming, Mira. I promise.”", aff: { mira: 3 }, set: 'promise' }, { t: 'Eat the onigiri she left. Every bite.', aff: { mira: 3 } }]],
     ['hide', B],
     ...toOp
   ];
-  S.eve_sora = [
+  S.promise_sora = [
     ['bg', 'stage'], ['music', 'romance'], ['fx', 'hearts'],
     ['show', SO, 'smile', 'default', 'c'],
     ['say', SO, "An empty arena. My favorite kind. No cameras. No manager. Just one audience member."],
-    ['say', SO, "I wrote a song. It's not for streams. It's about a person who listens to the part nobody listens to.", 'blush', 'shy'],
-    ['n', "She sings. Her voice fills twenty thousand empty seats — and somehow it's only for you."],
-    ['say', SO, "…That's you. The song. If that wasn't obvious. I'm in love with you, Handler. Is that allowed?", 'love', 'shy'],
-    ['choice', [{ t: "“It's allowed. I'm in love with you too, Sora.”", aff: { sora: 5 } }, { t: 'Applaud. Loudly. For a very long time.', aff: { sora: 4 } }]],
+    ['say', SO, "I'm writing a song. Not for streams. It's about a person who listens to the part nobody listens to.", 'blush', 'shy'],
+    ['n', "She sings the first verse. Her voice fills twenty thousand empty seats — and somehow it's only for you. Then she stops, mid-line."],
+    ['say', SO, "The rest isn't finished. I'll finish it after tomorrow. Promise you'll be here for the whole thing?", 'tender'],
+    ['choice', [{ t: '“Front row. Every time.”', aff: { sora: 3 }, set: 'promise' }, { t: 'Applaud. Loudly. For a very long time.', aff: { sora: 3 } }]],
     ['say', SO, "Ehehe… Then let's win tomorrow. I want an encore.", 'happy', 'wave'],
     ...toOp
   ];
-  S.eve_kaede = [
+  S.promise_kaede = [
     ['bg', 'glass_city'], ['music', 'romance'], ['fx', 'glass'],
     ['show', K, 'neutral', 'hip', 'c'],
     ['say', K, "Took you long enough. I've run around the city eleven times waiting."],
     ['say', K, "At the mall, when I fell… the only thing I thought was, “He told me to hold, and I didn't.”", 'sad'],
-    ['say', K, "You're the first person who ever made me want to *wait*. Do you know how weird that is for me?", 'blush', 'cross'],
-    ['say', K, "So. I like you. A lot. That's it. That's the whole race.", 'love', 'shy'],
-    ['choice', [{ t: "“You win. I like you too, Kaede.”", aff: { kaede: 5 } }, { t: "“Race you to saying it again.”", aff: { kaede: 4 } }]],
-    ['say', K, "…Cheater. Okay. Tomorrow, I hold when you say hold. And after that, you're buying sneakers.", 'happy', 'point'],
+    ['say', K, "So tomorrow, when you say hold, I hold. Even if every muscle in my body is screaming run. Deal?", 'determined', 'point'],
+    ['choice', [{ t: '“Deal. And when I say run, you run.”', aff: { kaede: 3 }, set: 'promise' }, { t: '“Race you to the finish line.”', aff: { kaede: 2 } }]],
+    ['say', K, "…Heh. After this, you and me need to talk. Slowly. Don't get used to it.", 'blush', 'cross'],
     ...toOp
   ];
-  S.eve_squad = [
+  S.promise_squad = [
     ['show', T, 'smile', 'default', 'l'], ['show', B, 'happy', '', 'r'],
     ['say', T, "Couldn't sleep either, Handler?"],
     ['n', "One by one they drift back up — Hikari with a blanket, Rei out of a shadow, Kaede on the fence, Sora humming. Nobody says why."],
     ['say', T, "My sisters used to say home isn't a place. It's the people who come back up to the roof at midnight.", 'tender'],
     ['say', B, "I have recorded this moment. File name: *family*. Beep.", 'happy'],
+    ['do', G => { ['hikari', 'rei', 'kaede', 'sora', 'tetsu'].forEach(h => { G.aff[h] = (G.aff[h] || 0) + 1; }); }],
     ...toOp
   ];
   S.ch5_op = [
@@ -250,7 +250,7 @@ Object.assign(STORY.scripts, (() => {
     ['show', A, 'determined', 'cross', 'c'],
     ['say', A, "(comms) Squad Zero, you're go. {name}, they're yours."],
     ['hideall'],
-    ['bg', 'rift'], ['fx', 'glass'], ['letterbox', 1],
+    ['bg', 'rift', 'shatter'], ['fx', 'glass'], ['letterbox', 1], ['light', 'rift'],
     ['cg', 'cg_final'], ['sfx', 'thunder'], ['shake', 10],
     ['n', "Inside the Shibuya Rift, the sky is a cathedral of broken light. Buildings float upside down. Glass bridges spiral into nothing."],
     ['n', "And somewhere at the center, a heartbeat — Mira's — on your screen."],
@@ -263,9 +263,9 @@ Object.assign(STORY.scripts, (() => {
     ] }],
     ['if', G => G.flags.f1, [
       ['show', T, 'determined', 'cross', 'l'], ['say', T, "Steel skin! Come on, then!"],
-      ['show', SO, 'determined', 'point', 'r'], ['say', SO, "Gravity — DOWN!"], ['sfx', 'boom'], ['shake', 10],
+      ['show', SO, 'determined', 'point', 'r'], ['cutin', SO, 'Gravity — DOWN!', 'furious'], ['sfx', 'boom'], ['impact'],
       ['show', H, 'angry', 'fist', 'c'], ['say', H, "NOW, {name}?!"], ['me', "NOW!"],
-      ['sfx', 'thunder'], ['flash', '#fff'], ['n', "Twelve guardians shatter in the same heartbeat."], ['hideall']
+      ['cutin', H, 'THUNDER GODDESS — FULL VOLTAGE!', 'furious'], ['sfx', 'thunder'], ['flash', '#fff'], ['n', "Twelve guardians shatter in the same heartbeat."], ['hideall']
     ], [
       ['sfx', 'boom'], ['shake', 12], ['n', "It works — barely. Tetsu takes a spike through the shoulder that would have killed anyone else. Kaede's ankle cracks. They keep moving."],
       ['do', G => { G.hope = Math.max(0, G.hope - 1); }]
@@ -292,7 +292,7 @@ Object.assign(STORY.scripts, (() => {
       ['say', KY, "Handler. I can't close it from out here — it has to be pushed from both sides. I'll push. Your squad pulls.", 'determined', 'point'],
       ['set', 'good']
     ], [
-      ['say', KY, "No. NO. I'm so close—", 'angry', 'fist'], ['sfx', 'shatter'], ['shake', 14],
+      ['say', KY, "No. NO. I'm so close—", 'angry', 'fist'], ['sfx', 'shatter'], ['crack'], ['shake', 14],
       ['n', "The Rift screams. Mira's column cracks. The whole sky begins to fold inward."],
       ['say', KY, "…It's collapsing. It'll take the city with it unless someone holds the door from inside.", 'sad', 'default'],
       ['say', KY, "Get your healer out, Handler. This one's mine. Tell Aya… I finally went after them.", 'tender', 'default']
@@ -302,90 +302,75 @@ Object.assign(STORY.scripts, (() => {
     ['show', M, 'tender', 'shy', 'c'],
     ['say', M, "(weakly) …Told you everyone ends up in my med bay eventually. You're late, {name}."],
     ['hide', M],
-    ['n', "The squad pulls. Lightning, shadow, gravity, wind, steel. The Rift begins to close — and drags one of them with it."],
-    ['jumpf', 'save_', 'route']
+    ['n', "The squad pulls. Lightning, shadow, gravity, wind, steel. The Rift begins to close."],
+    ['jump', 'arc1_end']
   ];
-  const afterSave = [['jump', 'epilogue']];
-  const saveScene = (who, line1, line2) => [
-    ['sfx', 'shatter'], ['shake', 12],
-    ['n', `The closing Rift pulls ${who === 'squad' ? 'Tetsu' : '*her*'} backward into the light. The comms go silent.`],
-    ['eye', { prompt: 'No Spark. No powers. Just you, and the place where she disappeared.', time: 8000, opts: [{ t: 'Walk into the Rift.', ok: 1 }, { t: 'Run into the Rift.', ok: 1, timeout: 1 }] }],
-    ['bg', 'white'], ['music', 'romance'], ['fx', 'glass'],
-    ['n', "Inside, there is no up or down. Only light, and the sound of your own heartbeat, and — very faintly — hers."],
-    ['n', "You don't need a Spark to find her. You've been reading her every move for weeks."],
-    ...(who === 'squad' ? [['show', T, 'tender', 'default', 'c']] : [['show', who, 'cry', 'shy', 'c']]),
-    ['say', who === 'squad' ? T : who, line1],
-    ['me', "I'm the Handler. I don't leave anyone behind."],
-    ['say', who === 'squad' ? T : who, line2, 'love'],
-    ['hideall'], ...afterSave
-  ];
-  S.save_hikari = saveScene(H, "{name}?! You don't have powers! You can't be in here!", "…Genius Convenience Store Guy. Always knowing where to aim.");
-  S.save_rei = saveScene(R, "…You walked into a place made of nothing. For me.", "Then take my hand. I'll find the way out through the shadows — you just don't let go.");
-  S.save_mira = saveScene(M, "I told you to eat and sleep. Not to walk into a Rift, {name}.", "…Come here. I've got you. For once, somebody's got *me*.");
-  S.save_sora = saveScene(SO, "Handler?! This isn't a stage you can just walk onto!", "…You came to the one show that has no audience. Okay. Encore's over. Let's go home.");
-  S.save_kaede = saveScene(K, "You told me to hold. I held. And then it took me anyway…", "…You came slow. On foot. For me. Okay. That's the fastest anyone's ever reached me.");
-  S.save_squad = saveScene('squad', "Handler? You shouldn't be here. I'm steel, I'd have been fine.", "…My sisters were right. Home is whoever comes back for you.");
 
-  S.epilogue = [
-    ['bg', 'white'], ['sfx', 'shatter'], ['flash', '#fff'],
+  // End of Arc One: the Rift closes, a girl falls out of it, and the Board speaks for the first time.
+  S.arc1_end = [
+    ['bg', 'glass_city', 'flash'], ['fx', 'glass'], ['music', null], ['light', null],
+    ['n', "The Rift folds shut with a sound like a bell. For one second, Shibuya is perfectly silent."],
     ['if', G => G.flags.good, [
-      ['n', "You come out of the light together. And behind you — a second set of footsteps."],
-      ['bg', 'glass_city'], ['fx', 'glass'], ['show', KY, 'tender', 'default', 'c'],
-      ['say', KY, "They said goodbye. Properly, this time. …I'm going to turn myself in to Aya. And then I'm going to learn how to live."],
-      ['say', KY, "Handler. Thank you for not leaving anyone behind. Even me.", 'smile'],
-      ['ach', 'goodend'], ['hide', KY]
+      ['music', 'sad'], ['show', KY, 'tender', 'default', 'c'],
+      ['n', "Kyouya Aoi walks out of the light on his own two feet. He is carrying someone."],
+      ['say', KY, "They said goodbye. All of them. Properly, this time. …All except one. She wouldn't let go of my hand."],
+      ['hide', KY]
     ], [
-      ['n', "You come out of the light together. Behind you, the Rift folds shut with a sound like a bell — and Kyouya Aoi is not with you."],
-      ['n', "Aya stands at the edge of the crossing for a long time. Then she says, very quietly, “Welcome home, Squad One.”"]
+      ['music', 'sad'],
+      ['n', "Kyouya Aoi does not come out. Aya stands at the edge of the crossing for a long time, very still."],
+      ['sfx', 'glass'], ['n', "Then the air cracks one last time — and something falls out of the closing seam. Someone."]
     ]],
-    ['bg', 'hq_lobby'], ['music', 'victory'], ['fx', 'petals'], ['letterbox', 0],
-    ['title', 'THREE MONTHS LATER', 'Heartline'],
-    ['n', "The glass in Shibuya melted into sand by spring. Kids build castles out of it now."],
-    ['n', "HALO has a new Board. Its first order: the Shibuya files, unsealed. Squad One's names are on the lobby wall."],
-    ['show', A, 'smile', 'cross', 'l'],
-    ['say', A, "Squad Zero. S-rank. The first squad in HALO history run by a Handler with no Spark."],
-    ['say', A, "Don't let it go to your head, {name}. …Too late, I see.", 'smug'],
-    ['show', B, 'happy', '', 'r'],
-    ['say', B, "Handler! Calls are coming in! Also, your dental appointment is today. For real this time.", 'happy'],
+    ['cg', 'cg_rin'], ['sfx', 'chime'], ['music', 'mystery'],
+    ['n', "A girl. White hair full of glass dust. A HALO jacket with the old winged logo, the one retired eight years ago. Eyes two different colors: cyan and rose."],
+    ['say', RI, "…Is it over? Did we close it? Natsuki-senpai said to count to a thousand and not look back…", 'confused'],
+    ['say', RI, "What… what day is it?", 'scared'],
+    ['cgoff'],
+    ['show', RI, 'scared', 'shy', 'c'],
+    ['me', "…It's been eight years since Shibuya."],
+    ['say', RI, "Eight— no. No, it's been an afternoon. I was only in there for an afternoon.", 'shocked'],
+    ['if', G => G.flags.good, [
+      ['show', KY, 'crysmile', 'default', 'l'],
+      ['say', KY, "Rin. It's okay. It's me. I just… got old while you were gone."],
+      ['say', RI, "…Nii-san? Your HAIR— you have a wrinkle— you look like DAD—", 'cry'],
+      ['say', KY, "I know. I know. Come here.", 'cry'],
+      ['n', "Kyouya Aoi, the Glazier, the man who nearly shattered a city, holds his little sister in the middle of Shibuya Crossing and cries like a kid."],
+      ['hide', KY]
+    ], [
+      ['say', RI, "Nii-san… where's my brother? He was right behind me. He pushed me through. He said—", 'cry'],
+      ['say', RI, "He said, “Tell Aya I finally went after them.”", 'sob'],
+      ['show', A, 'sad', 'default', 'r'],
+      ['say', A, "…Of course he did. That idiot. That wonderful idiot.", 'cry'],
+      ['hide', A]
+    ]],
+    ['know', RI],
+    ['sfx', 'car'],
+    ['n', "Headlights. A dozen black vans roll into the crossing — no sirens, no markings. Men in grey armor step out. Every one of them wears a silver pin: a halo with a crack through it."],
+    ['show', A, 'angry', 'cross', 'r'],
+    ['say', A, "Board Security. What are you doing on my operation?"],
+    ['sfx', 'phone'], ['n', "Every speaker in every van crackles at once. An old man's voice — calm, dry, patient, like a teacher who has never once been disobeyed."],
+    ['say', KU, "Director Takamine. Congratulations on your little miracle. The Board will take custody of the Rift-touched girl now."],
+    ['say', A, "She's seventeen and she just walked out of hell. She's going to my med bay.", 'furious'],
+    ['say', KU, "*Kneel.*"],
+    ['sfx', 'heartbeat'], ['shake', 6], ['filter', 'mono'], ['zoom', 1.12, 50, 45, 1200],
+    ['n', "Every hero on the crossing drops to one knee. Hikari. Rei. Tetsu. Kaede. Sora. Their faces are shocked — their bodies simply obey."],
+    ['n', "Aya's knees hit the glass. So do the Board guards'. So do Rin's."],
+    ['t', "…Everyone's except mine."],
+    ['n', "You are the only person still standing in Shibuya Crossing."],
+    ['say', KU, "……How interesting."],
+    ['filter', null], ['zoom', 1],
+    ['say', KU, "Keep the girl, Director. For now. The Board convenes on the first of the month. Bring your Handler."],
+    ['n', "The vans leave. The heroes gasp, stagger, stand. Nobody can explain what just happened."],
     ['hideall'],
-    ['jumpf', 'fin_', 'route']
+    ['show', H, 'scared', 'shy', 'c'],
+    ['say', H, "{name}… why couldn't I move? Why could YOU?"],
+    ['t', "I don't know. And I don't like it."],
+    ['hideall'], ['codex', 'rin'], ['codex', 'board'], ['codex', 'command'], ['codex', 'squadone'],
+    ['ach', 'arc1'], ['journal', 'Operation Heartline. The Shibuya Rift is closed. A girl walked out of it. An old man told everyone to kneel. I didn\'t.'],
+    ['recap'],
+    ['bg', 'black'], ['music', null], ['fx', null],
+    ['title', 'END OF ARC ONE', 'The Glazier'],
+    ['jump', 'ch6']
   ];
-  const fin = (who, cg, lines) => [['bg', 'park'], ['music', 'romance'], ['fx', 'petals'], ['cg', cg], ...lines, ['cgoff'], ['ach', who === 'squad' ? 'fin_squad' : 'route_' + who], ['end']];
-  S.fin_hikari = fin('hikari', 'cg_end_hikari', [
-    ['say', H, "Ramen Raijin, table for two! I booked it under “Thunder Goddess and Genius.”"],
-    ['say', H, "Mom's memorial got new flowers today. Sunflowers. I told her about you. I told her everything.", 'tender'],
-    ['say', H, "Partners on the board. Partners off the board. Forever, okay? No take-backs.", 'love'],
-    ['n', "*Hikari & {name} — the loudest, brightest, most over-caffeinated couple in HALO history.*"]
-  ]);
-  S.fin_rei = fin('rei', 'cg_end_rei', [
-    ['say', R, "Kuro had kittens. Four. They're all black. I named one after you. …It's the clumsy one."],
-    ['say', R, "Jun came to visit. He hugged me. I didn't flinch. The shadows didn't either.", 'tender'],
-    ['say', R, "I don't need to work alone anymore. I have a squad. And I have you. …That's a big deal. You're allowed to make it one.", 'love'],
-    ['n', "*Rei & {name} — quiet, stubborn, and never, ever alone again.*"]
-  ]);
-  S.fin_mira = fin('mira', 'cg_end_mira', [
-    ['say', M, "One strawberry mille-feuille for me. One for you. And I'm not taking any wounds today. Doctor's orders."],
-    ['say', M, "You rebuilt the whole dispatch system so I'd heal less. HALO's injury rate dropped 40%. You know what they're calling it?", 'smile'],
-    ['say', M, "The Solace Protocol. …You named it after me, you ridiculous man. It's a date. Every Saturday. Medically.", 'love'],
-    ['n', "*Mira & {name} — who finally learned to take care of each other.*"]
-  ]);
-  S.fin_sora = fin('sora', 'cg_end_sora', [
-    ['say', SO, "New agency, new contract: STELLAR doesn't own me anymore. I sing what I want now."],
-    ['say', SO, "Tonight's first song is the one from the empty arena. Twenty thousand people are going to hear it.", 'smile'],
-    ['say', SO, "But I'll be looking at the dispatch van the whole time. Like always. My favorite audience of one.", 'love'],
-    ['n', "*Sora & {name} — an idol, a Handler, and a love song the whole city knows by heart.*"]
-  ]);
-  S.fin_kaede = fin('kaede', 'cg_end_kaede', [
-    ['say', K, "Race you to the park gate. Loser buys sneakers."],
-    ['say', K, "…Or. We could walk. Slowly. Together. I've gotten weirdly good at slow.", 'blush'],
-    ['say', K, "Don't tell Hikari. Actually, tell her. She owes me a race.", 'love'],
-    ['n', "*Kaede & {name} — the fastest hero in Neo-Tokyo, who learned the best things are worth waiting for.*"]
-  ]);
-  S.fin_squad = fin('squad', 'cg_end_squad', [
-    ['n', "A picnic in Ueno Park. Tetsu brought a bonsai. Hikari brought eleven bento. Rei brought Kuro's kittens. Kaede ran for ice. Sora brought a guitar. Mira brought a first-aid kit, just in case."],
-    ['say', H, "Squad photo! Everybody say “Handler!”"],
-    ['n', "*Squad Zero — six heroes, one drone, and a clerk with no Spark. Family.*"]
-  ]);
 
   // ======================= NEW HANG OUTS =======================
   S.hang_hikari_4 = [

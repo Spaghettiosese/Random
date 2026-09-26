@@ -247,7 +247,7 @@ Object.assign(STORY.scripts, (() => {
     ['say', SO, "Um. I called STELLAR. I told them I'm staying with Squad Zero — on loan, indefinitely. They were… loud about it.", 'sweat', 'shy'],
     ['say', SO, "So! Please take care of me, Handler!", 'happy', 'wave'],
     ['ach', 'ch2'], ['hideall'],
-    ['jump', 'ch3']
+    ['recap'], ['jump', 'ch3']
   ];
 
   // ======================= CHAPTER 3 =======================
@@ -407,7 +407,7 @@ Object.assign(STORY.scripts, (() => {
     ['hideall'],
     ['do', G => { G.goal = null; }],
     ['ach', 'ch3'],
-    ['jump', 'ch4']
+    ['recap'], ['jump', 'ch4']
   ];
   return S;
 })());

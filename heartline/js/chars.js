@@ -391,9 +391,12 @@ const CharArt = (() => {
     sora: { casual: { style: 'blouse', col: '#ece6ff', col2: '#2b2f6b', legs: 'skirt', socks: '#ffffff' }, formal: { style: 'dress', col: '#2b2f6b', stars: 1 }, winter: { style: 'coat', col: '#ddd8f7', col2: '#ff6fae', mitten: '#ff6fae' }, yukata: { style: 'yukata', col: '#2b2f6b', col2: '#ff6fae', col3: '#ffd54a' } },
     tetsu: { casual: { style: 'tee', col: '#4a5240', col2: '#2a2b30', jacket: '#8a6a4a' }, formal: { style: 'suit' }, winter: { style: 'coat', col: '#6f7684', col2: '#ff8a2a' }, yukata: { style: 'yukata', col: '#3a4a6a', col2: '#1c1f2a', col3: '#9fb4d9' } },
     aya: { formal: { style: 'dress', col: '#c42a36' }, winter: { style: 'coat', col: '#23222c', col2: '#c42a36' }, casual: { style: 'cardigan', col: '#6a2a36', col2: '#23222c', col3: '#f4f4f8' } },
-    kyouya: { formal: { style: 'suit' }, casual: { style: 'hoodie', col: '#dfe8ee', col2: '#15161c' } },
+    kyouya: { formal: { style: 'suit' }, casual: { style: 'hoodie', col: '#dfe8ee', col2: '#15161c' }, winter: { style: 'coat', col: '#dfe8ee', col2: '#7ff6ff' } },
     rin: { casual: { style: 'hoodie', col: '#ff9ad8', col2: '#2e3a52', legs: 'shorts' }, winter: { style: 'coat', col: '#e6f2ff', col2: '#5fe6ff', mitten: '#5fe6ff' }, yukata: { style: 'yukata', col: '#e6f2ff', col2: '#5fe6ff', col3: '#ff7ae0' } },
-    shiori: { casual: { style: 'cardigan', col: '#233056', col2: '#1c2440', col3: '#f4f5fa' }, formal: { style: 'dress', col: '#f4f5fa' } }
+    shiori: { casual: { style: 'cardigan', col: '#233056', col2: '#1c2440', col3: '#f4f5fa' }, formal: { style: 'dress', col: '#f4f5fa' }, winter: { style: 'coat', col: '#f4f5fa', col2: '#f2c14e', mitten: '#233056' }, yukata: { style: 'yukata', col: '#233056', col2: '#f2c14e', col3: '#f4f5fa' } },
+    natsuki: { casual: { style: 'tee', col: '#ff8a3a', col2: '#3a3f52', legs: 'shorts' }, winter: { style: 'coat', col: '#ff8a3a', col2: '#fff4dc', mitten: '#3a3f52' }, formal: { style: 'dress', col: '#d8582a' }, yukata: { style: 'yukata', col: '#ffd566', col2: '#d8582a', col3: '#fff4dc' } },
+    saeki: { formal: { style: 'suit' }, winter: { style: 'coat', col: '#2a2436', col2: '#b58aff' } },
+    kuroda: { formal: { style: 'suit' }, winter: { style: 'coat', col: '#3a3d46', col2: '#b8bcc8' } }
   };
   function garment(c, o) {
     const male = c.male, full = o.style === 'coat' || o.style === 'yukata', T = full ? (male ? TORSO_M : TORSO) : (male ? TOP_M : TOP), TS = male ? TORSO_M_SHADE : TORSO_SHADE, col = o.col || '#444', dk = tone(col, -.22), col2 = o.col2 || '#2a2b36', col3 = o.col3 || '#ffffff';

@@ -401,7 +401,7 @@ const STORY = (() => {
     ['n', '"Let\'s see how long his little heroes last… when the whole city turns to glass."'],
     ['cgoff'], ['sfx', 'shatter'], ['flash', '#9ff'],
     ['ach', 'ch1'],
-    ['jump', 'ch2']
+    ['recap'], ['jump', 'ch2']
   ];
 
   // ======================= HANG OUTS =======================

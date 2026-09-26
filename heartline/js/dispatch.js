@@ -58,7 +58,7 @@ const Dispatch = (() => {
   }
   function mkRng(seed) { let s = seed >>> 0 || 1; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; }
   function mkCall(sp, extra) {
-    const G = ctx.G, r = S.r, pool = ctx.calls.filter(c => (c.tier || 1) >= (S.cfg.tiers || [1, 3])[0] && (c.tier || 1) <= (S.cfg.tiers || [1, 3])[1] && !S.usedT?.includes(c.t));
+    const G = ctx.G, r = S.r, pool = ctx.calls.filter(c => (c.tier || 1) >= (S.cfg.tiers || [1, 3])[0] && (c.tier || 1) <= (S.cfg.tiers || [1, 3])[1] && !S.usedT?.includes(c.t) && (!c.ch || (G.chap || 0) >= c.ch) && (!c.until || (G.chap || 0) <= c.until));
     const tpl = sp || extra || pool[(r() * pool.length) | 0] || ctx.calls[0];
     S.usedT = (S.usedT || []).concat(tpl.t);
     const DM = { story: [.8, 1.4], normal: [1, 1], hard: [1.2, .8] }[G.diff || 'normal'];
@@ -135,7 +135,7 @@ const Dispatch = (() => {
       h.call = null;
     });
     if (ok) {
-      c.cred = Math.round(c.tier * 25 * Sys.credMul(G, c.team) * (1 + Math.min(5, S.streak - 1) * .05));
+      c.cred = Math.round(c.tier * 20 * Sys.credMul(G, c.team) * (1 + Math.min(5, S.streak - 1) * .05));
       S.saved += c.tier * (3 + ((S.r() * 10) | 0));
       G.pairs = G.pairs || {};
       for (let i = 0; i < c.team.length; i++) for (let j = i + 1; j < c.team.length; j++) {
@@ -382,7 +382,7 @@ const Dispatch = (() => {
     const G = ctx.G, total = S.ok + S.fail + S.miss, ratio = total ? S.ok / total : 1;
     const grade = ratio >= .9 ? 'S' : ratio >= .75 ? 'A' : ratio >= .6 ? 'B' : ratio >= .4 ? 'C' : 'D';
     const objRes = S.obj.map(o => [o.t, Sys.objOk(S, o)]), objN = objRes.filter(x => x[1]).length;
-    const credits = S.calls.filter(c => c.state === 'ok').reduce((s, c) => s + (c.cred || c.tier * 25), 0) + objN * 80 + (S.chainRes && S.chainRes[1] ? 150 : 0);
+    const credits = S.calls.filter(c => c.state === 'ok').reduce((s, c) => s + (c.cred || c.tier * 20), 0) + objN * 80 + (S.chainRes && S.chainRes[1] ? 150 : 0);
     const rep = S.ok * 2 - S.miss * 2 - S.fail + objN * 3;
     G.credits += credits; G.rep = Math.max(0, G.rep + rep); G.calls = (G.calls || 0) + S.ok; G.saved = (G.saved || 0) + S.saved;
     const m0 = G.morale === undefined ? 60 : G.morale, dm = { S: 10, A: 5, B: 1, C: -5, D: -10 }[grade] - S.inj * 3 + objN * 2;

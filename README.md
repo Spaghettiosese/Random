@@ -1,6 +1,6 @@
 # MOONKAI
 
-> **Also in this repo:** [`heartline/`](heartline/): *Heartline Agency*, an anime superpower-agency dating sim with Dispatch-style hero management (Prologue + 5 chapters). Open `heartline/index.html` in a browser.
+> **Also in this repo:** [`heartline/`](heartline/): *Heartline Agency*, an anime superpower-agency dating sim with Dispatch-style hero management (12 chapters, 7 endings). Open `heartline/index.html` in a browser.
 
 *A Saint Joseph School horror story.* A first-person, low-poly, PS1-style horror game that runs in the browser (three.js, no build step).
 

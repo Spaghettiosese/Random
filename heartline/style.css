@@ -749,3 +749,7 @@ body.nomotion #stage .bg, body.nomotion #chars { transform: none !important; }
 #dispatch.w5 .dwx { background: linear-gradient(0deg, rgba(255, 120, 40, .12), transparent 60%); }
 #dispatch.w6 .dwx { background: radial-gradient(ellipse at 30% 40%, rgba(180, 240, 255, .14), transparent 60%), radial-gradient(ellipse at 70% 70%, rgba(180, 240, 255, .1), transparent 60%); }
 @keyframes rainmap { to { background-position: -30px 60px; } } @keyframes snowmap { to { background-position: 0 380px, 19px 480px; } }
+.squad h3 small.rogue { display: block; width: fit-content; margin-top: 4px; font-family: var(--font); font-size: 10px; letter-spacing: 1px; padding: 2px 8px; border-radius: 8px; background: #ff3355; color: #fff; }
+
+.rch { font-size: 30px !important; letter-spacing: 3px !important; line-height: 1.15; } .rch small { display: block; font-family: var(--font); font-size: 12px; letter-spacing: 4px; color: var(--cyan); margin-bottom: 4px; }
+.sq b { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; } .sq .spb { font-size: 9px; padding: 1px 6px; margin: 0; line-height: 1.5; }

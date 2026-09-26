@@ -66,7 +66,7 @@ const Sys = (() => {
     drone: { n: 'Drone Bay', icon: '🛸', d: l => `+${l * 3}% success on every call` },
     lounge: { n: 'Rec Lounge', icon: '🎮', d: l => `+${l * 4} morale every morning${l >= 2 ? ' · +1 ♥ from Hang Outs' : ''}` }
   };
-  const HQCOST = [300, 650, 1100];
+  const HQCOST = [400, 800, 1400];
   const hq = (G, k) => (G.hq && G.hq[k]) || 0;
 
   // ---------- weather ----------

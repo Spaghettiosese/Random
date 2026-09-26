@@ -99,7 +99,7 @@ const Game = (() => {
       case 'move': if (G.vis.chars[a]) showChar(a, null, null, b); return NEXT;
       case 'hide': hideChar(a); return NEXT;
       case 'hideall': Object.keys(G.vis.chars).forEach(hideChar); return NEXT;
-      case 'know': G.known[a] = 1; if (!meta.met[a]) { meta.met[a] = 1; saveMeta(); } return NEXT;
+      case 'know': G.known[a] = 1; if (!meta.met[a]) { meta.met[a] = 1; saveMeta(); } if (STORY.codex['c_' + a] && !G.replay) codexUnlock('c_' + a); return NEXT;
       case 'say': mark(); if (b !== undefined && typeof b === 'string' && G.vis.chars[a] && d) showChar(a, d, e || G.vis.chars[a].pose); say(a, b); return WAIT;
       case 'n': mark(); say(null, a); return WAIT;
       case 't': mark(); say('think', a); return WAIT;
@@ -138,7 +138,7 @@ const Game = (() => {
       case 'shift': startShift(a); return WAIT;
       case 'recruit': if (b === 0) G.roster = G.roster.filter(x => x !== a); else if (!G.roster.includes(a)) G.roster.push(a); return NEXT;
       case 'jumpf': jump(a + (G.flags[b] || 'squad')); return CONT;
-      case 'chapter': G.chap = a; G.chapT = b; G.goal = d ? { n: d, day: e } : null; if (a > 1 && ACH['ch' + (a - 1)]) unlock('ch' + (a - 1)); G.chapStart = { aff: Object.assign({}, G.aff), shifts: G.shifts.length, calls: G.calls, t: Date.now(), credits: G.credits }; if (!G.replay) { meta.chaps[a] = b; meta.maxChap = Math.max(meta.maxChap || 0, a); saveMeta(); LS.set('hl2_chap_' + a, snapshot()); } autosave(); return NEXT;
+      case 'chapter': G.chap = a; G.chapT = b; G.weather = Sys.rollWeather(G); G.goal = d ? { n: d, day: e } : null; if (a > 1 && ACH['ch' + (a - 1)]) unlock('ch' + (a - 1)); G.chapStart = { aff: Object.assign({}, G.aff), shifts: G.shifts.length, calls: G.calls, t: Date.now(), credits: G.credits }; if (!G.replay) { meta.chaps[a] = b; meta.maxChap = Math.max(meta.maxChap || 0, a); saveMeta(); LS.set('hl2_chap_' + a, snapshot()); ((STORY.codexAt || {})[a] || []).forEach(k => codexUnlock(k, 1)); } autosave(); return NEXT;
       case 'goal': G.goal = a ? { n: a, day: b } : null; return NEXT;
       case 'night': night(); return WAIT;
       case 'nextday': nextDay(); return NEXT;
@@ -374,7 +374,7 @@ const Game = (() => {
 
   // ---------- choices ----------
   function choice(opts, eyeCfg) {
-    wait = 'choice'; skip = false; ctrlSkip = false; updateQuick();
+    wait = 'choice'; skip = false; ctrlSkip = false; updateQuick(); $$('#toasts .toast:not(.ach)').forEach(t => t.remove());
     const box = $('#choices'); box.innerHTML = ''; box.className = eyeCfg ? 'on eye' : 'on';
     const my = run;
     if (eyeCfg) {
@@ -462,6 +462,7 @@ const Game = (() => {
   // ---------- HUB (evening free time) ----------
   const ROMANCE = ['hikari', 'rei', 'mira', 'sora', 'kaede'];
   const MET = () => ['hikari', 'rei', 'mira', 'kaede', 'tetsu', 'sora', 'rin', 'natsuki', 'shiori'].filter(h => G.known[h] !== undefined);
+  const HERE = () => MET().filter(h => !G.flags['away_' + h]);
   const NEED = [0, 0, 5, 11, 18, 26];
   const sceneCount = h => { let n = 0; while (STORY.scripts[`hang_${h}_${n + 1}`]) n++; return n; };
   const moodTag = h => { const m = G.mood && G.mood[h] && Sys.MOOD[G.mood[h]]; return m && G.mood[h] !== 'calm' ? `<span class="mood" title="${m[2]}">${m[0]} ${m[1]}</span>` : ''; };
@@ -476,7 +477,7 @@ const Game = (() => {
   function renderHub() {
     wait = 'hub'; hist = []; $('#textbox').classList.add('hide'); G.vis.of = null; G.vis.pre = null;
     Object.keys(G.vis.chars).forEach(hideChar); ['#cg', '#letterbox', '#speed'].forEach(s => $(s).classList.remove('on'));
-    if (G.vis.bg !== 'hq_lobby') setBg('hq_lobby'); if (G.vis.fx !== 'dust') setFx('dust'); if (G.vis.music !== 'daily') { G.vis.music = 'daily'; Sound.play('daily'); }
+    const hbg = G.flags.hubbg || 'hq_lobby', hfx = hbg === 'shrine' && G.chap >= 9 && G.chap <= 10 ? 'snow' : 'dust'; if (G.vis.bg !== hbg) setBg(hbg); if (G.vis.fx !== hfx) setFx(hfx); if (G.vis.music !== 'daily') { G.vis.music = 'daily'; Sound.play('daily'); }
     const hud = $('#hud'); hud.innerHTML = hudHtml(); hud.classList.add('on');
     setTint(['evening', 'night'][G.slot]);
     const ch = G.chap || 0;
@@ -490,7 +491,7 @@ const Game = (() => {
       <div class="mini fat"><label>FTG</label><span><i style="width:${s.fat}%"></i></span><em>${s.fat}</em></div>${s.hurt ? '<div class="hurtb">🩹 injured</div>' : moodTag(h)}</div></div>`; }).join('')
       + `<h3 class="bh">BONDS</h3>` + MET().filter(h => h !== 'tetsu').map(h => `<div class="bond" style="--c:${WHO[h].c}"><b>${WHO[h].n}${G.bday === h ? ' 🎂' : ''}</b>${heart(G.aff[h])}<small>${tier(G.aff[h])}</small></div>`).join('')
       + (G.goal && G.goal.day >= G.day ? `<div class="countdown"><b>${Math.max(0, G.goal.day - G.day)}</b><span>day${G.goal.day - G.day === 1 ? '' : 's'} until<br>${G.goal.n}</span></div>` : '');
-    $('#hub').innerHTML = `<div class="squad"><h3>SQUAD ZERO</h3>${squad}</div>
+    $('#hub').innerHTML = `<div class="squad"><h3>SQUAD ZERO${G.flags.rogue && !G.flags.restored ? ' <small class="rogue">OFF THE BOOKS</small>' : ''}</h3>${squad}</div>
       <div class="hubmain">${G.bday ? `<div class="bdayb">🎂 It's <b>${WHO[G.bday].n}</b>'s birthday today! Gifts count double.</div>` : ''}<div class="acts">${acts.map(([k, ic, n, d, cost, off]) => `<button class="act ${off || (cost > 0 && G.energy < cost) ? 'off' : ''}" data-a="${k}" data-why="${off ? (d.startsWith('Unlocks') ? d : 'Not enough credits.') : 'Not enough energy. Rest first!'}"><div class="ic">${ic}</div><b>${n}</b><small>${d}</small>${cost > 0 ? `<em>-${cost} ⚡</em>` : cost === 0 ? '<em>uses slot</em>' : ''}</button>`).join('')}</div>
       <div class="frees">${frees.map(([k, ic, n, al]) => `<button class="free" data-a="${k}"><span>${ic}</span><b>${n}</b>${al ? `<i>${al}</i>` : ''}</button>`).join('')}</div></div>
       <div class="bittip"><div class="bitface">${Art.char('bit', 'happy', '', true)}</div><p>${hubTip()}</p></div>`;
@@ -515,7 +516,7 @@ const Game = (() => {
   function useSlot(evChance = .3) {
     G.slot++; closeModal();
     const hud = $('#hud'); hud.innerHTML = hudHtml(); Sound.sfx('swoosh');
-    const pool = Object.keys(STORY.events).filter(k => !G.ev[k] && STORY.events[k].day <= G.day && (!STORY.events[k].need || G.known[STORY.events[k].need] !== undefined) && (!STORY.events[k].ch || (G.chap || 0) >= STORY.events[k].ch));
+    const pool = Object.keys(STORY.events).filter(k => !G.ev[k] && STORY.events[k].day <= G.day && (!STORY.events[k].need || G.known[STORY.events[k].need] !== undefined) && (!STORY.events[k].ch || (G.chap || 0) >= STORY.events[k].ch) && (!STORY.events[k].until || (G.chap || 0) <= STORY.events[k].until));
     if (G.slot < SLOTS.length && pool.length && Math.random() < evChance) { const k = pool[(Math.random() * pool.length) | 0]; G.ev[k] = 1; hideHub(true); G.stack.push({ id: k, i: 0 }); setTimeout(step, 500); return; }
     setTimeout(step, 450);
   }
@@ -556,15 +557,15 @@ const Game = (() => {
         if (n <= sceneCount(h) && G.aff[h] >= NEED[n]) { G.seen[h] = n; label = `hang_${h}_${n}`; }
         if (!R[label]) label = 'hang_generic';
         G.today[h] = (G.today[h] || 0) + 1; G.morale = clamp((G.morale || 60) + 2, 0, 100);
-        if (MET().every(k => G.seen[k])) unlock('social');
+        if (HERE().every(k => G.seen[k])) unlock('social');
         if (Sys.hq(G, 'lounge') >= 2 || G.mood[h] === 'cheer') G.aff[h] += 1;
         Sys.journal(G, `Spent the evening with ${WHO[h].n}.`);
         G.slot++; closeModal(); hideHub(); G.vis.of = G.chap >= 9 && G.chap <= 10 ? 'winter' : 'casual'; G.hangWho = h;
         G.stack.push({ id: label, i: 0 }); step();
-      }, { list: MET(), sub: 'Who do you want to spend the evening with?', extra: h => { const n = (G.seen[h] || 0) + 1, max = sceneCount(h); return `<small>${heart(G.aff[h])}</small><small>${tier(G.aff[h])}</small>${moodTag(h)}<small class="nextscene">${n > max ? 'All scenes seen' : G.aff[h] >= NEED[n] ? '✨ New scene available' : `Next scene at ♥${NEED[n]}`}</small>`; } });
+      }, { list: HERE(), sub: 'Who do you want to spend the evening with?', extra: h => { const n = (G.seen[h] || 0) + 1, max = sceneCount(h); return `<small>${heart(G.aff[h])}</small><small>${tier(G.aff[h])}</small>${moodTag(h)}<small class="nextscene">${n > max ? 'All scenes seen' : G.aff[h] >= NEED[n] ? '✨ New scene available' : `Next scene at ♥${NEED[n]}`}</small>`; } });
     },
     date() {
-      const list = ROMANCE.filter(h => G.known[h] !== undefined);
+      const list = ROMANCE.filter(h => G.known[h] !== undefined && !G.flags['away_' + h]);
       heroPick('Date', h => {
         if (G.aff[h] < Sys.DATE_MIN) { Sound.sfx('fail'); toast('Not yet…', `Reach ♥${Sys.DATE_MIN} (Friend) with ${WHO[h].n} first.`); return; }
         datePlace(h);
@@ -590,7 +591,7 @@ const Game = (() => {
       $('#jbok').onclick = () => { Sound.sfx('confirm'); useSlot(.25); };
     },
     shop(tab) { shopModal(typeof tab === 'string' ? tab : 'gifts'); },
-    hq() { hqModal(); },
+    hq() { if (G.flags.rogue && !G.flags.restored) { Sound.sfx('fail'); toast('🏗️ HQ is under Board control', 'Upgrades are locked while Squad Zero is off the books.'); return; } hqModal(); },
     dossier(sel) { dossier(typeof sel === 'string' ? sel : MET()[0]); },
     heronet() {
       const posts = STORY.feed(G);
@@ -777,7 +778,7 @@ const Game = (() => {
       G, WHO, T, toast, unlock, sfx: n => Sound.sfx(n), music: m => { G.vis.music = m; Sound.play(m); },
       calls: STORY.calls, events: STORY.callEvents, quips: STORY.quips, synergy: (a, b) => STORY.synergy(G, a, b), items: STORY.items, codex: codexUnlock, journal: t => Sys.journal(G, t),
       portrait: id => Art.char(id, G.heroes[id] && G.heroes[id].hurt ? 'sad' : 'smile', 'default', true), bit: Art.char('bit', 'happy', '', true),
-      onDone: res => { if (my !== run) return; G.last = res; meta.stats.shifts++; meta.stats.calls += res.ok; meta.stats.saved = (meta.stats.saved || 0) + (res.saved || 0); if (res.grade === 'S') meta.stats.sranks++; saveMeta(); hist = []; setBg('hq_lobby', 'cut'); later(200); }
+      onDone: res => { if (my !== run) return; $$('#toasts .toast:not(.ach)').forEach(t => t.remove()); G.last = res; meta.stats.shifts++; meta.stats.calls += res.ok; meta.stats.saved = (meta.stats.saved || 0) + (res.saved || 0); if (res.grade === 'S') meta.stats.sranks++; saveMeta(); hist = []; setBg('hq_lobby', 'cut'); later(200); }
     });
   }
 
@@ -803,11 +804,12 @@ const Game = (() => {
     })();
   }
   function night() {
-    wait = 'modal'; hideHub(); setBg('apartment'); setTint('night'); Sound.play('night'); G.vis.music = 'night';
+    wait = 'modal'; hideHub(); setBg(G.flags.rogue && !G.flags.restored && G.flags.hubbg || 'apartment'); setTint('night'); Sound.play('night'); G.vis.music = 'night';
     Object.keys(G.vis.chars).forEach(hideChar);
-    const cand = MET().sort((a, b) => ((G.today[b] || 0) * 3 + G.aff[b]) - ((G.today[a] || 0) * 3 + G.aff[a]));
-    const who = cand[0], i = G.texts[who] || 0, convo = STORY.phone[who] && STORY.phone[who][i] || STORY.phoneFallback(who, G);
-    G.texts[who] = i + 1;
+    const cand = HERE().sort((a, b) => ((G.today[b] || 0) * 3 + G.aff[b]) - ((G.today[a] || 0) * 3 + G.aff[a]));
+    const who = cand[0] || 'hikari', seen = (G.textSeen = G.textSeen || {})[who] = G.textSeen[who] || [], L = STORY.phone[who] || [];
+    const i = L.findIndex((c, j) => !seen.includes(j) && (!c.ch || (G.chap || 0) >= c.ch) && (!c.until || (G.chap || 0) <= c.until));
+    const convo = i >= 0 ? L[i] : STORY.phoneFallback(who, G); if (i >= 0) seen.push(i); G.texts[who] = (G.texts[who] || 0) + 1;
     setTimeout(() => phone(who, convo, true), skipping() ? 50 : 900);
   }
   function sleepThen() {
@@ -838,6 +840,7 @@ const Game = (() => {
     Object.entries(n.heroes).forEach(([k, h]) => { if (!g.heroes[k]) g.heroes[k] = h; g.heroes[k].perks = g.heroes[k].perks || []; if (g.heroes[k].gear === undefined) g.heroes[k].gear = null; });
     Object.keys(n.aff).forEach(k => { if (g.aff[k] === undefined) g.aff[k] = 0; });
     if (g.date && g.stack.some(f => f.id.startsWith('__date'))) reg(Sys.buildDate(g.date, g), '__date');
+    if (!g.textSeen) { g.textSeen = {}; Object.entries(g.texts || {}).forEach(([w, n]) => { g.textSeen[w] = [...Array(n).keys()]; }); }
     return g;
   }
   function loadFrom(k) { const d = LS.get('hl2_save_' + k); if (!d) return false; loadState(d); toast('📂 Loaded', d.desc); return true; }
@@ -878,7 +881,7 @@ const Game = (() => {
     wait = 'modal'; const cs = G.chapStart || { aff: {}, shifts: 0, calls: 0, t: 0, credits: G.credits };
     const sh = G.shifts.slice(cs.shifts), newAch = Object.entries(meta.ach).filter(([, t]) => t >= cs.t).map(([k]) => ACH[k] ? ACH[k][0] : k);
     const bonds = MET().filter(h => h !== 'tetsu').map(h => { const d = G.aff[h] - (cs.aff[h] || 0); return `<div class="rcb" style="--c:${WHO[h].c}"><b>${WHO[h].n}</b><div class="bar"><i style="width:${clamp(G.aff[h] / 40 * 100, 0, 100)}%;background:${WHO[h].c}"></i></div><em>${d >= 0 ? '+' : ''}${d} ♥</em></div>`; }).join('');
-    modal(`<div class="recap"><div class="rch">${G.chapT} — COMPLETE</div><div class="rcgrid"><div><h4>Dispatch</h4>${sh.length ? sh.map((x, i) => `<span class="rcg g${x.grade}">${x.grade}</span>`).join('') : '<small>No shifts</small>'}<p>${G.calls - (cs.calls || 0)} calls resolved · 💴 ${G.credits - (cs.credits || 0) >= 0 ? '+' : ''}${G.credits - (cs.credits || 0)}</p></div>
+    modal(`<div class="recap"><div class="rch"><small>${(G.chapT || '').split(' · ')[0]} · COMPLETE</small>${(G.chapT || '').split(' · ').slice(1).join(' · ') || G.chapT}</div><div class="rcgrid"><div><h4>Dispatch</h4>${sh.length ? sh.map((x, i) => `<span class="rcg g${x.grade}">${x.grade}</span>`).join('') : '<small>No shifts</small>'}<p>${G.calls - (cs.calls || 0)} calls resolved · 💴 ${G.credits - (cs.credits || 0) >= 0 ? '+' : ''}${G.credits - (cs.credits || 0)}</p></div>
       <div><h4>Bonds</h4>${bonds}</div><div><h4>Achievements</h4>${newAch.length ? newAch.map(a => `<small>🏆 ${a}</small>`).join('') : '<small>—</small>'}</div></div><button class="btn primary" id="rcok">Continue ▸</button></div>`, { noclose: 1, wide: 1 });
     Sound.sfx('levelup'); $('#rcok').onclick = () => { closeModal(); Sound.sfx('confirm'); advance(); };
   }
@@ -1067,7 +1070,7 @@ const Game = (() => {
   function boot() {
     Object.entries(STORY.scripts).forEach(([k, v]) => reg(v, k));
     Object.entries(STORY.events).forEach(([k, v]) => reg(v.s, k));
-    Object.assign(ACH, Sys.ACH); STORY.codex = Object.assign({}, STORY.codex || {}, Sys.CODEX); Sys.init(api);
+    Object.assign(ACH, Sys.ACH, STORY.ach || {}); STORY.codex = Object.assign({}, STORY.codex || {}, Sys.CODEX); Sys.init(api);
     loadPrefs(); bind(); requestAnimationFrame(fxLoop);
     $('#bgA').innerHTML = Art.bg('city_night'); $('#bgA').classList.add('show'); Fx.type = 'stars';
   }
