@@ -178,7 +178,7 @@ const STORY = (() => {
     ['say', B, 'Evenings are yours: *Hang Out*, *Train* for XP, *Rest*, shop, and spend *skill points* in the Dossier.', 'smug'],
     ['say', B, 'Your first shift starts now! I\'ll hold your hand. Metaphorically. I don\'t have hands.', 'happy'],
     ['hideall'],
-    ['chapter', 1, 'Ch.1 Squad Zero', 'Field Certification', 4],
+    ['chapter', 1, 'Chapter 1 · Squad Zero', 'Field Certification', 4],
     ['daycard'],
     ['shift', { title: 'Day 1 · Tutorial Shift', calls: 5, tiers: [1, 1], diff: .9, real: 240, tutorial: true }],
     ['call', 'ch1_after1'],

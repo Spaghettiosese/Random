@@ -7,7 +7,7 @@ Object.assign(STORY.scripts, (() => {
   S.ch4 = [
     ['music', null], ['bg', 'black'], ['fx', null], ['tint', null], ['nextday'],
     ['title', 'CHAPTER 4', 'Shattered City'],
-    ['chapter', 4, 'Ch.4 Shattered City', 'the Grand Rift', 16],
+    ['chapter', 4, 'Chapter 4 · Shattered City', 'the Grand Rift', 16],
     ['bg', 'glass_city'], ['music', 'mystery'], ['fx', 'glass'],
     ['n', "Three days after the tower siege, Shibuya's first new Rift opened at 4:12 AM. By sunrise, six city blocks were glass."],
     ['n', "By the second day, there were four more."],

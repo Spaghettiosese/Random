@@ -30,7 +30,7 @@ Object.assign(STORY.scripts, (() => {
   S.ch2 = [
     ['music', null], ['bg', 'black'], ['fx', null], ['tint', null], ['nextday'],
     ['title', 'CHAPTER 2', 'Glass Hearts'],
-    ['chapter', 2, 'Ch.2 Glass Hearts', 'Mirror Mall Gala', 8],
+    ['chapter', 2, 'Chapter 2 · Glass Hearts', 'Mirror Mall Gala', 8],
     ['bg', 'hq_lobby'], ['music', 'hq'], ['fx', 'dust'],
     ['n', 'One week after the Harbor Incident.'],
     ['show', B, 'happy', '', 'l'],
@@ -254,7 +254,7 @@ Object.assign(STORY.scripts, (() => {
   S.ch3 = [
     ['music', null], ['bg', 'black'], ['fx', null], ['tint', null], ['nextday'],
     ['title', 'CHAPTER 3', 'Fractures'],
-    ['chapter', 3, 'Ch.3 Fractures', 'Board Review', 12],
+    ['chapter', 3, 'Chapter 3 · Fractures', 'Board Review', 12],
     ['bg', 'ops'], ['music', 'hq'],
     ['show', B, 'neutral', '', 'c'], ['sfx', 'beep'],
     ['say', B, "Good morning, Handler. Five heroes on the board today! Calls are up 40% since the gala."],
