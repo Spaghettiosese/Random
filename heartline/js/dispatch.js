@@ -87,7 +87,7 @@ const Dispatch = (() => {
     });
     Object.entries(S.hero).forEach(([id, h]) => {
       if (h.s === 'ret' && S.t >= h.until) { h.s = 'rest'; h.until = S.t + restTime(id); }
-      else if (h.s === 'rest' && S.t >= h.until) { h.s = 'ready'; ctx.sfx('beep'); }
+      else if (h.s === 'rest' && S.t >= h.until) { h.s = 'ready'; H(id).fat = clamp(H(id).fat - 10, 0, 100); ctx.sfx('beep'); }
     });
     if (S.t >= S.len && !S.done) finish();
     if (Dispatch.auto) autoplay();
@@ -108,7 +108,7 @@ const Dispatch = (() => {
     if (c.flag) S.flags[c.flag] = ok ? 1 : -1;
     const injured = !ok && S.r() < .35 ? c.team[(S.r() * c.team.length) | 0] : null;
     c.team.forEach(id => {
-      const h = S.hero[id], hero = H(id); hero.fat = clamp(hero.fat + 14 + c.tier * 3, 0, 100);
+      const h = S.hero[id], hero = H(id); hero.fat = clamp(hero.fat + 9 + c.tier * 3, 0, 100);
       S.xp[id] += ok ? 18 + c.tier * 14 : 8;
       if (id === injured) { h.s = 'hurt'; hero.fat = clamp(hero.fat + 25, 0, 100); ctx.toast(`🩹 ${ctx.WHO[id].n} injured`, 'Out for the rest of the shift'); }
       else { h.s = 'ret'; h.until = S.t + c.travel; }
@@ -277,7 +277,7 @@ const Dispatch = (() => {
     S.calls.forEach(c => { if (c.state === 'open') { c.state = 'missed'; S.miss++; } if (c.state === 'travel' || c.state === 'work') { c.state = c.state; c.bonus += 0; resolve(c); } });
     const G = ctx.G, total = S.ok + S.fail + S.miss, ratio = total ? S.ok / total : 1;
     const grade = ratio >= .9 ? 'S' : ratio >= .75 ? 'A' : ratio >= .6 ? 'B' : ratio >= .4 ? 'C' : 'D';
-    const credits = S.calls.filter(c => c.state === 'ok').reduce((s, c) => s + c.tier * 60, 0), rep = S.ok * 2 - S.miss * 2 - S.fail;
+    const credits = S.calls.filter(c => c.state === 'ok').reduce((s, c) => s + c.tier * 25, 0), rep = S.ok * 2 - S.miss * 2 - S.fail;
     G.credits += credits; G.rep = Math.max(0, G.rep + rep); G.calls = (G.calls || 0) + S.ok;
     const ups = [];
     G.roster.forEach(id => {

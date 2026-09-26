@@ -311,7 +311,7 @@ const Game = (() => {
   }
   function toast(t, s, cls = '') {
     const d = document.createElement('div'); d.className = 'toast ' + cls; d.innerHTML = `<b>${t}</b><span>${s || ''}</span>`;
-    $('#toasts').appendChild(d); setTimeout(() => d.classList.add('out'), 2800); setTimeout(() => d.remove(), 3300);
+    const tb = $('#toasts'); tb.appendChild(d); while (tb.children.length > 4) tb.firstChild.remove(); setTimeout(() => d.classList.add('out'), 2800); setTimeout(() => d.remove(), 3300);
   }
 
   // ---------- cards ----------
@@ -569,7 +569,7 @@ const Game = (() => {
   }
   function nextDay() {
     G.day++; G.slot = 0; G.energy = 100; G.gifted = {}; G.today = {}; G.weather = [0, 1, 2, 0, 1, 3, 0][G.day % 7];
-    Object.values(G.heroes).forEach(s => { s.fat = clamp(s.fat - 45, 0, 100); s.hurt = 0; });
+    Object.values(G.heroes).forEach(s => { s.fat = clamp(s.fat - 65, 0, 100); s.hurt = 0; });
     setTint(null);
   }
 

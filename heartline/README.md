@@ -1,6 +1,6 @@
 # HEARTLINE AGENCY
 
-*A superpower-agency anime dating sim. Tech demo: Prologue + Chapter 1.*
+*A superpower-agency anime dating sim with Dispatch-style hero management. Prologue + 5 chapters, multiple endings. About 2 to 3 hours to finish.*
 
 You're a Spark-negative night-shift clerk who spends his free time writing fight breakdowns of hero battles. After you talk a rookie hero through a Rift-beast attack outside your convenience store, the Director of the **HALO Agency** recruits you as a **Handler**. Your job: train, deploy, and keep alive **Squad Zero**, two gifted rookies who can't stand each other. Certification is in three days.
 
@@ -29,18 +29,40 @@ Headphones recommended.
 
 ## Cast
 
-- **Hikari Amane**: electrokinetic trainee. Loud, brave, always hungry, zero aim.
-- **Rei Kurogane**: umbrakinetic rookie. Flawless technique, refuses to work with anyone.
-- **Mira Solace**: HALO's medical officer. Heals everyone except herself.
-- **Director Aya Takamine**: the Director. Reads everything, trusts no one.
-- **B.I.T.**: tactical drone assistant who also offers "emotional support".
+- **Hikari Amane (Thunder Goddess)**: an electrokinetic trainee. Loud, brave, always hungry.
+- **Rei Kurogane (Nightveil)**: an umbrakinetic rookie with flawless technique who works alone.
+- **Mira Solace**: HALO's medical officer. She heals by taking the wound into herself.
+- **Kaede Mori (Gale)**: a speedster and Hikari's academy rival. *(Chapter 2)*
+- **Tetsu Oda (Bulwark)**: a gentle giant with steel skin who grows bonsai. *(Chapter 2)*
+- **Sora Hoshino (Stargazer)**: a gravity-powered idol hero who's tired of being a product. *(Chapter 2)*
+- **Kyouya Aoi (The Glazier)**: a former HALO Handler who is turning the city to glass.
+- **Director Aya Takamine** and **B.I.T.**, the drone.
+
+## How it plays
+
+Each story day has three parts:
+
+1. **Dispatch shift (09:00 to 17:00, real time).** Calls pop up across a city map with countdown timers. Each call needs certain stats: **Combat, Vigor, Mobility, Charisma and Intellect**. Pick heroes whose combined stats fill the red outline on the call's pentagon chart, then hit DISPATCH.
+   - Heroes travel to the call (Mobility), work it, come back, and **rest** (Vigor). Unanswered calls expire.
+   - Some calls pause mid-mission for a **live update** that asks you for a decision, with the odds shown for your team.
+   - Pairs of heroes have **synergy**: rivals bicker until they bond, and some pairs work especially well together.
+   - Failed calls can **injure** a hero for the rest of the shift.
+   - At the end you get a **shift report** with an S to D grade, credits, reputation and XP. Level-ups give **skill points**.
+   - You can pause or run at 1x, 2x or 3x speed.
+2. **Evening.** Two time slots for Hang Out (affection-gated scenes), Train (a timing minigame that earns XP) or Rest. Shop, Dossier (spend skill points, give gifts) and HeroNet are free.
+3. **Night.** Texts from whoever you're closest to, with reply choices.
+
+Story choices use timed **Handler's Eye** decisions. Chapter climaxes, and the final ending, depend on your shift results, your calls and the bonds you've built.
 
 ## Structure
 
-1. **Prologue, "Spark of a Handler"**: the konbini attack, your first Handler's Eye call, and the recruitment.
-2. **Chapter 1, "Squad Zero"**: meet HQ and the squad, then three free-time days (Morning / Afternoon / Evening), each ending with late-night phone texts.
-3. **Certification Day**: a Tier-4 Glass Leviathan attacks the harbor. Your stats, bonds, and tactical calls decide the outcome.
-4. **Rooftop ending**: a romance scene with whoever you're closest to (Hikari, Rei, or Mira), then a teaser for Chapter 2.
+- **Prologue, "Spark of a Handler"**: the konbini attack and the recruitment.
+- **Chapter 1, "Squad Zero"**: a tutorial shift, then Field Certification and the Glass Leviathan. Ends on a rooftop scene with your closest heroine.
+- **Chapter 2, "Glass Hearts"**: new recruits, the Prism cult, Sora's concert, and the Mirror Mall hostage crisis.
+- **Chapter 3, "Fractures"**: leaked dispatch data, the hunt for the mole, the tower siege, and the Glazier revealed.
+- **Chapter 4, "Shattered City"**: citywide Rifts, Hikari's past, Rei's shadows, and Mira's kidnapping.
+- **Final Chapter, "Heartline"**: the eve-of-battle confession, Operation Heartline, and the Shibuya Rift.
+- **Endings**: romance epilogues for Hikari, Rei, Mira, Sora or Kaede, or a Squad ending. There is also a good or normal outcome for Kyouya, depending on your earlier choices.
 
 ## Features
 
@@ -121,6 +143,18 @@ Headphones recommended.
 66. B.I.T. gives context-sensitive tips
 67. The Certification score combines stats, teamwork, tactical calls and reputation, and changes the Director's verdict
 68. The route is chosen by highest affection
+
+**Dispatch & progression (added)**
+75. Real-time dispatch shifts on an animated city map, with call pins, countdown rings and moving hero tokens
+76. Five-stat requirement pentagon, with a live success % as you build a team
+77. Hero state machine: ready, en route, on scene, returning, resting, injured
+78. 36 call templates across 4 tiers, and 19 mid-mission live-update events
+79. Pair synergies that evolve with the story
+80. Story-critical priority calls whose outcome changes the plot
+81. Shift report card with grades, XP, level-ups and skill points
+82. Speed controls (pause, 1x, 2x, 3x) and a guided tutorial shift
+83. Roster growth from 2 to 5 heroes, with hero chatter bubbles
+84. Five chapters, 18 days, 6 romance routes and 2 ending outcomes
 
 **Meta**
 69. 19 achievements, shown as toasts
