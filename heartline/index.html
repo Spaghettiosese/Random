@@ -34,7 +34,7 @@
     <div id="text"></div>
     <div id="next">▼</div>
     <div id="quick">
-      <button data-q="log">LOG</button><button data-q="auto">AUTO</button><button data-q="skip">SKIP</button>
+      <button data-q="back">BACK</button><button data-q="log">LOG</button><button data-q="auto">AUTO</button><button data-q="skip">SKIP</button>
       <button data-q="save">SAVE</button><button data-q="load">LOAD</button><button data-q="qsave">Q.SAVE</button><button data-q="qload">Q.LOAD</button>
       <button data-q="settings">CONFIG</button><button data-q="hide">HIDE</button><button data-q="menu">MENU</button>
     </div>
@@ -46,6 +46,7 @@
   <div id="modal"></div>
   <div id="viewer"></div>
   <div id="toasts"></div>
+  <div id="asave">💾 Autosaved</div>
 
   <div id="title">
     <div id="tchars"></div>
@@ -57,14 +58,15 @@
     </div>
     <nav class="tmenu">
       <button class="tb" id="tnew">New Game</button>
+      <button class="tb" id="tng" style="display:none">New Game+ ★</button>
       <button class="tb" id="tcont">Continue</button>
       <button class="tb" id="tload">Load</button>
-      <button class="tb" id="tgal">Gallery</button>
-      <button class="tb" id="tach">Achievements</button>
+      <button class="tb" id="tchap">Chapters</button>
+      <button class="tb" id="textra">Extras</button>
       <button class="tb" id="tset">Settings</button>
       <button class="tb" id="tcred">Credits</button>
     </nav>
-    <div class="tfoot">SPACE/ENTER advance · CTRL skip · A auto · H hide UI · L log · F5/F9 quick save/load · ESC menu</div>
+    <div class="tfoot">SPACE advance · WHEEL-UP rollback · CTRL skip · A auto · H hide · L log · F5/F9 quick save/load · ESC menu · 🎮 gamepad supported</div>
   </div>
 
   <div id="splash" class="on">

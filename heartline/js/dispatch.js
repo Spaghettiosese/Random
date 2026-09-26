@@ -51,13 +51,14 @@ const Dispatch = (() => {
     const G = ctx.G, r = S.r, pool = ctx.calls.filter(c => (c.tier || 1) >= (S.cfg.tiers || [1, 3])[0] && (c.tier || 1) <= (S.cfg.tiers || [1, 3])[1] && !S.usedT?.includes(c.t));
     const tpl = sp || pool[(r() * pool.length) | 0] || ctx.calls[0];
     S.usedT = (S.usedT || []).concat(tpl.t);
-    const dk = tpl.dist || Object.keys(DIST)[(r() * 8) | 0], d = DIST[dk], diff = S.cfg.diff || 1;
+    const DM = { story: [.8, 1.4], normal: [1, 1], hard: [1.2, .8] }[G.diff || 'normal'];
+    const dk = tpl.dist || Object.keys(DIST)[(r() * 8) | 0], d = DIST[dk], diff = (S.cfg.diff || 1) * DM[0];
     const rv = String(tpl.r).split(/\s+/).map(Number), req = {};
     ST.forEach((k, i) => req[k] = Math.round((rv[i] || 0) * diff));
     const a = r() * 6.28, rad = 18 + r() * 38;
     S.n++;
     return { id: S.n, t: tpl.t, d: tpl.d, req, slots: tpl.n || 1, tier: tpl.tier || 1, ev: tpl.ev, flag: tpl.flag, special: !!sp, dname: d[0],
-      x: clamp(d[1] + Math.cos(a) * rad, 30, 770), y: clamp(d[2] + Math.sin(a) * rad, 30, 440), born: S.t, exp: S.t + (tpl.exp || (75 + r() * 45)) * (sp ? 1.4 : 1),
+      x: clamp(d[1] + Math.cos(a) * rad, 30, 770), y: clamp(d[2] + Math.sin(a) * rad, 30, 440), born: S.t, exp: S.t + (tpl.exp || (75 + r() * 45)) * (sp ? 1.4 : 1) * DM[1],
       state: 'open', team: [], bonus: 0 };
   }
 
