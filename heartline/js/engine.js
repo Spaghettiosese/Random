@@ -74,7 +74,7 @@ const Game = (() => {
   }
   function advance() { const f = top(); if (f) f.i++; wait = null; step(); }
   const later = (ms, fn = advance) => { const my = run; setTimeout(() => { if (my === run) fn(); }, skipping() ? Math.min(ms, 80) : ms); };
-  function jump(label) { G.stack = [{ id: label, i: 0 }]; }
+  function jump(label) { if (!R[label]) console.error('missing label', label); G.stack = [{ id: label, i: 0 }]; }
   function push(arr) { G.stack.push({ id: idOf(arr), i: 0 }); }
   const skipping = () => skip || ctrlSkip;
   const T = s => String(s).replace(/\{name\}/g, G.name).replace(/\{grade\}/g, G.last ? G.last.grade : '').replace(/\{ok\}/g, G.last ? G.last.ok : '');
@@ -126,7 +126,7 @@ const Game = (() => {
       case 'goal': G.goal = a ? { n: a, day: b } : null; return NEXT;
       case 'night': night(); return WAIT;
       case 'nextday': nextDay(); return NEXT;
-      case 'route': { const pool = (b || ['hikari', 'rei', 'mira']).filter(x => G.known[x] !== undefined); let k = pool.reduce((m, x) => G.aff[x] > G.aff[m] ? x : m, pool[0]); if (d && G.aff[k] < d) k = 'squad'; jump(a + k); } return CONT;
+      case 'route': { const pool = (b || ['hikari', 'rei', 'mira']).filter(x => G.known[x] !== undefined); let k = pool.reduce((m, x) => G.aff[x] > G.aff[m] ? x : m, pool[0]); if (d && G.aff[k] < d) k = 'squad'; jump((a || 'end_') + k); } return CONT;
       case 'end': theEnd(); return WAIT;
       case 'autosave': autosave(); return NEXT;
     }
