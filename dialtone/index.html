@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DIALTONE - December 31, 1999</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; color: #e8e2d4; font-family: Georgia, 'Times New Roman', serif; }
+  #c { display: block; width: 100vw; height: 100vh; }
+  .bar { position: fixed; left: 0; right: 0; height: 0; background: #000; z-index: 3; transition: height 1.2s ease; }
+  #lbT { top: 0; } #lbB { bottom: 0; }
+  body.cine .bar { height: 10vh; }
+  #sub { position: fixed; left: 0; right: 0; bottom: 13vh; text-align: center; font-size: clamp(16px, 2.2vw, 26px); text-shadow: 0 2px 8px #000; z-index: 4; opacity: 0; transition: opacity .6s; font-style: italic; padding: 0 16px; }
+  #fade { position: fixed; inset: 0; background: #000; z-index: 5; pointer-events: none; transition: opacity 2s; }
+  #title { position: fixed; inset: 0; z-index: 6; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: radial-gradient(ellipse at center, rgba(10,16,30,.55), rgba(0,0,0,.92)); transition: opacity 1.2s; text-align: center; padding: 16px; }
+  #title h1 { font: 300 clamp(38px, 8vw, 88px)/1 'Courier New', monospace; letter-spacing: .35em; margin: 0 0 12px; color: #d8e4ff; text-shadow: 0 0 24px #4a6aff; }
+  #title .date { letter-spacing: .3em; opacity: .7; margin-bottom: 42px; }
+  #title .go { font: 14px 'Courier New', monospace; letter-spacing: .25em; animation: blink 1.6s infinite; }
+  #title .small { position: absolute; bottom: 20px; font-size: 12px; opacity: .45; font-family: 'Courier New', monospace; }
+  @keyframes blink { 50% { opacity: .25; } }
+  #hint { position: fixed; left: 16px; top: 14px; z-index: 4; font: 12px 'Courier New', monospace; color: #9aa; opacity: 0; transition: opacity 1s; line-height: 1.6; pointer-events: none; }
+  #view { position: fixed; right: 14px; bottom: 14px; z-index: 4; display: none; gap: 6px; }
+  #view button { font: 12px 'Courier New', monospace; background: rgba(0,0,0,.5); color: #ccd; border: 1px solid #445; padding: 6px 10px; cursor: pointer; }
+  #view button.on { background: #223; color: #fff; }
+  #skip { position: fixed; right: 16px; top: 14px; z-index: 6; font: 12px 'Courier New', monospace; color: #889; display: none; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="bar" id="lbT"></div><div class="bar" id="lbB"></div>
+<div id="sub"></div>
+<div id="fade"></div>
+<div id="hint"></div>
+<div id="skip">SPACE to skip</div>
+<div id="view"><button data-z="0">desk view</button><button data-z="1" class="on">screen view</button></div>
+<div id="title">
+  <h1>DIALTONE</h1>
+  <div class="date">DECEMBER 31, 1999 &nbsp;·&nbsp; 11:38 PM</div>
+  <div class="go">[ click to begin ]</div>
+  <div class="small">headphones recommended · a real keyboard is the whole point</div>
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
