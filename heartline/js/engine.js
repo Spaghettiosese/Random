@@ -29,7 +29,7 @@ const Game = (() => {
     route_sora: ['Gravity Heart', 'See Sora\'s rooftop scene'], fin_squad: ['Found Family', 'See the Squad ending'], veteran: ['Veteran', 'Raise a hero to Lv 5'],
     log: ['Rewind', 'Open the backlog'], deploy5: ['Dispatcher', 'Resolve 25 calls'], coach: ['Coach', 'Run 5 training sessions']
   };
-  let settings = { textSpeed: 45, autoDelay: 1.4, music: .55, sfx: .7, voice: true, hints: false, motion: true, parallax: true, textSize: 23, boxAlpha: .88, skipUnread: false, wheelBack: true };
+  let settings = { textSpeed: 45, autoDelay: 1.4, music: .55, sfx: .7, voice: true, hints: false, motion: true, parallax: true, textSize: 23, boxAlpha: .88, skipUnread: false, wheelBack: true, pixel: true };
   let meta = { ach: {}, gallery: {}, cleared: false, scenes: {}, codex: {}, endings: {}, chaps: {}, maxChap: 0, met: { hikari: 1 }, stats: { lines: 0, choices: 0, calls: 0, shifts: 0, sranks: 0, dates: 0, gifts: 0, playSec: 0, clears: 0 } };
   let hist = [], readSet = {}, readDirty = 0, lastUnread = false;
   let G = null, R = {}, run = 0;
@@ -40,7 +40,7 @@ const Game = (() => {
   const LS = { get: (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } } };
   function loadPrefs() { settings = Object.assign(settings, LS.get('hl_settings', {})); const m = LS.get('hl_meta', {}); meta = Object.assign(meta, m); meta.stats = Object.assign({ lines: 0, choices: 0, calls: 0, shifts: 0, sranks: 0, dates: 0, gifts: 0, playSec: 0, clears: 0 }, m.stats || {}); readSet = LS.get('hl2_read', {}); applySettings(); }
   const saveMeta = () => LS.set('hl_meta', meta), saveSettings = () => LS.set('hl_settings', settings);
-  function applySettings() { Sound.setVol('music', settings.music); Sound.setVol('sfx', settings.sfx); Sound.vol.voice = settings.voice; document.body.classList.toggle('nomotion', !settings.motion); const g = document.getElementById('game'); if (g) { g.style.setProperty('--tsize', settings.textSize + 'px'); g.style.setProperty('--boxa', settings.boxAlpha); } }
+  function applySettings() { window.PIXEL_ON = settings.pixel; Sound.setVol('music', settings.music); Sound.setVol('sfx', settings.sfx); Sound.vol.voice = settings.voice; document.body.classList.toggle('nomotion', !settings.motion); const g = document.getElementById('game'); if (g) { g.style.setProperty('--tsize', settings.textSize + 'px'); g.style.setProperty('--boxa', settings.boxAlpha); } }
 
   const HB = (com, vig, mob, cha, int) => ({ lvl: 1, xp: 0, sp: 0, st: { com, vig, mob, cha, int }, fat: 0, hurt: 0, perks: [], gear: null });
   function newState() {
@@ -891,7 +891,7 @@ const Game = (() => {
     const sl = (k, l, min, max, stp) => `<label class="set"><span>${l}</span><input type="range" min="${min}" max="${max}" step="${stp}" data-k="${k}" value="${settings[k]}"><em>${settings[k]}</em></label>`;
     const tg = (k, l) => `<label class="set tg"><span>${l}</span><button class="tog ${settings[k] ? 'on' : ''}" data-k="${k}"><i></i></button></label>`;
     modal(`<h2>Settings</h2><div class="sets two"><div>${sl('textSpeed', 'Text Speed (120 = instant)', 10, 120, 5)}${sl('autoDelay', 'Auto-Advance Delay (s)', .5, 4, .1)}${sl('textSize', 'Text Size', 18, 30, 1)}${sl('boxAlpha', 'Textbox Opacity', .3, 1, .05)}${sl('music', 'Music Volume', 0, 1, .05)}${sl('sfx', 'SFX Volume', 0, 1, .05)}</div>
-      <div>${tg('voice', 'Voice Blips')}${tg('hints', 'Affection Hints on Choices')}${tg('motion', 'Screen Shake & Flashes')}${tg('parallax', 'Mouse Parallax')}${tg('skipUnread', 'Skip Unread Text')}${tg('wheelBack', 'Mouse Wheel Up = Rollback')}</div></div>
+      <div>${tg('voice', 'Voice Blips')}${tg('hints', 'Affection Hints on Choices')}${tg('motion', 'Screen Shake & Flashes')}${tg('parallax', 'Mouse Parallax')}${tg('skipUnread', 'Skip Unread Text')}${tg('pixel', 'Pixel-Art Hikari')}${tg('wheelBack', 'Mouse Wheel Up = Rollback')}</div></div>
       <div class="row"><button class="btn" id="fs">⛶ Toggle Fullscreen</button><button class="btn" id="keys">⌨ Controls</button></div>`, { wide: 1 });
     $$('#modal input[type=range]').forEach(r => r.oninput = () => { settings[r.dataset.k] = +r.value; r.nextElementSibling.textContent = r.value; applySettings(); saveSettings(); });
     $$('#modal .tog').forEach(b => b.onclick = () => { settings[b.dataset.k] = !settings[b.dataset.k]; b.classList.toggle('on'); applySettings(); saveSettings(); Sound.sfx('click'); if (!settings.parallax) { $('#game').style.setProperty('--px', 0); $('#game').style.setProperty('--py', 0); } });

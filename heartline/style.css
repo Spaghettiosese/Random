@@ -753,3 +753,5 @@ body.nomotion #stage .bg, body.nomotion #chars { transform: none !important; }
 
 .rch { font-size: 30px !important; letter-spacing: 3px !important; line-height: 1.15; } .rch small { display: block; font-family: var(--font); font-size: 12px; letter-spacing: 4px; color: var(--cyan); margin-bottom: 4px; }
 .sq b { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; } .sq .spb { font-size: 9px; padding: 1px 6px; margin: 0; line-height: 1.5; }
+
+.csvg.pixelart image { image-rendering: pixelated; }
