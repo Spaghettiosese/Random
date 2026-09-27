@@ -59,7 +59,17 @@ export const A = {
     rainGain.gain.setTargetAtTime(v ? 0.08 : 0.14, t, 0.6);
   },
   hum(on) { if (ctx) humGain.gain.setTargetAtTime(on ? 0.025 : 0, ctx.currentTime, 0.2); },
+  profile: 'click',
   key(code, down) {
+    const P = A.profile;
+    if (P === 'thock') { const r = 0.9 + Math.random() * 0.2, big = /Space|Enter|Shift|Backspace/.test(code);
+      if (down) { tone({ f: (big ? 110 : 170) * r, f2: 55, dur: 0.06, vol: 0.5 }); burst({ f: (big ? 700 : 1100) * r, q: 1.5, dur: 0.03, vol: 0.45 }); }
+      else burst({ f: 1600 * r, q: 2, dur: 0.012, vol: 0.12 }); return; }
+    if (P === 'type') { const r = 0.9 + Math.random() * 0.2;
+      if (down) { burst({ f: 2600 * r, q: 5, dur: 0.03, vol: 0.6 }); tone({ type: 'square', f: 90 * r, f2: 40, dur: 0.05, vol: 0.2 }); burst({ f: 5200, q: 12, t: 0.02, dur: 0.05, vol: 0.2 }); if (code === 'Enter') { tone({ type: 'sine', f: 2637, dur: 0.9, vol: 0.18, t: 0.05 }); tone({ type: 'sine', f: 5274, dur: 0.5, vol: 0.05, t: 0.05 }); } }
+      else burst({ f: 1800, q: 3, dur: 0.02, vol: 0.15 }); return; }
+    if (P === 'soft') { if (down) { burst({ f: 1400, q: 1, dur: 0.018, vol: 0.2 }); tone({ f: 200, f2: 90, dur: 0.03, vol: 0.12 }); } return; }
+    if (P === 'blue' && down) burst({ f: 6500, q: 6, dur: 0.008, vol: 0.45 });
     const big = /Space|Enter|Shift|Backspace|Tab|Caps/.test(code), r = 0.85 + Math.random() * 0.3;
     if (down) {
       burst({ f: (big ? 1700 : 3300) * r, q: 1.4, dur: big ? 0.045 : 0.022, vol: big ? 0.55 : 0.5 });
@@ -110,6 +120,7 @@ export const A = {
   },
   ding() { tone({ type: 'triangle', f: 1320, dur: 0.12, vol: 0.2 }); tone({ type: 'triangle', f: 1760, t: 0.1, dur: 0.25, vol: 0.2 }); },
   shoot() { burst({ f: 1400, f2: 120, type: 'lowpass', dur: 0.35, vol: 0.9 }); tone({ type: 'square', f: 90, f2: 40, dur: 0.15, vol: 0.3 }); },
+  rifle() { burst({ f: 3000, f2: 250, type: 'lowpass', dur: 0.13, vol: 0.7 }); tone({ type: 'square', f: 140, f2: 50, dur: 0.05, vol: 0.2 }); },
   hurt() { tone({ type: 'sawtooth', f: 300, f2: 120, dur: 0.2, vol: 0.25 }); },
   pickup() { tone({ type: 'square', f: 660, dur: 0.05, vol: 0.1 }); tone({ type: 'square', f: 990, t: 0.06, dur: 0.08, vol: 0.1 }); },
   growl() { tone({ type: 'sawtooth', f: 110, f2: 60, dur: 0.5, vol: 0.2 }); burst({ f: 400, q: 2, dur: 0.4, vol: 0.2 }); },

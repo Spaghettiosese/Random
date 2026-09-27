@@ -25,3 +25,11 @@ Headphones recommended. Space skips the intro.
 The clock in the taskbar runs about 3x real time toward midnight. You can skip ahead with *Start → Sync clock* or the button on y2kbunker.net. The TV in the living room counts down too. At midnight, something happens.
 
 Controls: the mouse over the monitor is the PC mouse. Scroll outside the screen (or use the buttons) to switch between desk and screen view. Right-drag looks around. Esc closes a window.
+
+## DIALTONE 2026 (`modern.html`)
+Same room, current day: a gaming PC with a flat monitor, RGB tower and LED strip, and no scripted events. The desktop ("nova") is a game library:
+- **Duty Calls: Modern Ops**: wave-survival shooter (click the screen to capture the mouse; Esc releases it, Esc again closes the game)
+- **Blockcraft**: voxel mining and building
+- **Brickverse**: a lava tower obby with a blocky avatar
+- **KeyShop**: spend coins you earn in the games on 7 keyboards. Each one swaps the 3D keyboard on the desk and changes its sound (membrane, clicky, thocky, typewriter).
+- The classics: KeyStorm, DOOMED, Snake 2000 and Clips.

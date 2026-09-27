@@ -18,10 +18,10 @@ const NAV = [ // x offset in u, row index
 ];
 const DARK = /Escape|Backspace|Tab|Caps|Enter|Shift|Control|Meta|Alt|Context|Arrow|Insert|Home|Page|Delete|End|Print|Scroll|Pause|^F\d/;
 
-function legend(label, dark) {
+function legend(label, dark, st) {
   const c = document.createElement('canvas'); c.width = c.height = 64;
   const g = c.getContext('2d');
-  g.fillStyle = dark ? '#e8e4da' : '#3a3833';
+  g.fillStyle = dark ? st.legendMod : st.legend;
   const short = label.length <= 2;
   g.font = `${short ? 'bold 30' : 'bold 17'}px Arial, sans-serif`;
   g.textBaseline = 'top';
@@ -31,24 +31,27 @@ function legend(label, dark) {
 }
 
 export class Keyboard3D {
-  constructor(parent) {
-    this.group = new THREE.Group(); parent.add(this.group);
+  constructor(parent, style = {}) {
+    const st = this.style = { cap: 0xe0d8c3, mod: 0x9a968b, legend: '#3a3833', legendMod: '#e8e4da', base: 0xd6ceb8, round: false, h: 1, rgb: false, rough: 0.55, clear: false, ...style };
+    this.parent = parent; this.group = new THREE.Group(); parent.add(this.group);
     this.keys = {}; this.caps = [];
-    const beige = new THREE.MeshStandardMaterial({ color: 0xe0d8c3, roughness: 0.55 });
-    const grey = new THREE.MeshStandardMaterial({ color: 0x9a968b, roughness: 0.55 });
-    const capGeo = new THREE.CylinderGeometry(0.0125 / Math.SQRT2 * 1.0, 0.0178 / Math.SQRT2, 0.009, 4, 1);
-    capGeo.rotateY(Math.PI / 4); capGeo.translate(0, 0.0045, 0);
+    const beige = new THREE.MeshStandardMaterial({ color: st.cap, roughness: st.rough, transparent: st.clear, opacity: st.clear ? 0.75 : 1 });
+    const grey = new THREE.MeshStandardMaterial({ color: st.mod, roughness: st.rough, transparent: st.clear, opacity: st.clear ? 0.75 : 1 });
+    const hh = 0.009 * st.h;
+    const capGeo = st.round ? new THREE.CylinderGeometry(0.0078, 0.0078, hh, 20, 1) : new THREE.CylinderGeometry(0.0125 / Math.SQRT2, 0.0178 / Math.SQRT2, hh, 4, 1);
+    if (!st.round) capGeo.rotateY(Math.PI / 4); capGeo.translate(0, hh / 2, 0);
     const W = 18.5 * U, D = 6.25 * U;
     const add = (code, label, x, row, w = 1) => {
       const g = new THREE.Group();
       const dark = DARK.test(code);
-      const cap = new THREE.Mesh(capGeo, dark ? grey : beige);
-      cap.scale.x = (w * U - 0.0012) / 0.0178; cap.castShadow = true; cap.receiveShadow = true;
+      const cap = new THREE.Mesh(capGeo, st.rgb ? (dark ? grey : beige).clone() : dark ? grey : beige);
+      if (st.rgb) this.caps.push({ m: cap.material, x });
+      cap.scale.x = st.round ? 1 : (w * U - 0.0012) / 0.0178; cap.castShadow = true; cap.receiveShadow = true;
       g.add(cap);
       if (label) {
         const lw = 0.0125;
-        const lm = new THREE.Mesh(new THREE.PlaneGeometry(lw, lw), new THREE.MeshStandardMaterial({ map: legend(label, dark), transparent: true, roughness: 0.6, polygonOffset: true, polygonOffsetFactor: -2 }));
-        lm.rotation.x = -Math.PI / 2; lm.position.set(w > 1.3 ? -(w * U) / 2 + lw / 2 + 0.003 : 0, 0.0092, 0);
+        const lm = new THREE.Mesh(new THREE.PlaneGeometry(lw, lw), new THREE.MeshStandardMaterial({ map: legend(label, dark, st), transparent: true, emissive: st.rgb ? 0xffffff : 0, emissiveIntensity: st.rgb ? 0.35 : 0, roughness: 0.6, polygonOffset: true, polygonOffsetFactor: -2 }));
+        lm.rotation.x = -Math.PI / 2; lm.position.set(w > 1.3 && !st.round ? -(w * U) / 2 + lw / 2 + 0.003 : 0, hh + 0.0002, 0);
         g.add(lm);
       }
       const z = row === 0 ? 0 : row + 0.25;
@@ -60,7 +63,7 @@ export class Keyboard3D {
     ROWS.forEach((row, r) => { let x = 0; for (const [code, label, w = 1] of row) { if (code) add(code, label, x, r, w); x += w; } });
     for (const [code, label, x, r] of NAV) add(code, label, x, r);
     // case
-    const base = new THREE.Mesh(new THREE.BoxGeometry(W + 0.03, 0.02, D + 0.035), new THREE.MeshStandardMaterial({ color: 0xd6ceb8, roughness: 0.6 }));
+    const base = new THREE.Mesh(new THREE.BoxGeometry(W + 0.03, 0.02, D + 0.035), new THREE.MeshStandardMaterial({ color: st.base, roughness: 0.4, metalness: st.round ? 0.6 : 0 }));
     base.position.y = 0.006; base.castShadow = base.receiveShadow = true; this.group.add(base);
     const led = new THREE.Mesh(new THREE.BoxGeometry(0.004, 0.002, 0.003), new THREE.MeshBasicMaterial({ color: 0x22ff44 }));
     led.position.set(W / 2 - 0.02, 0.017, -D / 2 - 0.008); this.group.add(led);
@@ -72,7 +75,9 @@ export class Keyboard3D {
     const k = this.keys[code]; if (!k) return;
     k.down = down;
   }
-  update(dt) {
+  dispose() { this.parent.remove(this.group); }
+  update(dt, t = 0) {
+    for (const c of this.caps) { c.m.emissive.setHSL((c.x / 18 + t * 0.25) % 1, 1, 0.5); c.m.emissiveIntensity = 0.3; }
     for (const code in this.keys) {
       const k = this.keys[code];
       const target = k.down ? -0.0038 : 0;

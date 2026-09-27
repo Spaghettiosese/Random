@@ -226,7 +226,7 @@ export function buildWorld(scene, renderer) {
   box(scene, 0.38, 0.2, 0.01, std(0x6a5040, 0.5), 3.65, 0.55, -5.92); box(scene, 0.1, 0.02, 0.02, std(0xaaaaaa, 0.3, { metalness: 1 }), 3.65, 0.55, -5.905);
   // monitor
   const beige = std(0xd8cfb6, 0.55);
-  const mon = new THREE.Group(); mon.position.set(3.1, 0.75, -6.34); scene.add(mon);
+  const mon = new THREE.Group(); mon.position.set(3.1, 0.75, -6.34); scene.add(mon); W.retro = [mon];
   box(mon, 0.28, 0.03, 0.24, beige, 0, 0.015, -0.05); box(mon, 0.12, 0.06, 0.12, beige, 0, 0.06, -0.05);
   box(mon, 0.52, 0.42, 0.26, beige, 0, 0.3, 0); box(mon, 0.38, 0.32, 0.24, beige, 0, 0.29, -0.23);
   plane(mon, 0.42, 0.325, std(0x14130f, 0.4), 0, 0.3, 0.1305);
@@ -237,7 +237,7 @@ export function buildWorld(scene, renderer) {
   { const c = canvasOf(64, 64, (g) => { g.fillStyle = '#f2e35c'; g.fillRect(0, 0, 64, 64); g.fillStyle = '#233'; g.font = 'bold 15px Comic Sans MS, cursive'; g.fillText('Y2K', 8, 22); g.fillText('??!', 14, 44); });
     const n = plane(mon, 0.06, 0.06, new THREE.MeshStandardMaterial({ map: ctex(c), roughness: 0.9 }), -0.235, 0.47, 0.1315); n.rotation.z = 0.12; }
   // tower
-  const tower = new THREE.Group(); tower.position.set(3.72, 0.75, -6.45); scene.add(tower);
+  const tower = new THREE.Group(); tower.position.set(3.72, 0.75, -6.45); scene.add(tower); W.retro.push(tower);
   box(tower, 0.2, 0.44, 0.44, beige, 0, 0.22, 0);
   box(tower, 0.15, 0.04, 0.005, std(0xcfc6ae, 0.4), 0, 0.37, 0.221); box(tower, 0.15, 0.005, 0.005, std(0x222222), 0, 0.3, 0.221);
   box(tower, 0.1, 0.004, 0.004, std(0x111111), 0, 0.25, 0.222);
@@ -245,7 +245,7 @@ export function buildWorld(scene, renderer) {
   W.pwrLed = new THREE.Mesh(new THREE.BoxGeometry(0.006, 0.006, 0.004), new THREE.MeshBasicMaterial({ color: 0x0a200a })); W.pwrLed.position.set(-0.04, 0.08, 0.222); tower.add(W.pwrLed);
   W.hddLed = new THREE.Mesh(new THREE.BoxGeometry(0.006, 0.006, 0.004), new THREE.MeshBasicMaterial({ color: 0x200505 })); W.hddLed.position.set(0.04, 0.08, 0.222); tower.add(W.hddLed);
   // speakers
-  for (const x of [2.72, 3.47]) { box(scene, 0.1, 0.17, 0.1, beige, x, 0.835, -6.4); cyl(scene, 0.03, 0.03, 0.005, std(0x222222, 0.8), x, 0.86, -6.349).rotation.x = Math.PI / 2; }
+  for (const x of [2.72, 3.47]) { W.retro.push(box(scene, 0.1, 0.17, 0.1, beige, x, 0.835, -6.4)); const sp = cyl(scene, 0.03, 0.03, 0.005, std(0x222222, 0.8), x, 0.86, -6.349); sp.rotation.x = Math.PI / 2; W.retro.push(sp); }
   // keyboard & mouse
   W.kbGroup = new THREE.Group(); W.kbGroup.position.set(3.1, 0.75, -5.99); scene.add(W.kbGroup);
   W.kb = new Keyboard3D(W.kbGroup);
@@ -255,9 +255,9 @@ export function buildWorld(scene, renderer) {
   // desk clutter
   const mug = cyl(scene, 0.04, 0.035, 0.1, std(0x1f4f7a, 0.3), 2.6, 0.8, -6.05);
   cyl(scene, 0.033, 0.033, 0.12, std(0xb01818, 0.25, { metalness: 0.8 }), 3.78, 0.81, -6.08);
-  for (let i = 0; i < 4; i++) { const f = box(scene, 0.09, 0.003, 0.09, std([0x222222, 0x1b3d7a, 0x7a1b1b, 0x222222][i], 0.5), 2.55 + i * 0.012, 0.753 + i * 0.003, -6.25 + i * 0.01); f.rotation.y = rnd(-0.3, 0.3); }
+  for (let i = 0; i < 4; i++) { const f = box(scene, 0.09, 0.003, 0.09, std([0x222222, 0x1b3d7a, 0x7a1b1b, 0x222222][i], 0.5), 2.55 + i * 0.012, 0.753 + i * 0.003, -6.25 + i * 0.01); f.rotation.y = rnd(-0.3, 0.3); W.retro.push(f); }
   // desk lamp
-  const lamp = new THREE.Group(); lamp.position.set(2.5, 0.75, -6.62); scene.add(lamp);
+  const lamp = new THREE.Group(); lamp.position.set(2.5, 0.75, -6.62); scene.add(lamp); W.lampGroup = lamp;
   const lampM = std(0x1a4d2e, 0.35, { metalness: 0.5 });
   cyl(lamp, 0.07, 0.08, 0.02, lampM, 0, 0.01, 0);
   const arm = cyl(lamp, 0.01, 0.01, 0.55, lampM, 0.02, 0.28, 0.06); arm.rotation.x = 0.35;
@@ -324,7 +324,7 @@ export function buildWorld(scene, renderer) {
   box(couch, 0.18, 0.6, 0.85, cf, -0.95, 0.3, 0); box(couch, 0.18, 0.6, 0.85, cf, 0.95, 0.3, 0);
   box(couch, 0.4, 0.3, 0.12, std(0x8a3a2a, 0.95), -0.55, 0.55, 0.2);
   // xmas tree
-  const tree = new THREE.Group(); tree.position.set(-4.2, 0, -1.0); scene.add(tree);
+  const tree = new THREE.Group(); tree.position.set(-4.2, 0, -1.0); scene.add(tree); W.tree = tree;
   cyl(tree, 0.2, 0.25, 0.25, std(0x7a1c1c, 0.8), 0, 0.12, 0);
   for (let i = 0; i < 4; i++) { const c = new THREE.Mesh(new THREE.ConeGeometry(0.62 - i * 0.13, 0.6, 10), std(0x173a22, 0.9, { flatShading: true })); c.position.y = 0.55 + i * 0.35; c.castShadow = true; tree.add(c); }
   const bulbs = [];
@@ -391,17 +391,17 @@ export function buildWorld(scene, renderer) {
     rgeo.attributes.position.needsUpdate = true;
     // lightning
     lightningT -= dt;
-    if (lightningT < 0) { lightningT = rnd(14, 30); flashV = 1; W.onThunder && W.onThunder(); }
+    if (lightningT < 0 && !W.calm) { lightningT = rnd(14, 30); flashV = 1; W.onThunder && W.onThunder(); }
     flashV = Math.max(0, flashV - dt * 2.2);
     const fl2 = flashV * (0.6 + 0.4 * Math.sin(t * 70));
     flashLight.intensity = fl2 * 4; scene.background.setRGB(0.02 + fl2 * 0.25, 0.027 + fl2 * 0.27, 0.05 + fl2 * 0.35);
     // xmas / clock / tv / leds
     bulbs.forEach((b, i) => b.material.emissiveIntensity = power ? (Math.sin(t * 2 + i * 1.7) > 0 ? 2.5 : 0.2) : 0);
     star.material.emissiveIntensity = power ? 2 : 0;
-    treeLight.intensity = power ? 0.6 + 0.3 * Math.sin(t * 2) : 0;
+    treeLight.intensity = power && W.tree.visible ? 0.6 + 0.3 * Math.sin(t * 2) : 0;
     const cs = clockSec % 43200;
     mH.rotation.z = -(cs % 3600) / 3600 * Math.PI * 2; hH.rotation.z = -cs / 43200 * Math.PI * 2;
-    if (frame % 3 === 0) tvDraw(t, clockSec);
+    if (frame % 3 === 0) { if (W.tvOverride) { W.tvOverride(tvC.getContext('2d'), t); tvT.needsUpdate = true; } else tvDraw(t, clockSec); }
     tvLight.intensity = power ? 0.8 + Math.random() * 0.4 : 0;
     vcrM.visible = power && Math.sin(t * 3) > 0;
     W.hddLed.material.color.setHex(busy && Math.random() < 0.5 ? 0xff2a1a : 0x200505);
