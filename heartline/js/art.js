@@ -9,10 +9,19 @@ const Art = (() => {
   // Pixel-art sprites (from Moonkai Pixel Studio) replace the vector art when enabled.
   const CLOSED = ['happy', 'laugh', 'sleepy', 'crysmile', 'relieved', 'singing'];
   const pixelChar = (id, emo, portrait) => {
-    const src = PIXEL[id][CLOSED.includes(emo) ? 1 : 0];
+    const set = CLOSED.includes(emo) ? 'happy' : 'open', src = PIXEL[id][set][0];
     return portrait ? `<svg class="csvg" viewBox="40 26 80 90" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><image href="${src}" width="160" height="192" style="image-rendering:pixelated"/></svg>`
-      : `<svg class="csvg pixelart" viewBox="0 0 400 720" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="pxf" x1="0" y1="0" x2="0" y2="1"><stop offset=".8" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><mask id="pxm"><rect x="0" y="-12" width="400" height="432" fill="url(#pxf)"/></mask></defs><image href="${src}" x="20" y="-12" width="360" height="432" mask="url(#pxm)" style="image-rendering:pixelated"/></svg>`;
+      : `<svg class="csvg pixelart" viewBox="0 0 400 720" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="pxf" x1="0" y1="0" x2="0" y2="1"><stop offset=".8" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><mask id="pxm"><rect x="0" y="-12" width="400" height="432" fill="url(#pxf)"/></mask></defs><image class="pxa" data-id="${id}" data-set="${set}" href="${src}" x="20" y="-12" width="360" height="432" mask="url(#pxm)" style="image-rendering:pixelated"/></svg>`;
   };
+  // Pixel sprite animator: idle loop (breathing, hair sway, blink); talking loop while the character speaks.
+  let pxTick = 0;
+  setInterval(() => {
+    pxTick++;
+    document.querySelectorAll('#chars image.pxa, #cg image.pxa').forEach(im => {
+      const talk = im.closest('.talking') ? 'Talk' : '', frames = PIXEL[im.dataset.id][im.dataset.set + talk], f = frames[pxTick % frames.length];
+      if (im.getAttribute('href') !== f) im.setAttribute('href', f);
+    });
+  }, 140);
   const char = (id, emo = 'neutral', pose = 'default', portrait = false, of = 'hero') => id === 'bit' ? bit(emo, portrait)
     : typeof PIXEL !== 'undefined' && PIXEL[id] && window.PIXEL_ON !== false ? pixelChar(id, emo, portrait) : CharArt.char(id, emo, pose, portrait, of);
   const CH = CharArt.CH;

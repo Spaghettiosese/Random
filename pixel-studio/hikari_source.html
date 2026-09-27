@@ -1,13 +1,13 @@
 <!doctype html><meta charset="utf-8"><body style="background:#222"><script>
 const W=160,H=192,K=4;
 const P={line:'#3a2030',skin:'#ffe9dc',skinS:'#f2bfa8',blush:'#f7a0a8',hair:'#ffd966',hairS:'#e8a73a',hairD:'#bf7a2a',hairH:'#fff4c2',iris:'#3f8ef2',irisD:'#1c3f9e',pupil:'#171a44',white:'#ffffff',jacket:'#f7f5ff',jacketS:'#c6c2e6',trim:'#ffc62a',trimS:'#d9921c',blue:'#2f58d8',blueS:'#1f3a9e',mouth:'#b8455a'};
-function draw(ctx,blink){
+function draw(ctx,o){const blink=o.blink,sw=o.sway||0;
  const x=ctx; x.save(); x.scale(K,K); x.lineJoin='round'; x.lineCap='round';
  const path=(d,fill,sw=1.1)=>{const p=new Path2D(d); if(fill){x.fillStyle=fill;x.fill(p)} if(sw){x.strokeStyle=P.line;x.lineWidth=sw;x.stroke(p)} return p};
  const line=(d,c,w)=>{x.strokeStyle=c;x.lineWidth=w;x.stroke(new Path2D(d))};
  // twin tails (behind everything)
- path('M46,56 C22,70 12,110 16,150 C18,170 14,184 10,192 L40,192 C34,170 38,140 40,118 C42,96 46,76 52,62 Z',P.hair);
- path('M114,56 C138,70 148,110 144,150 C142,170 146,184 150,192 L120,192 C126,170 122,140 120,118 C118,96 114,76 108,62 Z',P.hair);
+ path(`M46,56 C22,70 ${12+sw},110 ${16+sw},150 C${18+sw},170 ${14+sw*2},184 ${10+sw*2},192 L${40+sw},192 C${34+sw},170 38,140 40,118 C42,96 46,76 52,62 Z`,P.hair);
+ path(`M114,56 C138,70 ${148+sw},110 ${144+sw},150 C${142+sw},170 ${146+sw*2},184 ${150+sw*2},192 L${120+sw},192 C${126+sw},170 122,140 120,118 C118,96 114,76 108,62 Z`,P.hair);
  line('M40,80 C26,110 24,150 20,188',P.hairS,1.4); line('M120,80 C134,110 136,150 140,188',P.hairS,1.4);
  line('M46,70 C34,100 30,140 30,180',P.hairH,1); line('M114,70 C126,100 130,140 130,180',P.hairH,1);
  // back hair
@@ -31,7 +31,7 @@ function draw(ctx,blink){
  // face
  path('M53,76 C53,100 60,112 70,117 C75,120 85,120 90,117 C100,112 107,100 107,76 C107,56 96,46 80,46 C64,46 53,56 53,76 Z',P.skin);
  // eyes
- const eye=(cx,f)=>{ if(blink){ line(`M${cx-8},${91} Q${cx},${96} ${cx+8},${91}`,P.line,1.6); line(`M${cx+7*f},${90} l${3*f},-1`,P.line,1.1); return }
+ const eye=(cx,f)=>{ if(o.happy){ line(`M${cx-7},${92} Q${cx},${84} ${cx+7},${92}`,P.line,1.8); return } if(blink){ line(`M${cx-8},${91} Q${cx},${96} ${cx+8},${91}`,P.line,1.6); line(`M${cx+7*f},${90} l${3*f},-1`,P.line,1.1); return }
   path(`M${cx-8},${90} C${cx-8},${80} ${cx+8},${80} ${cx+8},${90} C${cx+8},${99} ${cx-8},${99} ${cx-8},${90} Z`,P.white,0);
   path(`M${cx-5.5},${91} C${cx-5.5},${82} ${cx+5.5},${82} ${cx+5.5},${91} C${cx+5.5},${99} ${cx-5.5},${99} ${cx-5.5},${91} Z`,P.iris,0.6);
   path(`M${cx-5.5},${89} C${cx-5},${82} ${cx+5},${82} ${cx+5.5},${89} Z`,P.irisD,0);
@@ -42,7 +42,7 @@ function draw(ctx,blink){
  eye(67,-1); eye(93,1);
  x.fillStyle=P.blush; x.globalAlpha=.55; x.beginPath(); x.ellipse(60,102,5,2.4,0,0,7); x.fill(); x.beginPath(); x.ellipse(100,102,5,2.4,0,0,7); x.fill(); x.globalAlpha=1;
  line('M80,100 l0.4,1',P.skinS,1.2);
- path('M75,107 Q80,112 85,107 Q80,109 75,107 Z',P.mouth,0.9);
+ if(o.mouth){path('M75,106 Q80,115 85,106 Q80,108 75,106 Z',P.mouth,0.9); x.fillStyle='#ff8a9a'; x.beginPath(); x.ellipse(80,110.5,2.2,1.2,0,0,7); x.fill()} else if(o.happy) path('M75,106 Q80,112 85,106 Z',P.mouth,0.9); else path('M75,107 Q80,112 85,107 Q80,109 75,107 Z',P.mouth,0.9);
  // hair top + bangs
  path('M50,82 C46,52 60,36 80,36 C100,36 114,52 110,82 C104,70 96,62 80,62 C64,62 56,70 50,82 Z',P.hair,0); line('M50,82 C46,52 60,36 80,36 C100,36 114,52 110,82',P.line,1.1);
  path('M52,64 C56,52 66,46 80,46 L66,84 L62,72 L58,86 Z',P.hair); // left bang cluster
@@ -60,21 +60,26 @@ function draw(ctx,blink){
  path('M99,64 L94,72 L98,72 L95,79 L103,69 L99,69 L102,64 Z',P.trim,0.8);
  x.restore();
 }
-function toPix(blink){const c=document.createElement('canvas');c.width=W*K;c.height=H*K;draw(c.getContext('2d'),blink);const s=document.createElement('canvas');s.width=W;s.height=H;const sx=s.getContext('2d');sx.imageSmoothingQuality='high';const m=document.createElement('canvas');m.width=W*2;m.height=H*2;m.getContext('2d').drawImage(c,0,0,W*2,H*2);sx.drawImage(m,0,0,W,H);return sx.getImageData(0,0,W,H).data}
+function toPix(o){const c=document.createElement('canvas');c.width=W*K;c.height=H*K;draw(c.getContext('2d'),o);const s=document.createElement('canvas');s.width=W;s.height=H;const sx=s.getContext('2d');sx.imageSmoothingQuality='high';const m=document.createElement('canvas');m.width=W*2;m.height=H*2;m.getContext('2d').drawImage(c,0,0,W*2,H*2);sx.drawImage(m,0,0,W,H);return sx.getImageData(0,0,W,H).data}
 const PAL=Object.values(P).map(h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]);
 const LI=PAL[0];
-function build(blink){const d=toPix(blink),f=new Uint8ClampedArray(W*H*4),l=new Uint8ClampedArray(W*H*4),op=i=>d[i*4+3]>110;
+function build(o){const d=toPix(o),f=new Uint8ClampedArray(W*H*4),l=new Uint8ClampedArray(W*H*4),op=i=>d[i*4+3]>110;
  for(let i=0;i<W*H;i++){if(!op(i))continue;const a=d[i*4+3]/255;let r=d[i*4]/a,g=d[i*4+1]/a,b=d[i*4+2]/a,bi=0,bd=1e9;PAL.forEach((c,j)=>{if(j===0&&(r*.3+g*.59+b*.11)>95)return;if((j===3||j===18)&&d[i*4+3]<250)return;const q=(c[0]-r)**2*.3+(c[1]-g)**2*.59+(c[2]-b)**2*.11;if(q<bd){bd=q;bi=j}});const c=PAL[bi];(bi===0?l:f).set([c[0],c[1],c[2],255],i*4)}
  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x;if(op(i))continue;if([[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>{const X=x+a,Y=y+b;return X>=0&&Y>=0&&X<W&&Y<H&&op(Y*W+X)}))l.set([...LI,255],i*4)}
-  return [f,l]}
-const [f0,l0]=build(false),[f1,l1]=build(true);
+  if(o.breathe)for(const a of [f,l]){const u=new Uint32Array(a.buffer);for(let y=121;y>=1;y--)for(let x=0;x<W;x++)u[y*W+x]=u[(y-1)*W+x];for(let x=0;x<W;x++)u[x]=0}
+ return [f,l]}
+const SW=[0,0,1,1,1,1,0,0],BR=[0,0,1,1,1,1,0,0];
+const SETS={};
+for(const [name,base] of [['open',{}],['happy',{happy:1}]])for(const talk of [0,1]){SETS[name+(talk?'Talk':'')]=[...Array(8)].map((_,i)=>build(Object.assign({},base,{sway:SW[i],breathe:BR[i],blink:!base.happy&&!talk&&i===6,mouth:talk&&i%2===0})))}
+const [f0,l0]=SETS.open[0],[f1,l1]=SETS.open[6];
 const bg=new Uint8ClampedArray(W*H*4),A=[27,23,48],B=[84,48,104];
 for(let y=0;y<H;y++)for(let x=0;x<W;x++){const t=y/H*6,band=t|0,use=((x+y)&1)&&t-band>.5?band+1:band,k=Math.min(1,use/6);bg.set([A[0]+(B[0]-A[0])*k,A[1]+(B[1]-A[1])*k,A[2]+(B[2]-A[2])*k,255],(y*W+x)*4)}
 let s=11;const rnd=()=>(s=(s*1664525+1013904223)>>>0)/4294967296;for(let n=0;n<34;n++){const x=rnd()*W|0,y=rnd()*H*.6|0;bg.set([255,240,200,255],(y*W+x)*4)}
 const url=a=>{const c=document.createElement('canvas');c.width=W;c.height=H;c.getContext('2d').putImageData(new ImageData(a,W,H),0,0);return c.toDataURL()};
 const L=(name,cels)=>({name,visible:true,opacity:1,locked:false,guide:false,cels:cels.map(url)});
-const proj={app:'moonkai-pixel',v:1,w:W,h:H,fps:3,frames:2,palette:Object.values(P),palName:'Anime Essentials',layers:[L('Background',[bg,bg]),L('Hikari · Colours',[f0,f1]),L('Line Art',[l0,l1])]};
+const seq=[...SETS.open,...SETS.openTalk,...SETS.happy];const proj={app:'moonkai-pixel',v:1,w:W,h:H,fps:6,frames:seq.length,palette:Object.values(P),palName:'Anime Essentials',layers:[L('Background',seq.map(()=>bg)),L('Hikari · Colours',seq.map(q=>q[0])),L('Line Art',seq.map(q=>q[1]))]};
 const pv=document.createElement('canvas');pv.width=W*8+16;pv.height=H*4;const px=pv.getContext('2d');px.imageSmoothingEnabled=false;
 [[f0,l0],[f1,l1]].forEach(([f,l],i)=>{const c=document.createElement('canvas');c.width=W;c.height=H;const cx=c.getContext('2d');for(const a of [bg,f,l]){const t=document.createElement('canvas');t.width=W;t.height=H;t.getContext('2d').putImageData(new ImageData(a,W,H),0,0);cx.drawImage(t,0,0)}px.drawImage(c,i*(W*4+16),0,W*4,H*4)});
-window.RESULT={proj:JSON.stringify(proj),png:pv.toDataURL()};
+const comp=([f,l])=>{const c=document.createElement('canvas');c.width=W;c.height=H;const cx=c.getContext('2d');for(const a of [f,l]){const t=document.createElement('canvas');t.width=W;t.height=H;t.getContext('2d').putImageData(new ImageData(a,W,H),0,0);cx.drawImage(t,0,0)}return c.toDataURL()};const ANIM={};for(const k in SETS)ANIM[k]=SETS[k].map(comp);
+window.RESULT={frames:ANIM,proj:JSON.stringify(proj),png:pv.toDataURL()};
 </script>
