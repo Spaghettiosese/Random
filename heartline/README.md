@@ -4,7 +4,7 @@
 
 You're a Spark-negative night-shift clerk who spends his free time writing fight breakdowns of hero battles. After you talk a rookie hero through a Rift-beast attack outside your convenience store, the Director of the **HALO Agency** recruits you as a **Handler**. Your job is to train, deploy and keep alive **Squad Zero**, a team of gifted misfits. Then the Rift closes, a girl who vanished eight years ago falls out of it, an old man on the HALO Board tells every hero in the city to kneel — and you're the only one who doesn't.
 
-Everything is procedural: the art is hand-built SVG and the music and sound effects are synthesized live with WebAudio. There are no image or audio files and no build step.
+Everything is procedural: the characters, monsters and CGs are pixel art painted at runtime by the **Moonkai Pixel Engine** (a port of [Moonkai Pixel Studio](https://github.com/Spaghettiosese/moonkai)'s pipeline), the backgrounds are painted scenes re-rasterised onto the same pixel grid, and the music and sound effects are synthesized live with WebAudio. There are no image or audio files and no build step.
 
 ## Play
 
@@ -64,6 +64,34 @@ Headphones recommended.
 - **Natsuki Amane (Salamander)**: rescue hero. *(Arc Two)*
 - **Shiori Kagami (Aegis Prime)**: captain of the Board's elite unit. *(Arc Two)*
 - **Kyouya Aoi (The Glazier)**, **Director Aya Takamine**, **Deputy Saeki**, **Chairman Genjirou Kuroda**, Mr. Oba the night manager, and **B.I.T.** the drone.
+
+## Pixel art (Moonkai Pixel Engine)
+
+The whole cast was redrawn as pixel art for the Moonkai Pixel Engine (`js/px*.js`). Nothing is a filtered copy of the old vector sprites: every character is painted in pixel space and supersampled 4x. Each frame snaps to exactly the colours it drew, line art takes priority in the snap, and the result gets the Pixel Studio outline pass.
+
+- **Cast:** 13 characters with new hair, new hero costumes and face details, plus the casual, formal, winter and yukata outfits. Sprites are 176 × 316.
+- **Expressions:** all 40, with pixel eyes (star, heart, swirl, shadow, teary and so on), brows and mouths. The manpu (blushes, tears, sweat, anger marks, steam, notes, Zzz, dizzy stars) are animated. Expressions also change body language: head tilt, drooping, leaning, bouncing, hopping, shaking and swaying.
+- **Poses:** 12, each with its own left and right arm rig and hands (open, fist, point, wave, clasp, chin, palm, reach, hip), plus head tilt and lean. Waving waves, cheering pumps both fists, and a raised fist pulses.
+- **Animation:** a 12-frame idle loop (breathing, hair sway), a 4-frame talk loop (the mouth opens from the current expression) and random blinks. Each character also has a signature loop:
+  - Hikari: static crackle in her twin tails and a bouncing ahoge
+  - Rei: shadow wisps and a fluttering scarf
+  - Mira: a pulsing halo and floating healer crosses
+  - Kaede: a whipping ponytail, headband tails, wind streaks and a leaf
+  - Sora: floats, with stars orbiting her
+  - Tetsu: heavy breathing and a steel glint
+  - Kyouya: orbiting glass shards
+  - Rin: resonance rings and echo lines
+  - Shiori: a fluttering cape and Aegis hexes
+  - Kuroda: a pin glint
+  - Saeki: glare sweeping across his glasses
+  - Natsuki: rising embers and flame-tipped hair
+  - Aya: hair sway and a glasses glint
+- **B.I.T.:** a float loop, a thruster flicker, a blinking antenna and 10 screen faces.
+- **Monsters:** the Rift Hound, the Glass Leviathan and the Glazier, with a pulsing core, a working jaw, glinting shards and coils.
+- **CGs:** all 48 are recomposed as unique animated pixel scenes (400 × 225, 6 frames). Each one has its own framing (close-ups, dutch angles, mirrored doubles, a gondola window, prison bars) and effects (lightning, tendrils, hex shields, spotlights, glow sticks, fireworks, snow, petals, embers, command rings and a glitch tear).
+- **Backgrounds:** re-rasterised onto a 400 × 225 grid with a 40-colour palette per scene and ordered dithering. Animated scenes keep 8 frames.
+- **Settings:** *Pixel-Art Graphics* switches back to the original vector art. *Smooth Pixels* applies Pixel Studio's Scale2x.
+- **Pixel Studio round trip:** the Character Viewer can export any sprite (character, expression, pose and outfit) as a `.pxs.json` project. Open it in Moonkai Pixel Studio (`pixel/index.html`) with **Open**. Ready-made projects for the whole cast are in [`../pixel-studio/cast/`](../pixel-studio/cast/).
 
 ## How it plays
 
@@ -144,7 +172,7 @@ Each story day has three parts:
 62. Photo album of every date, across all playthroughs
 63. 65 achievements with toast notifications
 
-**Character art (procedural SVG)**
+**Character art (procedural SVG; the vector style in Settings)**
 64. 13 fully drawn characters plus B.I.T.
 65. Strand-built anime hair with gradient locks, shadow cores, light edges and an "angel ring" shine
 66. Layered eyes with gradient irises, highlights and lid shapes
@@ -317,7 +345,13 @@ The list keeps going in the small things: B.I.T.'s file named *family*, a puddin
 heartline/
   index.html          layout / DOM layers
   style.css           UI, animations, effects
-  js/chars.js         character sprites: hair, eyes, 40 expressions, poses, outfits
+  js/pxengine.js      Moonkai Pixel Engine: palette snap, outline, dither, Scale2x, motion presets, frame cache, animator
+  js/pxchars.js       pixel cast rig: faces, 40 expressions, 12 poses, outfits, Hikari
+  js/pxcast.js        pixel cast: the other twelve characters and their signature animations
+  js/pxmon.js         pixel B.I.T., Rift Hound, Glass Leviathan, the Glazier
+  js/pxbg.js          backgrounds re-rasterised to the pixel grid
+  js/pxcg.js          the 48 pixel CGs
+  js/chars.js         vector character sprites (vector style): hair, eyes, 40 expressions, poses, outfits
   js/art.js           backgrounds, CGs, B.I.T.
   js/art2.js          Arc Two backgrounds and CGs
   js/audio.js         music sequencer, SFX synth, rhythm sync

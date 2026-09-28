@@ -755,3 +755,12 @@ body.nomotion #stage .bg, body.nomotion #chars { transform: none !important; }
 .sq b { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; } .sq .spb { font-size: 9px; padding: 1px 6px; margin: 0; line-height: 1.5; }
 
 .csvg.pixelart image { image-rendering: pixelated; }
+/* Moonkai Pixel Engine layers */
+.bgpx { position: absolute; inset: 0; overflow: hidden; }
+.bgpx > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.bgpx > img, .pxcgimg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; display: block; }
+img.pxa:not([src]), img.pxa[src=""] { visibility: hidden; }
+.bg.kb .bgpx > img { animation: kb 40s ease-in-out infinite alternate; }
+body.nomotion .bg.kb .bgpx > img { animation: none; }
+.dlbg, .pimg { position: relative; }
+.cgscene.pxcg .cgtint { position: absolute; inset: 0; pointer-events: none; }

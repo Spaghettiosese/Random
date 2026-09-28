@@ -6,24 +6,12 @@ const Art = (() => {
   const rng = seed => { let s = seed >>> 0 || 1; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; };
 
   // ---------- characters (see chars.js) ----------
-  // Pixel-art sprites (from Moonkai Pixel Studio) replace the vector art when enabled.
-  const CLOSED = ['happy', 'laugh', 'sleepy', 'crysmile', 'relieved', 'singing'];
-  const pixelChar = (id, emo, portrait) => {
-    const set = CLOSED.includes(emo) ? 'happy' : 'open', src = PIXEL[id][set][0];
-    return portrait ? `<svg class="csvg" viewBox="40 26 80 90" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><image href="${src}" width="160" height="192" style="image-rendering:pixelated"/></svg>`
-      : `<svg class="csvg pixelart" viewBox="0 0 400 720" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="pxf" x1="0" y1="0" x2="0" y2="1"><stop offset=".8" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><mask id="pxm"><rect x="0" y="-12" width="400" height="432" fill="url(#pxf)"/></mask></defs><image class="pxa" data-id="${id}" data-set="${set}" href="${src}" x="20" y="-12" width="360" height="432" mask="url(#pxm)" style="image-rendering:pixelated"/></svg>`;
-  };
-  // Pixel sprite animator: idle loop (breathing, hair sway, blink); talking loop while the character speaks.
-  let pxTick = 0;
-  setInterval(() => {
-    pxTick++;
-    document.querySelectorAll('#chars image.pxa, #cg image.pxa').forEach(im => {
-      const talk = im.closest('.talking') ? 'Talk' : '', frames = PIXEL[im.dataset.id][im.dataset.set + talk], f = frames[pxTick % frames.length];
-      if (im.getAttribute('href') !== f) im.setAttribute('href', f);
-    });
-  }, 140);
-  const char = (id, emo = 'neutral', pose = 'default', portrait = false, of = 'hero') => id === 'bit' ? bit(emo, portrait)
-    : typeof PIXEL !== 'undefined' && PIXEL[id] && window.PIXEL_ON !== false ? pixelChar(id, emo, portrait) : CharArt.char(id, emo, pose, portrait, of);
+  // Pixel mode (default): the redrawn pixel cast, B.I.T., monsters, backgrounds and CGs from the Moonkai Pixel Engine
+  // (pxengine.js, pxchars.js, pxcast.js, pxmon.js, pxbg.js, pxcg.js). Settings > Pixel-Art Graphics switches back to vector.
+  const pixelOn = () => window.PIXEL_ON !== false && typeof PixelCast !== 'undefined';
+  const char = (id, emo = 'neutral', pose = 'default', portrait = false, of = 'hero') => pixelOn()
+    ? (id === 'bit' ? PixelMon.bitSprite(emo, portrait) : PixelCast.sprite(id, emo, pose, portrait, of) || CharArt.char(id, emo, pose, portrait, of))
+    : id === 'bit' ? bit(emo, portrait) : CharArt.char(id, emo, pose, portrait, of);
   const CH = CharArt.CH;
 
   function bit(emo, portrait) {
@@ -45,6 +33,7 @@ const Art = (() => {
   }
 
   function monster(big) {
+    if (pixelOn()) return PixelMon.monSprite(big ? 'leviathan' : 'hound');
     const r = rng(big ? 7 : 3);
     let shards = '';
     for (let i = 0; i < 26; i++) {
@@ -259,7 +248,8 @@ const Art = (() => {
         ${bld}${shards(r, 30, 0, 1600, 0, 900, '#e8ccff')}<ellipse cx="800" cy="400" rx="140" ry="220" fill="none" stroke="#fff" stroke-width="6" class="glowpulse"/>`);
     }
   });
-  function bg(name) { return (BG[name] || BG.black)(); }
+  const vbg = name => (BG[name] || BG.black)();
+  function bg(name) { return pixelOn() ? PixelBG.markup(name, vbg(name)) : vbg(name); }
 
   // ---------- CGs / special scenes ----------
   const big = (id, emo, pose, style, of) => `<div class="cgchar" style="${style}">${char(id, emo, pose, false, of)}</div>`;
@@ -288,7 +278,7 @@ const Art = (() => {
     cg_end_squad: () => bg('park') + ['tetsu', 'kaede', 'hikari', 'rei', 'sora', 'mira'].map((id, i) => big(id, i === 3 ? 'smile' : 'happy', ['cross', 'hip', 'wave', 'cross', 'wave', 'shy'][i], `left:${-6 + i * 16}%;bottom:-62%;height:135%;z-index:${i === 2 ? 3 : 1}`)).join('')
   });
   const CG_NAMES = { cg_strike: 'Thunder Goddess Stomp', cg_recruit: 'The Director', cg_shadow: 'From the Shadows', cg_leviathan: 'Glass Leviathan', cg_combo: 'Shadow & Lightning', cg_roof_hikari: 'Sunset Promise (Hikari)', cg_roof_rei: 'Twilight Confession (Rei)', cg_roof_mira: 'A Healer\'s Wish (Mira)', cg_glazier: 'The Glazier', cg_mall: 'Hall of Mirrors', cg_kaede_save: 'Catch!', cg_bit: 'System Breach', cg_reveal: 'Kyouya', cg_final: 'Operation Heartline', cg_roof_sora: 'Gravity of Love (Sora)', cg_end_hikari: 'Forever Partners (Hikari)', cg_end_rei: 'Out of the Shadows (Rei)', cg_end_mira: 'Healing Hearts (Mira)', cg_end_sora: 'Encore (Sora)', cg_end_kaede: 'Slow Down (Kaede)', cg_end_squad: 'Squad Zero, Forever' };
-  function cg(name) { return `<div class="cgscene">${(CG[name] || CG.cg_strike)()}</div>`; }
+  function cg(name) { return pixelOn() && typeof PixelCG !== 'undefined' ? PixelCG.markup(name) : `<div class="cgscene">${(CG[name] || CG.cg_strike)()}</div>`; }
 
   return { char, bg, cg, CG_NAMES, CH, monster, bit, _h: { svgWrap, grad, skyline, stars, rng, tree, shards, BG, CG, big, bolts, tendrils } };
 })();

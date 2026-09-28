@@ -29,7 +29,7 @@ const Game = (() => {
     route_sora: ['Gravity Heart', 'See Sora\'s rooftop scene'], fin_squad: ['Found Family', 'See the Squad ending'], veteran: ['Veteran', 'Raise a hero to Lv 5'],
     log: ['Rewind', 'Open the backlog'], deploy5: ['Dispatcher', 'Resolve 25 calls'], coach: ['Coach', 'Run 5 training sessions']
   };
-  let settings = { textSpeed: 45, autoDelay: 1.4, music: .55, sfx: .7, voice: true, hints: false, motion: true, parallax: true, textSize: 23, boxAlpha: .88, skipUnread: false, wheelBack: true, pixel: true };
+  let settings = { textSpeed: 45, autoDelay: 1.4, music: .55, sfx: .7, voice: true, hints: false, motion: true, parallax: true, textSize: 23, boxAlpha: .88, skipUnread: false, wheelBack: true, pixel: true, pixelSmooth: false };
   let meta = { ach: {}, gallery: {}, cleared: false, scenes: {}, codex: {}, endings: {}, chaps: {}, maxChap: 0, met: { hikari: 1 }, stats: { lines: 0, choices: 0, calls: 0, shifts: 0, sranks: 0, dates: 0, gifts: 0, playSec: 0, clears: 0 } };
   let hist = [], readSet = {}, readDirty = 0, lastUnread = false;
   let G = null, R = {}, run = 0;
@@ -40,7 +40,7 @@ const Game = (() => {
   const LS = { get: (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } } };
   function loadPrefs() { settings = Object.assign(settings, LS.get('hl_settings', {})); const m = LS.get('hl_meta', {}); meta = Object.assign(meta, m); meta.stats = Object.assign({ lines: 0, choices: 0, calls: 0, shifts: 0, sranks: 0, dates: 0, gifts: 0, playSec: 0, clears: 0 }, m.stats || {}); readSet = LS.get('hl2_read', {}); applySettings(); }
   const saveMeta = () => LS.set('hl_meta', meta), saveSettings = () => LS.set('hl_settings', settings);
-  function applySettings() { window.PIXEL_ON = settings.pixel; Sound.setVol('music', settings.music); Sound.setVol('sfx', settings.sfx); Sound.vol.voice = settings.voice; document.body.classList.toggle('nomotion', !settings.motion); const g = document.getElementById('game'); if (g) { g.style.setProperty('--tsize', settings.textSize + 'px'); g.style.setProperty('--boxa', settings.boxAlpha); } }
+  function applySettings() { window.PIXEL_ON = settings.pixel; if (window.PIXEL_SMOOTH !== undefined && window.PIXEL_SMOOTH !== settings.pixelSmooth && typeof PX !== 'undefined') PX.cache.clear(); window.PIXEL_SMOOTH = settings.pixelSmooth; Sound.setVol('music', settings.music); Sound.setVol('sfx', settings.sfx); Sound.vol.voice = settings.voice; document.body.classList.toggle('nomotion', !settings.motion); const g = document.getElementById('game'); if (g) { g.style.setProperty('--tsize', settings.textSize + 'px'); g.style.setProperty('--boxa', settings.boxAlpha); } }
 
   const HB = (com, vig, mob, cha, int) => ({ lvl: 1, xp: 0, sp: 0, st: { com, vig, mob, cha, int }, fat: 0, hurt: 0, perks: [], gear: null });
   function newState() {
@@ -73,8 +73,18 @@ const Game = (() => {
       const arr = R[f.id]; if (!arr || f.i >= arr.length) { G.stack.pop(); continue; }
       if (f.i === 0 && /^(hang_|date_|eve_|fin_|save_|end_|ev_)/.test(f.id) && !meta.scenes[f.id]) { meta.scenes[f.id] = 1; saveMeta(); }
       const r = exec(arr[f.i], f);
-      if (r === WAIT) return;
+      if (r === WAIT) { prewarm(arr, f.i); return; }
       if (r === NEXT) f.i++;
+    }
+  }
+  // Look a few lines ahead and start painting the pixel frames that will be needed next.
+  function prewarm(arr, i) {
+    if (!settings.pixel || typeof PixelCast === 'undefined') return;
+    for (let j = i + 1; j < Math.min(arr.length, i + 10); j++) {
+      const [op, a, b, d, e] = arr[j];
+      if (op === 'show' || op === 'emo' || (op === 'say' && G.vis.chars[a] && d)) { const st = G.vis.chars[a] || {}, id = (WHO[a] && WHO[a].art) || a, emo = op === 'say' ? d : b, pose = (op === 'say' ? e : d) || st.pose || 'default'; if (id === 'bit') Art.char('bit', emo, '', false); else PixelCast.prewarm(id, emo, pose, st.of || G.vis.of || 'hero'); }
+      else if (op === 'bg') PixelBG.prewarm(a);
+      else if (op === 'cg') Art.cg(a);
     }
   }
   function advance() { const f = top(); if (f) f.i++; wait = null; step(); }
@@ -891,10 +901,10 @@ const Game = (() => {
     const sl = (k, l, min, max, stp) => `<label class="set"><span>${l}</span><input type="range" min="${min}" max="${max}" step="${stp}" data-k="${k}" value="${settings[k]}"><em>${settings[k]}</em></label>`;
     const tg = (k, l) => `<label class="set tg"><span>${l}</span><button class="tog ${settings[k] ? 'on' : ''}" data-k="${k}"><i></i></button></label>`;
     modal(`<h2>Settings</h2><div class="sets two"><div>${sl('textSpeed', 'Text Speed (120 = instant)', 10, 120, 5)}${sl('autoDelay', 'Auto-Advance Delay (s)', .5, 4, .1)}${sl('textSize', 'Text Size', 18, 30, 1)}${sl('boxAlpha', 'Textbox Opacity', .3, 1, .05)}${sl('music', 'Music Volume', 0, 1, .05)}${sl('sfx', 'SFX Volume', 0, 1, .05)}</div>
-      <div>${tg('voice', 'Voice Blips')}${tg('hints', 'Affection Hints on Choices')}${tg('motion', 'Screen Shake & Flashes')}${tg('parallax', 'Mouse Parallax')}${tg('skipUnread', 'Skip Unread Text')}${tg('pixel', 'Pixel-Art Hikari')}${tg('wheelBack', 'Mouse Wheel Up = Rollback')}</div></div>
+      <div>${tg('voice', 'Voice Blips')}${tg('hints', 'Affection Hints on Choices')}${tg('motion', 'Screen Shake & Flashes')}${tg('parallax', 'Mouse Parallax')}${tg('skipUnread', 'Skip Unread Text')}${tg('pixel', 'Pixel-Art Graphics')}${tg('pixelSmooth', 'Smooth Pixels (Scale2x)')}${tg('wheelBack', 'Mouse Wheel Up = Rollback')}</div></div>
       <div class="row"><button class="btn" id="fs">⛶ Toggle Fullscreen</button><button class="btn" id="keys">⌨ Controls</button></div>`, { wide: 1 });
     $$('#modal input[type=range]').forEach(r => r.oninput = () => { settings[r.dataset.k] = +r.value; r.nextElementSibling.textContent = r.value; applySettings(); saveSettings(); });
-    $$('#modal .tog').forEach(b => b.onclick = () => { settings[b.dataset.k] = !settings[b.dataset.k]; b.classList.toggle('on'); applySettings(); saveSettings(); Sound.sfx('click'); if (!settings.parallax) { $('#game').style.setProperty('--px', 0); $('#game').style.setProperty('--py', 0); } });
+    $$('#modal .tog').forEach(b => b.onclick = () => { settings[b.dataset.k] = !settings[b.dataset.k]; b.classList.toggle('on'); applySettings(); saveSettings(); Sound.sfx('click'); if (/^pixel/.test(b.dataset.k) && G && G.vis && G.vis.bg) restoreVis(); if (!settings.parallax) { $('#game').style.setProperty('--px', 0); $('#game').style.setProperty('--py', 0); } });
     $('#fs').onclick = () => { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => { }); };
     $('#keys').onclick = () => modal(`<h2>Controls</h2><div class="log">${[['Click / Space / Enter', 'Advance'], ['Wheel up / Backspace', 'Rollback one line'], ['Ctrl (hold) / S', 'Skip'], ['A', 'Auto'], ['H', 'Hide UI'], ['L', 'Backlog'], ['1-4', 'Choose'], ['F5 / F9', 'Quick save / load'], ['Esc', 'Menu'], ['Dispatch: Space', 'Pause shift'], ['Gamepad A / B / X / Y / Start', 'Advance / Back / Auto / Log / Menu'], ['Touch: swipe up / down / long-press', 'Log / Rollback / Hide UI']].map(([k, v]) => `<div class="ll"><b>${k}</b><p>${v}</p></div>`).join('')}</div>`, { small: 1 });
   }
@@ -932,7 +942,9 @@ const Game = (() => {
       <div class="cvstage" style="--c:${(WHO[sel] || { c: '#fff' }).c}">${Art.char(sel, emo, pose, false, of)}</div>
       <div class="cvctl"><h4>Expression</h4><div class="cvgrid">${Object.keys(CharArt.EMO).map(e => `<button class="cvb ${e === emo ? 'on' : ''}" data-e="${e}">${e}</button>`).join('')}</div>
       <h4>Pose</h4><div class="cvgrid">${Object.keys(CharArt.POSES).map(p => `<button class="cvb ${p === pose ? 'on' : ''}" data-p="${p}">${p}</button>`).join('')}</div>
-      <h4>Outfit</h4><div class="cvgrid">${ofs.map(o => `<button class="cvb ${o === of ? 'on' : ''}" data-o="${o}">${o}</button>`).join('')}</div></div></div>`, { wide: 1 });
+      <h4>Outfit</h4><div class="cvgrid">${ofs.map(o => `<button class="cvb ${o === of ? 'on' : ''}" data-o="${o}">${o}</button>`).join('')}</div>
+      ${settings.pixel && typeof PixelCast !== 'undefined' && PixelCast.CAST[sel] ? '<button class="btn" id="pxexp">⬇ Open in Moonkai Pixel Studio (.pxs.json)</button>' : ''}</div></div>`, { wide: 1 });
+    const ex = $('#pxexp'); if (ex) ex.onclick = () => { Sound.sfx('confirm'); PixelCast.exportPxs(sel, emo, pose, of); };
     $$('#modal .cvlist .dtab').forEach(b => b.onclick = () => { Sound.sfx('page'); charViewer(b.dataset.id, emo, pose, 'hero'); });
     $$('#modal .cvb').forEach(b => b.onclick = () => { Sound.sfx('click'); charViewer(sel, b.dataset.e || emo, b.dataset.p || pose, b.dataset.o || of); });
   }
