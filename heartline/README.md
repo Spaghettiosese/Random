@@ -67,7 +67,9 @@ Headphones recommended.
 
 ## Pixel art (Moonkai Pixel Engine)
 
-The whole cast was redrawn as pixel art for the Moonkai Pixel Engine (`js/px*.js`). Nothing is a filtered copy of the old vector sprites: every character is painted in pixel space and supersampled 4x. Each frame snaps to exactly the colours it drew, line art takes priority in the snap, and the result gets the Pixel Studio outline pass.
+The whole cast was redrawn as pixel art for the Moonkai Pixel Engine (`js/px*.js`). Nothing is a filtered copy of the old vector sprites: every character is painted in pixel space and supersampled 4x.
+
+The drawings use anime proportions, about 6 heads tall. Each character has a large round head with big, low-set eyes, a small chin and a tiny mouth. The body has a slender neck, sloped shoulders about 1.3 head-widths across, a narrow waist, flared hips and long legs. Limbs are curved, with rounded elbows and small jointed hands. Torsos and legs are built from width profiles, so every costume is cut to the same body. Cel shading is lit from the upper left. Each frame snaps to exactly the colours it drew, line art takes priority in the snap, and the result gets the Pixel Studio outline pass.
 
 - **Cast:** 13 characters with new hair, new hero costumes and face details, plus the casual, formal, winter and yukata outfits. Sprites are 176 × 316.
 - **Expressions:** all 40, with pixel eyes (star, heart, swirl, shadow, teary and so on), brows and mouths. The manpu (blushes, tears, sweat, anger marks, steam, notes, Zzz, dizzy stars) are animated. Expressions also change body language: head tilt, drooping, leaning, bouncing, hopping, shaking and swaying.
@@ -346,7 +348,7 @@ heartline/
   index.html          layout / DOM layers
   style.css           UI, animations, effects
   js/pxengine.js      Moonkai Pixel Engine: palette snap, outline, dither, Scale2x, motion presets, frame cache, animator
-  js/pxchars.js       pixel cast rig: faces, 40 expressions, 12 poses, outfits, Hikari
+  js/pxchars.js       pixel cast rig: anime anatomy, faces, 40 expressions, 12 poses, limbs and hands, outfits, Hikari
   js/pxcast.js        pixel cast: the other twelve characters and their signature animations
   js/pxmon.js         pixel B.I.T., Rift Hound, Glass Leviathan, the Glazier
   js/pxbg.js          backgrounds re-rasterised to the pixel grid

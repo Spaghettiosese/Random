@@ -1,9 +1,11 @@
 /* HEARTLINE AGENCY — pixel cast, drawn for the Moonkai Pixel Engine.
-   Every character is painted from scratch in pixel space: cel-shaded hair locks, new costumes, 40 pixel
-   expressions with animated manpu, 12 poses with their own two-arm rigs, head tilt and body language,
-   and a signature idle loop per character (Hikari's static crackle, Rei's shadow wisps, Sora's orbiting
-   stars...). Frames: 12-frame idle, 4-frame talk, 1-frame blink. Sprite grid 176 x 316 over the
-   400 x 720 stage box (0.44 px per unit), supersampled 4x and snapped to each frame's palette. */
+   Anime proportions (about 6 heads tall): a large round head with big low-set eyes and a small chin, a slender
+   neck, sloped shoulders, a narrow waist, flared hips, long legs, curved limbs with small jointed hands.
+   Every character is painted from scratch in pixel space with cel shading lit from the upper left: layered
+   hair clumps, costumes cut to the body profile, 40 pixel expressions with animated manpu, 12 poses with
+   their own two-arm rigs, head tilt and body language, and a signature idle loop per character.
+   Frames: 12-frame idle, 4-frame talk, 1-frame blink. Sprite grid 176 x 316 over the 400 x 720 stage box
+   (0.44 px per unit: head to just above the knee), supersampled 4x and snapped to each frame's palette. */
 const PixelCast = (() => {
   const W = 176, H = 316, S = .44, K = 4, PADX = 0;
   const TAU = Math.PI * 2;
@@ -48,32 +50,203 @@ const PixelCast = (() => {
     return 'M' + A.join(' L') + ' L' + B.reverse().join(' L') + 'Z';
   }
 
-  // ---------- body plans ----------
-  const BODY = {
-    f: { sh: [[124, 264], [276, 264]], torso: 'M186,226 C162,234 136,240 122,254 C110,266 108,290 112,318 C116,350 128,382 138,408 C142,432 136,456 134,480 L266,480 C264,456 258,432 262,408 C272,382 284,350 288,318 C292,290 290,266 278,254 C264,240 238,234 214,226Z', neck: [187, 213], kx: 1, arm: [30, 24, 19] },
-    m: { sh: [[108, 262], [292, 262]], torso: 'M184,224 C156,232 124,236 106,250 C92,262 90,292 94,326 C98,370 114,406 126,438 C128,470 126,478 124,488 L276,488 C274,478 272,470 274,438 C286,406 302,370 306,326 C310,292 308,262 294,250 C276,236 244,232 216,224Z', neck: [182, 218], kx: 1.2, arm: [36, 29, 23] },
-    b: { sh: [[92, 266], [308, 266]], torso: 'M180,222 C148,230 110,234 90,250 C74,264 72,296 76,332 C82,378 100,414 114,446 C116,474 114,482 112,492 L288,492 C286,482 284,474 286,446 C300,414 318,378 324,332 C328,296 326,264 310,250 C290,234 252,230 220,222Z', neck: [178, 222], kx: 1.38, arm: [44, 36, 28] }
+  // ---------- anime anatomy (about 6 heads tall; the frame runs from the top of the head to just above the knee) ----------
+  // Torso and legs are built from width profiles (y, half-width) so every garment can follow the same body.
+  const catmull = pts => { let d = `M${f1(pts[0][0])},${f1(pts[0][1])}`; for (let i = 0; i < pts.length - 1; i++) { const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2; d += ` C${f1(p1[0] + (p2[0] - p0[0]) / 6)},${f1(p1[1] + (p2[1] - p0[1]) / 6)} ${f1(p2[0] - (p3[0] - p1[0]) / 6)},${f1(p2[1] - (p3[1] - p1[1]) / 6)} ${f1(p2[0])},${f1(p2[1])}`; } return d; };
+  function makeAnat(o) {
+    const P = o.prof, hw = y => { if (y <= P[0][0]) return P[0][1]; for (let i = 1; i < P.length; i++) if (y <= P[i][0]) { const [y0, w0] = P[i - 1], [y1, w1] = P[i]; return w0 + (w1 - w0) * (y - y0) / (y1 - y0); } return P[P.length - 1][1]; };
+    const L = P.map(([y, w]) => [200 - w, y]), R = P.map(([y, w]) => [200 + w, y]).reverse();
+    const torso = catmull(L) + ` L200,${o.crotch} ` + catmull(R).replace(/^M/, 'L') + 'Z';
+    const leg = s => { const X = x => 200 + (x - 200) * s, t = o.thigh, y0 = P[P.length - 2][0];
+      return catmull([[X(200 - hw(y0)), y0], [X(200 - t[0]), 626], [X(200 - t[1]), 720]]) + ` L${X(200 - t[2])},720 L${X(200 - t[3])},630 L${X(199)},${o.crotch}Z`; };
+    return Object.assign(o, { hw, torso, legs: [leg(1), leg(-1)], span: y => [200 - hw(y), 200 + hw(y)] });
+  }
+  const ANAT = {
+    f: makeAnat({ prof: [[262, 13], [270, 46], [282, 68], [298, 76], [322, 68], [350, 62], [376, 52], [404, 42], [436, 38], [470, 50], [502, 66], [530, 72], [548, 68]], crotch: 566, thigh: [66, 54, 12, 8],
+      sh: [[136, 300], [264, 300]], kx: 1, arm: [31, 25, 17], hand: 1, neck: [189, 211], head: 'f', eye: [[173, 162], [227, 162], 1.3, 1.34], mouth: [200, 202, .85], chest: 1 }),
+    m: makeAnat({ prof: [[260, 15], [268, 54], [280, 84], [298, 96], [328, 88], [364, 78], [402, 66], [440, 58], [480, 58], [520, 62], [556, 60]], crotch: 574, thigh: [60, 52, 12, 8],
+      sh: [[116, 300], [284, 300]], kx: 1.16, arm: [37, 30, 21], hand: 1.14, neck: [185, 215], head: 'm', eye: [[174, 158], [226, 158], 1.12, 1.08], mouth: [200, 204, .95] }),
+    b: makeAnat({ prof: [[258, 18], [266, 66], [278, 102], [296, 116], [330, 110], [368, 100], [404, 88], [442, 80], [480, 78], [520, 74], [556, 70]], crotch: 574, thigh: [70, 62, 14, 10],
+      sh: [[98, 302], [302, 302]], kx: 1.4, arm: [48, 40, 28], hand: 1.3, neck: [180, 220], head: 'm', eye: [[174, 158], [226, 158], 1.08, 1.02], mouth: [200, 206, 1] })
   };
-  const HEAD_F = 'M143,112 C143,70 168,50 200,50 C232,50 257,70 257,112 C257,148 246,174 223,193 Q200,208 177,193 C154,174 143,148 143,112Z';
-  const HEAD_M = 'M141,108 C141,68 166,46 200,46 C234,46 259,68 259,108 C259,148 250,176 228,196 Q200,212 172,196 C150,176 141,148 141,108Z';
-  const HEAD_O = 'M143,106 C143,66 168,46 200,46 C232,46 257,66 257,106 C257,150 250,180 228,200 Q200,214 172,200 C150,180 143,150 143,106Z';
+  const HEAD = {
+    f: 'M142,128 C142,80 168,52 200,52 C232,52 258,80 258,128 C258,158 252,182 238,200 C226,214 212,222 200,226 C188,222 174,214 162,200 C148,182 142,158 142,128Z',
+    m: 'M140,124 C140,76 166,50 200,50 C234,50 260,76 260,124 C260,156 256,184 244,204 C232,220 216,228 200,230 C184,228 168,220 156,204 C144,184 140,156 140,124Z',
+    o: 'M141,122 C141,74 166,50 200,50 C234,50 259,74 259,122 C259,160 254,190 240,208 C228,222 214,230 200,231 C186,230 172,222 160,208 C146,190 141,160 141,122Z'
+  };
+  // cel fill: shadow colour first, then the base shifted toward the light (upper left); leaves a crisp shade band
+  function cel(g, d, base, sh, lw = 2.4, lc, off = [-9, -5]) {
+    const p = typeof d === 'string' ? new Path2D(d) : d;
+    g.solid(p, sh || shade(base, -1, 13)); g.save(); g.clip(p); g.tr(off[0], off[1]); g.solid(p, base); g.restore();
+    if (lw) g.line(p, lc || g.LN, lw);
+    return p;
+  }
+  const clipY = (g, y0, y1) => g.clip(`M-200,${y0} L600,${y0} L600,${y1} L-200,${y1}Z`);
+  // clothing on the torso between two heights, with a hem line
+  function wearTorso(g, A, base, sh, y0 = 0, y1 = 999, lw = 2.4) {
+    g.save(); clipY(g, y0, y1); cel(g, A.torso, base, sh, lw); g.restore();
+    if (y1 < A.crotch) { const [a, b] = A.span(y1); g.line(`M${f1(a)},${y1} L${f1(b)},${y1}`, g.LN, lw); }
+  }
+  function wearLegs(g, A, base, sh, y0 = 0, lw = 2.4) { A.legs.forEach(l => { g.save(); clipY(g, y0, 800); cel(g, l, base, sh, lw); g.restore(); if (y0 > 560) { g.save(); g.clip(l); g.line(`M0,${y0} L400,${y0}`, g.LN, lw); g.restore(); } }); }
+  function skirt(g, A, base, sh, y0, y1, flare = 24, pleats = 6, hem) {
+    const [a0, b0] = A.span(y0), [a1, b1] = A.span(y1).map((v, i) => v + (i ? flare : -flare)), n = pleats * 2;
+    let d = `M${f1(a0 - 2)},${y0} L${f1(b0 + 2)},${y0} L${f1(b1)},${y1}`;
+    for (let i = n; i >= 0; i--) { const x = a1 + (b1 - a1) * i / n; d += ` L${f1(x)},${y1 + (i % 2 ? 6 : 0)}`; }
+    d += 'Z'; cel(g, d, base, sh);
+    for (let i = 1; i < pleats; i++) { const t = i / pleats; g.line(`M${f1(a0 + (b0 - a0) * t)},${y0 + 6} L${f1(a1 + (b1 - a1) * t)},${y1}`, sh, 2); }
+    if (hem) g.line(`M${f1(a1)},${y1 - 4} L${f1(b1)},${y1 - 4}`, hem, 3.4);
+  }
+  function shorts(g, A, base, sh, y1 = 600) { g.save(); clipY(g, 0, y1); A.legs.forEach(l => cel(g, l, base, sh)); g.restore(); const [a, b] = A.span(480); g.save(); clipY(g, 470, y1); cel(g, A.torso, base, sh); g.restore(); A.legs.forEach(l => { g.save(); g.clip(l); g.line(`M0,${y1} L400,${y1}`, g.LN, 2.4); g.restore(); }); }
+  const mirror = (g, fn) => { fn(); g.mir(fn); };
 
-  // ---------- poses: explicit elbow/wrist per side (female frame; x scales for broader builds) ----------
+  // ---------- arms: a curved limb through shoulder, rounded elbow and wrist ----------
+  function limbPts(s, e, w, n = 22) {
+    const d1 = [e[0] - s[0], e[1] - s[1]], d2 = [w[0] - e[0], w[1] - e[1]], l1 = Math.hypot(...d1) || 1, l2 = Math.hypot(...d2) || 1, r = Math.min(16, l1 / 3, l2 / 3);
+    const a = [e[0] - d1[0] / l1 * r, e[1] - d1[1] / l1 * r], b = [e[0] + d2[0] / l2 * r, e[1] + d2[1] / l2 * r], out = [];
+    for (let i = 0; i <= n; i++) {
+      const u = i / n; let p;
+      if (u < .45) { const k = u / .45; p = [s[0] + (a[0] - s[0]) * k, s[1] + (a[1] - s[1]) * k]; }
+      else if (u < .55) { const k = (u - .45) / .1, m = 1 - k; p = [m * m * a[0] + 2 * m * k * e[0] + k * k * b[0], m * m * a[1] + 2 * m * k * e[1] + k * k * b[1]]; }
+      else { const k = (u - .55) / .45; p = [b[0] + (w[0] - b[0]) * k, b[1] + (w[1] - b[1]) * k]; }
+      out.push(p);
+    }
+    return out;
+  }
+  // outline of the limb between u0 and u1, widths [shoulder, elbow, wrist] (+pad for sleeves)
+  function limbPath(pts, ws, u0 = 0, u1 = 1, pad = 0) {
+    const n = pts.length - 1, Lp = [], Rp = [];
+    const wAt = u => { if (u < .5) { const k = u / .5; return ws[0] + (ws[1] - ws[0]) * k + Math.sin(k * Math.PI) * ws[0] * .12; } const k = (u - .5) / .5; return ws[1] + (ws[2] - ws[1]) * k + Math.sin(Math.min(1, k * 1.6) * Math.PI) * ws[1] * .1; };
+    for (let i = Math.round(u0 * n); i <= Math.round(u1 * n); i++) {
+      const p = pts[i], q = pts[Math.min(n, i + 1)], o = pts[Math.max(0, i - 1)], dx = q[0] - o[0], dy = q[1] - o[1], l = Math.hypot(dx, dy) || 1, nx = -dy / l, ny = dx / l, hw = wAt(i / n) / 2 + pad;
+      Lp.push([p[0] + nx * hw, p[1] + ny * hw]); Rp.push([p[0] - nx * hw, p[1] - ny * hw]);
+    }
+    const all = [...Lp, ...Rp.reverse()];
+    return 'M' + all.map(p => f1(p[0]) + ',' + f1(p[1])).join(' L') + 'Z';
+  }
+  // hands in wrist space (+y runs along the forearm)
+  function hand(g, c, type, col, sz) {
+    const LN = c.line, sh = shade(col, -1, 12), fg = (d, w = 7) => { g.line(d, LN, w + 2.6); g.line(d, col, w); };
+    g.save(); g.sc(sz);
+    switch (type) {
+      case 'fist': case 'hipfist': case 'under':
+        cel(g, 'M-11,-1 C-13,9 -13,21 -8,27 C-2,31 8,31 11,25 C14,17 13,7 11,-1Z', col, sh, 2.2, LN, [-3, -2]); g.line('M-9,20 q3,4 6,1 q3,4 6,1 q3,3 5,0', LN, 1.2); if (type === 'fist') g.line('M-12,8 Q-6,13 0,10', LN, 1.4); break;
+      case 'point': fg('M-3,22 L-4,50', 6.4); cel(g, 'M-11,-1 C-13,9 -12,20 -8,25 C-2,29 8,29 11,23 C14,15 13,6 11,-1Z', col, sh, 2.2, LN, [-3, -2]); g.line('M-8,18 q3,4 6,1', LN, 1.2); break;
+      case 'wave': case 'reach': fg('M-7,18 L-12,40', 6); fg('M-2,20 L-3,46', 6); fg('M3,20 L6,45', 6); fg('M7,17 L13,38', 5.4); fg('M-9,6 L-19,16', 6); cel(g, 'M-10,-1 C-13,8 -12,20 -6,24 C0,27 8,25 11,18 C13,10 12,4 10,-1Z', col, sh, 2.2, LN, [-3, -2]); break;
+      case 'chin': fg('M-5,20 L-8,44', 6); cel(g, 'M-11,-1 C-13,9 -12,20 -8,24 C-2,28 8,28 11,22 C14,15 13,6 11,-1Z', col, sh, 2.2, LN, [-3, -2]); break;
+      case 'palm': cel(g, 'M-9,-1 C-11,14 -10,32 -5,44 C-1,49 6,47 8,41 C10,29 11,13 9,-1Z', col, sh, 2.2, LN, [-3, -2]); g.line('M-3,26 L-3,44 M2,26 L3,45', LN, 1.1); fg('M-9,8 L-15,20', 5.4); break;
+      default: cel(g, 'M-9,-1 C-11,10 -10,22 -6,30 C-3,35 4,36 8,31 C11,24 11,12 9,-1Z', col, sh, 2.2, LN, [-3, -2]); g.fill('M-6,27 C-7,35 -4,43 0,45 C3,45 6,39 6,31', col, 2, LN); g.fill('M-9,9 C-15,15 -15,23 -10,27 C-8,23 -8,17 -6,13Z', col, 1.8, LN); g.line('M1,31 L2,42', LN, 1);
+    }
+    g.restore();
+  }
+  // o: { sleeve: 'long'|'short'|'none'|'puff', sleeveC, sleeveS, cuff, glove (whole hand), gauntlet (forearm) }
+  function arm(g, c, A, side, spec, st) {
+    const X = x => 200 + (x - 200) * A.kx, s0 = A.sh[side === 'L' ? 0 : 1];
+    let [[ex, ey], [wx, wy], ht] = spec; ex = X(ex); wx = X(wx); ey += st.lift; wy += st.lift;
+    if (st.waveArm && side === 'R') { const a = Math.sin(st.t * TAU * 2) * .3, dx = wx - ex, dy = wy - ey; wx = ex + dx * Math.cos(a) - dy * Math.sin(a); wy = ey + dx * Math.sin(a) + dy * Math.cos(a); }
+    if (st.cheer) { const b = Math.round(Math.sin(st.t * TAU * 2 + (side === 'L' ? 0 : 1.5)) * 6); ey += b; wy += b * 1.6; }
+    if (st.pump && side === 'R') wy += Math.round(Math.sin(st.t * TAU) * 5);
+    const s = [s0[0], s0[1] + st.lift * .6], pts = limbPts(s, [ex, ey], [wx, wy]), o = st.outfit, ws = A.arm;
+    const skin = c.skin, sc = o.sleeveC || '#888', scS = o.sleeveS || shade(sc, -1, 13), sl = o.sleeve || 'long';
+    cel(g, limbPath(pts, ws), skin, c.skinS, 2.4, c.line, [side === 'L' ? -4 : -6, -3]);
+    if (sl === 'long') { cel(g, limbPath(pts, ws, 0, .94, 2.5), sc, scS, 2.4, c.line, [-5, -3]); g.line(limbPath(pts, ws, .5, .52, 2.5), scS, 1.6); }
+    else if (sl === 'short' || sl === 'puff') cel(g, limbPath(pts, ws, 0, sl === 'puff' ? .3 : .38, sl === 'puff' ? 7 : 4), sc, scS, 2.4, c.line, [-5, -3]);
+    if (o.gauntlet) cel(g, limbPath(pts, ws, .56, .96, 3), o.gauntlet, shade(o.gauntlet, -1, 14), 2.4, c.line, [-4, -3]);
+    if (o.cuff && sl !== 'none') { const u = sl === 'long' ? .88 : sl === 'puff' ? .26 : .33; g.fill(limbPath(pts, ws, u, u + .06, 3), o.cuff, 2); }
+    if (o.band) g.fill(limbPath(pts, ws, .86, .94, 2), o.band, 2);
+    const w = pts[pts.length - 1], q = pts[pts.length - 3], ang = Math.atan2(w[1] - q[1], w[0] - q[0]) - Math.PI / 2;
+    g.save(); g.tr(w[0], w[1]); g.x.rotate(ang); if (ht === 'hipfist') g.x.rotate(side === 'L' ? .5 : -.5);
+    hand(g, c, ht, o.glove || skin, (ht === 'reach' ? 1.55 : 1) * A.hand);
+    g.restore();
+  }
+
+  // ---------- poses: explicit elbow / wrist per side in the female frame (x widens for broader builds) ----------
   // hand: open | fist | point | wave | clasp | chin | palm | reach | hipfist | under
   const POSES = {
-    default: { L: [[118, 370], [114, 466], 'open'], R: [[284, 372], [292, 466], 'open'], tilt: 0 },
-    hip: { L: [[80, 354], [134, 438], 'hipfist'], R: [[282, 372], [288, 470], 'open'], tilt: -3, lean: -3 },
-    hips: { L: [[78, 350], [134, 436], 'hipfist'], R: [[322, 350], [266, 436], 'hipfist'], tilt: 0, chest: 1 },
-    wave: { L: [[118, 372], [118, 470], 'open'], R: [[334, 214], [344, 122], 'wave'], tilt: 5, waveArm: 1 },
-    cross: { L: [[122, 368], [236, 352], 'under'], R: [[280, 364], [166, 338], 'fist'], tilt: -2, front: 1 },
-    shy: { L: [[130, 374], [190, 432], 'clasp'], R: [[270, 374], [212, 434], 'clasp'], tilt: 7, lift: 5 },
-    fist: { L: [[80, 354], [134, 438], 'hipfist'], R: [[326, 346], [292, 262], 'fist'], tilt: -2, lean: 2, pump: 1 },
-    point: { L: [[118, 370], [116, 468], 'open'], R: [[330, 300], [396, 262], 'point'], tilt: -4, lean: 4 },
-    think: { L: [[128, 376], [238, 380], 'under'], R: [[270, 368], [226, 236], 'chin'], tilt: 8 },
-    heart: { L: [[128, 380], [180, 318], 'palm'], R: [[284, 372], [290, 468], 'open'], tilt: 5 },
-    cheer: { L: [[74, 196], [82, 100], 'fist'], R: [[326, 196], [318, 100], 'fist'], tilt: -4, cheer: 1 },
-    reach: { L: [[118, 370], [116, 468], 'open'], R: [[300, 326], [256, 296], 'reach'], tilt: 4, lean: 3 }
+    default: { L: [[124, 452], [118, 580], 'open'], R: [[276, 452], [282, 578], 'open'] },
+    hip: { L: [[66, 420], [150, 484], 'hipfist'], R: [[278, 452], [284, 580], 'open'], tilt: -3, lean: -3 },
+    hips: { L: [[64, 420], [150, 484], 'hipfist'], R: [[336, 420], [250, 484], 'hipfist'], chest: 1 },
+    wave: { L: [[124, 454], [120, 580], 'open'], R: [[326, 196], [340, 76], 'wave'], tilt: 5, waveArm: 1 },
+    cross: { L: [[112, 414], [226, 432], 'under'], R: [[288, 410], [176, 414], 'fist'], tilt: -2 },
+    shy: { L: [[130, 452], [194, 556], 'clasp'], R: [[270, 452], [206, 558], 'clasp'], tilt: 7, lift: 6 },
+    fist: { L: [[66, 420], [150, 484], 'hipfist'], R: [[318, 414], [322, 300], 'fist'], tilt: -2, lean: 2, pump: 1 },
+    point: { L: [[124, 452], [118, 580], 'open'], R: [[318, 398], [388, 446], 'point'], tilt: -4, lean: 4 },
+    think: { L: [[128, 438], [236, 452], 'under'], R: [[286, 396], [228, 272], 'chin'], tilt: 8 },
+    heart: { L: [[134, 444], [188, 380], 'palm'], R: [[278, 452], [284, 580], 'open'], tilt: 5 },
+    cheer: { L: [[86, 204], [96, 86], 'fist'], R: [[314, 204], [304, 86], 'fist'], tilt: -4, cheer: 1 },
+    reach: { L: [[124, 452], [118, 580], 'open'], R: [[292, 404], [250, 366], 'reach'], tilt: 4, lean: 3 }
   };
+
+  // ---------- hair helpers ----------
+  function hairLock(g, c, p, w, prof = 'taper', side = 1) {
+    g.fill(ribbon(p, w, prof), c.hair, 1.8, c.hairL); g.markLine(c.hairL);
+    if (w > 12) { g.solid(ribbon(p, w, prof, .4, .58 * side), c.hairS); g.solid(ribbon(p, w, prof, .14, -.62 * side), c.hairH); }
+    if (w > 22) g.line(`M${f1(p[0][0])},${f1(p[0][1])} C${f1(p[1][0])},${f1(p[1][1])} ${f1(p[2][0])},${f1(p[2][1])} ${f1((p[2][0] + p[3][0]) / 2)},${f1((p[2][1] + p[3][1]) / 2)}`, c.hairS, 1.6);
+  }
+  // skull cap with volume; bangs are drawn over it
+  function cap(g, c, d) {
+    const p = d || 'M132,150 C118,72 158,28 200,28 C242,28 282,72 268,150 C258,112 236,94 200,94 C164,94 142,112 132,150Z';
+    cel(g, p, c.hair, c.hairS, 2, c.hairL, [-10, -6]); g.markLine(c.hairL);
+    g.solid('M152,62 C168,42 186,36 200,36 C186,48 174,60 166,80Z', c.hairH);
+  }
+  // clumped anime fringe: tips [[x, y, width], ...] fanning from the crown
+  function fringe(g, c, tips, crown = [200, 40], prof = 'leaf') {
+    tips.forEach(([x, y, w]) => { const s = x < crown[0] ? -1 : 1; hairLock(g, c, [[crown[0] + (x - crown[0]) * .2, crown[1]], [crown[0] + (x - crown[0]) * .55, crown[1] + 26], [x - s * 4, y - 36], [x, y]], w, prof, s); });
+  }
+  function angelRing(g, c, y0 = 90) {
+    let top = [], bot = []; for (let x = 150, i = 0; x <= 250; x += 8, i++) { const y = y0 - Math.sin((x - 150) / 100 * Math.PI) * 20; top.push(`${x},${f1(y - 3)}`); bot.unshift(`${x},${f1(y + (i % 2 ? 7 : 3))}`); }
+    g.solid('M' + top.join(' L') + ' L' + bot.join(' L') + 'Z', c.hairH);
+  }
+
+  // ---------- the cast ----------
+  const SK = base => { const r = ramp(base, 4, 10); return { skin: base, skinS: r[2], skinD: r[3], skinH: r[0] }; };
+  const HR = (hair, hairS, hairH, hairL) => ({ hair, hairS, hairH, hairL });
+  const EY = (e, d, l, dd) => ({ eye: e, eyeD: d, eyeL: l, eyeP: dd || shade(d, -1, 12) });
+  const CAST = {};
+  const C_BLUE = '#2f5be0';
+
+  // --- Hikari Amane, Thunder Goddess: long blonde twin tails, cropped white hero jacket, lightning everywhere ---
+  CAST.hikari = Object.assign(SK('#ffe9de'), HR('#ffd65c', '#e39a2e', '#fff6cc', '#9a5a18'), EY('#3ea4ff', '#1b46a8', '#bff0ff'), {
+    body: 'f', line: '#3a1f2e', blush: '#ff9aa6',
+    hero: { sleeve: 'puff', sleeveC: '#f8f8ff', sleeveS: '#cfd2ee', cuff: '#ffc21a', glove: C_BLUE, band: '#ffc21a' },
+    anim: { spark: 1 },
+    back(g, c, a) {
+      const sw = a.sway * 12, sw2 = a.sway2 * 8;
+      g.fill('M142,96 C132,150 136,196 150,226 L250,226 C264,196 268,150 258,96Z', c.hairS, 0);
+      for (const s of [-1, 1]) {
+        const X = x => 200 + (x - 200) * s, bx = s * sw, bx2 = s * sw2 + sw * .4;
+        [[[X(142), 82], [X(80), 96], [X(50) + bx * .5, 270], [X(62) + bx, 500], 40], [[X(142), 86], [X(92), 130], [X(76) + bx * .6, 330], [X(92) + bx2, 560], 28],
+          [[X(140), 84], [X(64), 110], [X(34) + bx * .7, 280], [X(40) + bx, 440], 22]]
+          .forEach(([p0, p1, p2, p3, w]) => hairLock(g, c, [p0, p1, p2, p3], w, 'taper', s));
+        if (a.spark) { const k = a.frame % 3, y0 = 280 + k * 80, X0 = X(80) + bx * .7; g.line(`M${X0},${y0} l${-10 * s},16 l${12 * s},6 l${-12 * s},18`, '#fff27a', 3.4); g.line(`M${X0},${y0} l${-10 * s},16 l${12 * s},6 l${-12 * s},18`, '#ffffff', 1.3); }
+      }
+    },
+    outfit(g, c, A, a) {
+      wearLegs(g, A, c.skin, c.skinS);
+      wearLegs(g, A, '#232846', '#151830', 640); A.legs.forEach(l => { g.save(); g.clip(l); g.line('M0,652 L400,652', '#ffc21a', 4); g.restore(); });
+      wearTorso(g, A, C_BLUE, '#1d3a9e');
+      g.line('M154,376 Q176,394 194,384 M246,376 Q224,394 206,384', '#1d3a9e', 2);
+      g.poly([[206, 398], [188, 430], [200, 430], [192, 462], [216, 424], [204, 424], [212, 398]], '#ffc21a', 1.8);
+      skirt(g, A, '#232846', '#151830', 486, 612, 26, 7, '#ffc21a');
+      g.fill('M156,474 L244,474 L246,494 L154,494Z', '#262a40', 2); g.fill('M190,470 L210,470 L210,498 L190,498Z', '#ffc21a', 1.8);
+      // cropped white jacket, open front, gold trim
+      g.save(); g.clip(A.torso); clipY(g, 0, 420);
+      const pn = 'M-40,240 L188,240 C180,300 182,360 186,424 L-40,424Z';
+      mirror(g, () => cel(g, pn, '#f8f8ff', '#cfd2ee', 2.4));
+      g.restore();
+      mirror(g, () => { g.line('M188,272 C180,320 182,370 186,420', '#ffc21a', 4.4); const [a0] = A.span(420); g.line(`M${a0},420 L186,420`, '#ffc21a', 4.4); });
+      g.fill('M178,236 C184,254 216,254 222,236 L232,270 C216,284 184,284 168,270Z', '#f8f8ff', 2.2); g.line('M170,270 C184,280 216,280 230,270', '#ffc21a', 3);
+    },
+    front(g, c, a) {
+      const s = a.sway * 3;
+      for (const sg of [-1, 1]) { const X = x => 200 + (x - 200) * sg; hairLock(g, c, [[X(146), 104], [X(134), 160], [X(134) + s * sg, 212], [X(146) + s * sg, 262]], 24, 'taper', sg); }
+      cap(g, c);
+      fringe(g, c, [[140, 124, 26], [158, 138, 30], [176, 130, 30], [194, 140, 28], [212, 132, 30], [232, 138, 30], [254, 124, 26], [262, 146, 18], [138, 148, 18]]);
+      angelRing(g, c);
+      const ah = a.bob2 * 6; hairLock(g, c, [[204, 32], [202, 4 + ah], [232 + ah, -6], [240 + ah, 14 + ah * .5]], 11, 'leaf', 1);
+      for (const sg of [-1, 1]) { const X = 200 + 60 * sg; g.ell(X, 80, 10, 13, C_BLUE, 2); g.line(`M${X - 4 * sg},74 q${5 * sg},6 0,12`, '#8ab4ff', 1.6); }
+      g.poly([[256, 92], [246, 110], [254, 110], [248, 124], [264, 104], [256, 104], [262, 92]], '#fff27a', 1.8, '#2a4fd6');
+    }
+  });
 
   // ---------- expressions: e eyes (or [left,right]), b brows, m mouth, fx manpu, look, body language ----------
   const EMO = {
@@ -99,93 +272,6 @@ const PixelCast = (() => {
     ominous: { e: 'shadow', b: 'angry', m: 'smirk', lean: 2, tilt: 3 }, singing: { e: 'closed', b: 'raised', m: 'sing', fx: ['notes'], sway: 1, tilt: -4 }
   };
   const OPEN_M = { grin: 1, laugh: 1, open: 1, sing: 1, o: 1, triangle: 1, shout: 1, sob: 1, teeth: 1 };
-
-  // ---------- the cast ----------
-  // Palette per character: skin ramp, hair ramp (+ line), eye ramp, and named costume colours.
-  const SK = (base) => { const r = ramp(base, 4, 9); return { skin: base, skinS: r[2], skinD: r[3], skinH: r[0] }; };
-  const HR = (base, s, h, l) => ({ hair: base, hairS: s, hairH: h, hairL: l });
-  const EY = (e, d, l, dd) => ({ eye: e, eyeD: d, eyeL: l, eyeP: dd || shade(d, -1, 12) });
-
-  const CAST = {};
-
-  // --- Hikari Amane, Thunder Goddess ---
-  CAST.hikari = Object.assign(SK('#ffe8dc'), HR('#ffd65c', '#e39a2e', '#fff6cc', '#9a5a18'), EY('#3ea4ff', '#1b46a8', '#bff0ff'), {
-    body: 'f', line: '#3a1f2e', blush: '#ff9aa6',
-    col: { jacket: '#f8f8ff', jacketS: '#cfd2ee', trim: '#ffc21a', trimS: '#d98a10', suit: '#2f5be0', suitS: '#1d3a9e', skirt: '#232846', skirtS: '#151830', sock: '#232846', glove: '#2f5be0' },
-    sleeve: 'short', hand: 'glove',
-    back(g, c, a) {
-      // long twin tails from high ties, swinging on the idle loop
-      const sw = a.sway * 10, sw2 = a.sway2 * 7;
-      for (const s of [-1, 1]) {
-        const X = x => 200 + (x - 200) * s, bx = s * sw, bx2 = s * sw2 + sw * .4;
-        const locks = [
-          [[X(146), 70], [X(92), 96], [X(64) + bx * .5, 250], [X(76) + bx, 420], 46, 'taper'],
-          [[X(144), 74], [X(106), 130], [X(96) + bx * .6, 300], [X(112) + bx2, 470], 36, 'taper'],
-          [[X(140), 72], [X(74), 110], [X(40) + bx * .7, 260], [X(46) + bx, 400], 28, 'taper'],
-          [[X(146), 80], [X(122), 170], [X(128) + bx2 * .5, 350], [X(104) + bx2, 520], 24, 'taper']
-        ];
-        for (const [p0, p1, p2, p3, w, pr] of locks) hairLock(g, c, [p0, p1, p2, p3], w, pr, s);
-        // electric crackle in the tails
-        if (a.spark) { const k = a.frame % 3; const y0 = 230 + k * 70; g.line(`M${X(78) + bx * .7},${y0} l${-10 * s},14 l${12 * s},6 l${-12 * s},16`, '#fff27a', 3); g.line(`M${X(78) + bx * .7},${y0} l${-10 * s},14 l${12 * s},6 l${-12 * s},16`, '#ffffff', 1.2); }
-      }
-      g.fill('M150,84 C146,150 154,200 164,236 L236,236 C246,200 254,150 250,84Z', c.hairS, 0);
-    },
-    outfit(g, c, o) {
-      const C = c.col;
-      // legs: navy skirt, thigh socks with lightning stripes
-      g.fill('M140,556 L196,556 L194,720 L144,720Z', c.skin); g.fill('M260,556 L204,556 L206,720 L256,720Z', c.skin);
-      g.fill('M142,610 L196,610 L194,720 L146,720Z', C.sock); g.fill('M258,610 L204,610 L206,720 L254,720Z', C.sock);
-      g.line('M144,622 L195,622 M256,622 L205,622', C.trim, 3);
-      g.fill('M136,470 L264,470 C276,512 286,546 292,580 L108,580 C114,546 124,512 136,470Z', C.skirt);
-      g.solid('M200,476 L214,576 L186,576Z', C.skirtS); g.solid('M160,476 L148,576 L130,576 L146,476Z', C.skirtS); g.solid('M240,476 L252,576 L270,576 L254,476Z', C.skirtS);
-      g.line('M110,578 L290,578', C.trim, 3);
-      // blue bodysuit + emblem
-      g.fill(BODY.f.torso, C.suit); g.solid('M262,408 C272,382 284,350 288,318 C292,290 290,266 278,254 L262,262 C272,300 266,360 246,420 Z', C.suitS);
-      g.poly([[206, 296], [186, 332], [200, 332], [190, 366], [218, 322], [204, 322], [214, 296]], C.trim, 1.8);
-      // belt
-      g.fill('M134,462 L266,462 L268,482 L132,482Z', '#262a40', 1.8); g.fill('M188,460 L212,460 L212,484 L188,484Z', C.trim, 1.8); g.poly([[202, 464], [194, 473], [200, 473], [196, 481], [206, 470], [200, 470]], '#fff7b0', 0);
-      // cropped white jacket with gold trim and high collar
-      const jk = 'M186,226 C162,234 136,240 122,254 C110,266 108,290 112,318 C116,350 126,378 134,396 L176,400 C172,350 168,296 180,244Z';
-      g.fill(jk, C.jacket); g.save(); g.x.translate(400, 0); g.x.scale(-1, 1); g.fill(jk, C.jacket); g.restore();
-      g.solid('M122,254 C110,266 108,290 112,318 C116,346 124,372 132,392 L144,388 C132,350 126,300 132,262Z', C.jacketS);
-      g.solid('M278,254 C290,266 292,290 288,318 C284,346 276,372 268,392 L256,388 C268,350 274,300 268,262Z', C.jacketS);
-      g.line('M180,244 C168,296 172,350 176,400 M220,244 C232,296 228,350 224,400', C.trim, 4); g.line('M134,396 L176,400 M266,396 L224,400', C.trim, 4);
-      g.fill('M170,204 C178,222 222,222 230,204 L240,236 C220,256 180,256 160,236Z', C.jacket, 2); g.line('M162,236 C180,252 220,252 238,236', C.trim, 3);
-      g.line('M178,212 L184,238 M222,212 L216,238', C.jacketS, 2);
-    },
-    front(g, c, a) {
-      const s = a.sway * 3;
-      const side = (sg) => { const X = x => 200 + (x - 200) * sg; hairLock(g, c, [[X(148), 92], [X(136), 140], [X(136) + s * sg, 190], [X(148) + s * sg, 238]], 22, 'taper', sg); };
-      side(-1); side(1);
-      cap(g, c);
-      const bangs = [[[196, 46], [166, 52], [142, 76], [138, 116], 26], [[204, 46], [234, 52], [258, 76], [262, 116], 26], [[198, 46], [178, 62], [160, 92], [150, 128], 32],
-        [[206, 46], [228, 62], [244, 94], [250, 128], 32], [[200, 46], [190, 68], [182, 96], [176, 124], 30], [[204, 46], [212, 70], [220, 98], [224, 120], 30], [[202, 46], [200, 72], [198, 100], [200, 132], 24]];
-      bangs.forEach(([p0, p1, p2, p3, w]) => hairLock(g, c, [p0, p1, p2, p3], w, 'leaf', p3[0] < 200 ? -1 : 1));
-      angelRing(g, c);
-      // ahoge bounces
-      const ah = a.bob2 * 6;
-      hairLock(g, c, [[204, 44], [202, 14 + ah], [232 + ah, 2], [240 + ah, 22 + ah * .5]], 10, 'leaf', 1);
-      // scrunchies + lightning clip
-      for (const sg of [-1, 1]) { const X = 200 + 58 * sg; g.ell(X, 72, 10, 12, C_BLUE, 2); g.line(`M${X - 4 * sg},66 q${5 * sg},6 0,12`, '#8ab4ff', 1.6); }
-      g.poly([[258, 84], [248, 102], [256, 102], [250, 116], [266, 96], [258, 96], [264, 84]], '#fff27a', 1.8, '#2a4fd6');
-    },
-    anim: { spark: 1, bounce: 1 }
-  });
-  const C_BLUE = '#2f5be0';
-
-  // ---------- shared hair helpers ----------
-  function hairLock(g, c, p, w, prof = 'taper', side = 1) {
-    g.fill(ribbon(p, w, prof), c.hair, 1.6, c.hairL); g.markLine(c.hairL);
-    if (w > 12) { g.solid(ribbon(p, w, prof, .42, .55 * side), c.hairS); g.solid(ribbon(p, w, prof, .16, -.6 * side), c.hairH); }
-  }
-  function cap(g, c, d) {
-    g.fill(d || 'M138,130 C128,62 164,34 200,34 C236,34 272,62 262,130 C250,98 230,82 200,82 C170,82 150,98 138,130Z', c.hair, 1.8, c.hairL);
-    g.solid('M150,70 C166,46 186,40 200,40 C188,50 176,62 168,80Z', c.hairH);
-  }
-  function angelRing(g, c, y0 = 84) {
-    let top = [], bot = []; for (let x = 150, i = 0; x <= 250; x += 8, i++) { const y = y0 - Math.sin((x - 150) / 100 * Math.PI) * 18; top.push(`${x},${f1(y - 3)}`); bot.unshift(`${x},${f1(y + (i % 2 ? 7 : 3))}`); }
-    g.solid('M' + top.join(' L') + ' L' + bot.join(' L') + 'Z', c.hairH);
-  }
 
   // ---------- face ----------
   function eye(g, c, cx, cy, flip, type, look, t) {
@@ -293,56 +379,7 @@ const PixelCast = (() => {
   }
   function star4(g, cx, cy, r, col) { g.fill(`M${cx},${cy - r} L${cx + r * .28},${cy - r * .28} L${cx + r},${cy} L${cx + r * .28},${cy + r * .28} L${cx},${cy + r} L${cx - r * .28},${cy + r * .28} L${cx - r},${cy} L${cx - r * .28},${cy - r * .28}Z`, col, 1.6, '#e8a826'); }
 
-  // ---------- arms ----------
-  function tube(a, b, w0, w1) {
-    const dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, nx = -dy / l, ny = dx / l;
-    return `M${f1(a[0] + nx * w0 / 2)},${f1(a[1] + ny * w0 / 2)} L${f1(b[0] + nx * w1 / 2)},${f1(b[1] + ny * w1 / 2)} L${f1(b[0] - nx * w1 / 2)},${f1(b[1] - ny * w1 / 2)} L${f1(a[0] - nx * w0 / 2)},${f1(a[1] - ny * w0 / 2)}Z`;
-  }
-  function hand(g, c, type, col, sz) {
-    const LN = c.line, fg = (x1, y1, x2, y2, w = 6) => { g.line(`M${x1},${y1} L${x2},${y2}`, LN, w + 2.4); g.line(`M${x1},${y1} L${x2},${y2}`, col, w); };
-    g.save(); g.sc(sz);
-    switch (type) {
-      case 'fist': case 'hipfist': case 'under':
-        g.fill('M-12,-2 C-14,11 -12,23 0,24 C12,23 14,11 12,-2Z', col, 2); g.line('M-8,16 q3,3 6,0 q3,3 6,0', LN, 1.2); if (type === 'fist') g.line('M-12,6 Q-4,10 4,6', LN, 1.2); break;
-      case 'point': fg(2, 14, 3, 40); g.fill('M-12,-2 C-14,10 -12,21 0,22 C12,21 14,10 12,-2Z', col, 2); g.line('M-7,15 q3,3 6,0', LN, 1.2); break;
-      case 'wave': case 'reach': fg(-7, 14, -13, 32); fg(-2, 16, -3, 37); fg(3, 16, 5, 37); fg(7, 14, 13, 31); fg(-10, 4, -20, 12); g.ell(0, 9, 11, 11, col, 2, LN); break;
-      case 'chin': fg(-4, 14, -8, 34, 5.5); g.fill('M-12,-2 C-14,10 -12,20 0,21 C12,20 14,10 12,-2Z', col, 2); break;
-      case 'clasp': case 'palm': g.fill('M-10,-2 C-12,9 -12,20 -7,28 C-3,33 6,33 9,26 C12,17 12,7 10,-2Z', col, 2); g.line('M-3,18 L-3,30 M2,18 L2,31 M6,17 L7,28', LN, 1.1); break;
-      default: g.fill('M-10,-2 C-12,9 -12,20 -7,28 C-3,33 6,33 9,26 C12,17 12,7 10,-2Z', col, 2); g.fill('M-10,6 C-17,10 -17,18 -11,21 C-9,17 -9,13 -8,9', col, 1.8); g.line('M-3,18 L-4,29 M2,18 L2,30 M6,17 L7,28', LN, 1.1);
-    }
-    g.restore();
-  }
-  function arm(g, c, side, spec, st) {
-    const B = BODY[c.body], kx = B.kx, [sx, sy] = B.sh[side === 'L' ? 0 : 1];
-    const X = x => 200 + (x - 200) * kx;
-    let [[ex, ey], [wx, wy], ht] = spec;
-    ex = X(ex); wx = X(wx); ey += st.lift; wy += st.lift;
-    if (st.waveArm && side === 'R') { const a = Math.sin(st.t * TAU * 2) * .28, dx = wx - ex, dy = wy - ey; wx = ex + dx * Math.cos(a) - dy * Math.sin(a); wy = ey + dx * Math.sin(a) + dy * Math.cos(a); }
-    if (st.cheer) { const b = Math.round(Math.sin(st.t * TAU * 2 + (side === 'L' ? 0 : 1.5)) * 6); ey += b; wy += b * 1.6; }
-    if (st.pump && side === 'R') { const b = Math.round(Math.sin(st.t * TAU) * 4); wy += b; }
-    const s = [sx, sy + st.lift * .6], e = [ex, ey], w = [wx, wy], [a0, a1, a2] = B.arm, o = st.outfit;
-    const sl = o.sleeve || 'long', skin = c.skin, sc = o.sleeveC || '#888', scS = o.sleeveS || shade(sc, -1, 12);
-    const up = tube(s, e, a0, a1), lo = tube(e, w, a1, a2);
-    const upC = sl === 'none' ? skin : sc, loC = sl === 'long' ? sc : skin;
-    // silhouette with outline, then fill, then cel shade strip
-    g.fill(up, upC, 3); g.ell(e[0], e[1], a1 / 2, a1 / 2, sl === 'long' ? sc : sl === 'short' ? skin : skin, 3);
-    g.fill(lo, loC, 3); g.ell(s[0], s[1], a0 / 2 + 1, a0 / 2 + 1, upC, 0);
-    g.solid(up, upC); g.solid(lo, loC); g.ell(e[0], e[1], a1 / 2 - 1.5, a1 / 2 - 1.5, sl === 'long' ? sc : skin);
-    const sh2 = (a, b, w0, w1, col) => { const dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, nx = -dy / l * (side === 'L' ? 1 : -1), ny = dx / l * (side === 'L' ? 1 : -1); g.solid(tube([a[0] - nx * w0 * .28, a[1] - ny * w0 * .28], [b[0] - nx * w1 * .28, b[1] - ny * w1 * .28], w0 * .38, w1 * .38), col); };
-    sh2(s, e, a0, a1, sl === 'none' ? c.skinS : scS); sh2(e, w, a1, a2, sl === 'long' ? scS : c.skinS);
-    if (sl === 'short') { const m = [(s[0] + e[0]) / 2, (s[1] + e[1]) / 2]; g.fill(tube(s, [s[0] + (m[0] - s[0]) * 1.25, s[1] + (m[1] - s[1]) * 1.25], a0 + 5, a0 + 3), sc, 2.6); if (o.cuff) g.line(tube([s[0] + (m[0] - s[0]) * 1.1, s[1] + (m[1] - s[1]) * 1.1], [s[0] + (m[0] - s[0]) * 1.25, s[1] + (m[1] - s[1]) * 1.25], a0 + 5, a0 + 3), o.cuff, 3); }
-    // cuff
-    const ang = Math.atan2(w[1] - e[1], w[0] - e[0]) - Math.PI / 2;
-    g.save(); g.tr(w[0], w[1]); g.x.rotate(ang);
-    if (o.cuff && sl === 'long') g.fill('M-13,-9 L13,-9 L12,1 L-12,1Z', o.cuff, 2);
-    if (o.glove) { g.fill('M-11,-10 L11,-10 L11,2 L-11,2Z', o.glove, 2); }
-    const hs = ht === 'reach' ? 1.7 : c.body === 'b' ? 1.35 : c.body === 'm' ? 1.12 : 1;
-    let hc = o.glove || skin; if (ht === 'hipfist') g.x.rotate(side === 'L' ? .6 : -.6);
-    hand(g, c, ht, hc, hs);
-    g.restore();
-  }
-
-  // ---------- generic outfits (casual / formal / winter / yukata / suit), per-character colours ----------
+  // ---------- everyday outfits (casual / formal / winter / yukata / suit), tailored to the anatomy ----------
   const OUTFITS = {
     hikari: { casual: { style: 'tee', col: '#ffd54a', col2: '#3a5ba8', legs: 'shorts', jacket: '#f4f6ff', print: 'bolt' }, formal: { style: 'dress', col: '#ffcf3f' }, winter: { style: 'coat', col: '#f4f6ff', col2: '#2b4fd6', mitten: '#2b4fd6' }, yukata: { style: 'yukata', col: '#2b4fd6', col2: '#ffc21a', col3: '#fff27a' } },
     rei: { casual: { style: 'cardigan', col: '#3a3050', col2: '#1d1a2b', col3: '#f0ecf8', legs: 'skirt', socks: '#1d1a2b' }, formal: { style: 'dress', col: '#4b2e7c' }, winter: { style: 'coat', col: '#1d1a2b', col2: '#a978ff', mitten: '#a978ff' }, yukata: { style: 'yukata', col: '#1d1a2b', col2: '#b99bff', col3: '#a978ff' } },
@@ -350,71 +387,72 @@ const PixelCast = (() => {
     kaede: { casual: { style: 'hoodie', col: '#2fbf7a', col2: '#1c1f24', legs: 'shorts' }, formal: { style: 'dress', col: '#1f8a58' }, winter: { style: 'coat', col: '#2fbf7a', col2: '#f4f7f5', mitten: '#f4f7f5' }, yukata: { style: 'yukata', col: '#dcffea', col2: '#1c1f24', col3: '#2fbf7a' } },
     sora: { casual: { style: 'blouse', col: '#ece6ff', col2: '#2b2f6b', legs: 'skirt', socks: '#ffffff' }, formal: { style: 'dress', col: '#2b2f6b', stars: 1 }, winter: { style: 'coat', col: '#ddd8f7', col2: '#ff6fae', mitten: '#ff6fae' }, yukata: { style: 'yukata', col: '#2b2f6b', col2: '#ff6fae', col3: '#ffd54a' } },
     tetsu: { casual: { style: 'tee', col: '#4a5240', col2: '#2a2b30', jacket: '#8a6a4a' }, formal: { style: 'suit' }, winter: { style: 'coat', col: '#6f7684', col2: '#ff8a2a' }, yukata: { style: 'yukata', col: '#3a4a6a', col2: '#1c1f2a', col3: '#9fb4d9' } },
-    aya: { formal: { style: 'dress', col: '#c42a36' }, winter: { style: 'coat', col: '#23222c', col2: '#c42a36' }, casual: { style: 'cardigan', col: '#6a2a36', col2: '#23222c', col3: '#f4f4f8' } },
+    aya: { formal: { style: 'dress', col: '#c42a36' }, winter: { style: 'coat', col: '#23222c', col2: '#c42a36' }, casual: { style: 'cardigan', col: '#6a2a36', col2: '#23222c', col3: '#f4f4f8', legs: 'skirt' } },
     kyouya: { formal: { style: 'suit' }, casual: { style: 'hoodie', col: '#dfe8ee', col2: '#15161c' }, winter: { style: 'coat', col: '#dfe8ee', col2: '#7ff6ff' } },
     rin: { casual: { style: 'hoodie', col: '#ff9ad8', col2: '#2e3a52', legs: 'shorts' }, winter: { style: 'coat', col: '#e6f2ff', col2: '#5fe6ff', mitten: '#5fe6ff' }, yukata: { style: 'yukata', col: '#e6f2ff', col2: '#5fe6ff', col3: '#ff7ae0' } },
-    shiori: { casual: { style: 'cardigan', col: '#233056', col2: '#1c2440', col3: '#f4f5fa' }, formal: { style: 'dress', col: '#f4f5fa' }, winter: { style: 'coat', col: '#f4f5fa', col2: '#f2c14e', mitten: '#233056' }, yukata: { style: 'yukata', col: '#233056', col2: '#f2c14e', col3: '#f4f5fa' } },
+    shiori: { casual: { style: 'cardigan', col: '#233056', col2: '#1c2440', col3: '#f4f5fa', legs: 'skirt' }, formal: { style: 'dress', col: '#f4f5fa' }, winter: { style: 'coat', col: '#f4f5fa', col2: '#f2c14e', mitten: '#233056' }, yukata: { style: 'yukata', col: '#233056', col2: '#f2c14e', col3: '#f4f5fa' } },
     natsuki: { casual: { style: 'tee', col: '#ff8a3a', col2: '#3a3f52', legs: 'shorts' }, winter: { style: 'coat', col: '#ff8a3a', col2: '#fff4dc', mitten: '#3a3f52' }, formal: { style: 'dress', col: '#d8582a' }, yukata: { style: 'yukata', col: '#ffd566', col2: '#d8582a', col3: '#fff4dc' } },
     saeki: { formal: { style: 'suit' }, winter: { style: 'coat', col: '#2a2436', col2: '#b58aff' } },
     kuroda: { formal: { style: 'suit' }, winter: { style: 'coat', col: '#3a3d46', col2: '#b8bcc8' } }
   };
-  function garment(g, c, o) {
-    const B = BODY[c.body], male = c.body !== 'f', T = B.torso, col = o.col || '#555', [cH, , cS, cD] = ramp(col, 7, 12), col2 = o.col2 || '#2a2b36', col3 = o.col3 || '#ffffff';
-    const X = x => 200 + (x - 200) * B.kx;
-    const legs = y => { g.fill(`M${X(142)},${y} L196,${y} L194,720 L${X(146)},720Z`, c.skin); g.fill(`M${X(258)},${y} L204,${y} L206,720 L${X(254)},720Z`, c.skin); };
-    const shadeR = () => g.solid(`M${X(278)},254 C${X(292)},268 ${X(292)},296 ${X(288)},324 C${X(284)},356 ${X(272)},388 ${X(262)},412 L${X(246)},420 C${X(262)},370 ${X(270)},310 ${X(262)},262Z`, cS);
+  function garment(g, c, A, o) {
+    const male = c.body !== 'f', col = o.col || '#555', [cH, , cS, cD] = ramp(col, 7, 13), col2 = o.col2 || '#2a2b36', c2S = shade(col2, -1, 13), col3 = o.col3 || '#ffffff';
+    const out = { sleeve: 'long', sleeveC: col, sleeveS: cS, cuff: cD };
+    const pants = (pc, ps) => { wearLegs(g, A, pc, ps); g.save(); clipY(g, 468, 999); cel(g, A.torso, pc, ps); g.restore(); g.line(`M200,${A.crotch - 60} L200,${A.crotch}`, ps, 2); };
     const lower = () => {
-      if (o.legs === 'shorts') { legs(560); g.fill(`M${X(132)},472 L${X(268)},472 L${X(274)},566 L204,566 L200,546 L196,566 L${X(126)},566Z`, col2); g.line(`M${X(152)},500 L${X(150)},560`, shade(col2, -1, 12), 1.6); }
-      else if (o.legs === 'skirt') { legs(570); if (o.socks) { g.fill(`M${X(144)},636 L196,636 L194,720 L${X(146)},720Z`, o.socks); g.fill(`M${X(256)},636 L204,636 L206,720 L${X(254)},720Z`, o.socks); } g.fill(`M${X(134)},462 L${X(266)},462 C${X(280)},516 ${X(290)},556 ${X(296)},592 L${X(104)},592 C${X(110)},556 ${X(120)},516 ${X(134)},462Z`, col2); g.line(`M${X(162)},476 L${X(146)},588 M200,476 L200,590 M${X(238)},476 L${X(254)},588`, shade(col2, -1, 14), 1.6); }
-      else { g.fill(male ? `M${X(124)},466 L${X(276)},466 L${X(282)},720 L206,720 L200,580 L194,720 L${X(118)},720Z` : 'M132,476 L268,476 L274,720 L204,720 L200,570 L196,720 L126,720Z', col2); g.line('M200,486 L200,572', shade(col2, -1, 14), 1.6); }
+      if (o.legs === 'shorts') { wearLegs(g, A, c.skin, c.skinS); shorts(g, A, col2, c2S, 604); }
+      else if (o.legs === 'skirt') { wearLegs(g, A, c.skin, c.skinS); if (o.socks) wearLegs(g, A, o.socks, shade(o.socks, -1, 12), 650); skirt(g, A, col2, c2S, 470, 614, 24, 6); }
+      else pants(col2, c2S);
     };
-    const out = { sleeve: 'long', sleeveC: col, sleeveS: cS, cuff: cD, glove: null };
+    const panels = (pc, ps, y1, gap = 14) => { g.save(); g.clip(A.torso); clipY(g, 0, y1); const pn = `M-60,250 L${200 - gap},250 L${200 - gap},${y1 + 2} L-60,${y1 + 2}Z`; mirror(g, () => cel(g, pn, pc, ps)); g.restore(); const [a, b] = A.span(y1); g.line(`M${f1(a)},${y1} L${f1(b)},${y1}`, g.LN, 2.4); };
     switch (o.style) {
       case 'tee': case 'hoodie':
-        lower(); g.fill(T, col); shadeR(); g.line(`M${X(134)},478 L${X(266)},478`, cD, 3);
-        if (o.style === 'tee') { g.line('M174,230 Q200,252 226,230', cD, 3.4); out.sleeve = 'short'; out.cuff = cD; }
-        else { g.fill('M156,226 C162,194 238,194 244,226 C240,254 160,254 156,226Z', cH, 2); g.solid('M170,226 C176,208 224,208 230,226 C224,242 176,242 170,226Z', cS); g.line('M190,250 L186,300 M210,250 L214,300', '#f4f4f4', 2); g.fill(`M${X(152)},392 L${X(248)},392 L${X(260)},452 L${X(140)},452Z`, cH, 1.8); }
-        if (o.print === 'bolt') g.poly([[206, 296], [188, 330], [200, 330], [192, 360], [216, 322], [204, 322], [212, 296]], C_BLUE, 1.6);
-        if (o.jacket) { const [jH, , jS] = ramp(o.jacket, 6, 12); const pn = `M188,228 C${X(160)},236 ${X(130)},240 ${X(114)},254 C${X(100)},266 ${X(98)},292 ${X(102)},322 C${X(106)},356 ${X(126)},388 ${X(138)},414 C${X(144)},440 ${X(134)},470 ${X(130)},510 L${X(128)},540 L172,538 L174,420 C176,360 170,300 178,250Z`; g.fill(pn, o.jacket, 2); g.save(); g.x.translate(400, 0); g.x.scale(-1, 1); g.fill(pn, o.jacket, 2); g.solid(`M${X(114)},254 C${X(100)},266 ${X(98)},292 ${X(102)},322 C${X(106)},350 ${X(118)},378 ${X(128)},398 L${X(142)},392 C${X(128)},350 ${X(124)},300 ${X(128)},262Z`, jS); g.restore(); out.sleeve = 'long'; out.sleeveC = o.jacket; out.sleeveS = jS; out.cuff = jS; }
+        lower(); wearTorso(g, A, col, cS, 0, o.legs === 'skirt' ? 486 : 506);
+        if (o.style === 'tee') { g.line('M180,278 Q200,296 220,278', cD, 3.4); out.sleeve = 'short'; }
+        else { g.fill('M160,274 C166,244 234,244 240,274 C236,300 164,300 160,274Z', cH, 2.2); g.solid('M174,274 C180,260 220,260 226,274 C220,288 180,288 174,274Z', cS); g.line('M190,296 L186,346 M210,296 L214,346', '#f4f4f4', 2.2); const [a, b] = A.span(456); g.fill(`M${a + 18},440 L${b - 18},440 L${b - 8},490 L${a + 8},490Z`, cH, 2); }
+        if (o.print === 'bolt') g.poly([[206, 390], [188, 422], [200, 422], [192, 452], [216, 416], [204, 416], [212, 390]], C_BLUE, 1.8);
+        if (o.jacket) { const [jH, , jS] = ramp(o.jacket, 6, 13); panels(o.jacket, jS, 500, 24); out.sleeve = 'long'; out.sleeveC = o.jacket; out.sleeveS = jS; out.cuff = jS; }
         break;
       case 'cardigan':
-        lower(); g.fill(T, col3); g.solid('M180,224 L168,248 L196,244Z', '#ffffff');
-        { const pn = `M188,228 C${X(160)},236 ${X(130)},240 ${X(114)},254 C${X(100)},266 ${X(98)},292 ${X(102)},322 C${X(106)},356 ${X(126)},388 ${X(138)},414 C${X(144)},440 ${X(134)},470 ${X(132)},490 L176,490 L176,420 C178,360 172,300 180,250Z`; g.fill(pn, col, 2); g.save(); g.x.translate(400, 0); g.x.scale(-1, 1); g.fill(pn, col, 2); g.restore(); }
-        shadeR(); [300, 350, 400, 450].forEach(y => g.ell(172, y, 3.4, 3.4, cH, 1.2)); break;
+        lower(); wearTorso(g, A, col3, shade(col3, -1, 10), 0, 490); g.fill('M186,272 L176,296 L198,292Z', '#ffffff', 1.6); g.fill('M214,272 L224,296 L202,292Z', '#ffffff', 1.6);
+        panels(col, cS, 494, 22); [340, 390, 440].forEach(y => g.ell(176, y, 3.6, 3.6, cH, 1.4)); break;
       case 'blouse':
-        lower(); g.fill(T, col); shadeR();
-        g.fill('M188,226 C168,234 160,256 180,260 C194,262 198,246 200,236Z', '#ffffff', 1.6); g.fill('M212,226 C232,234 240,256 220,260 C206,262 202,246 200,236Z', '#ffffff', 1.6);
-        g.fill('M200,246 C186,234 172,240 178,254 C182,262 194,258 200,252 C206,258 218,262 222,254 C228,240 214,234 200,246Z', col2, 1.6); g.ell(200, 250, 4.4, 4.4, col2, 1.4);
+        lower(); wearTorso(g, A, col, cS, 0, 488);
+        mirror(g, () => g.fill('M188,272 C170,280 162,300 180,306 C194,308 198,292 200,282Z', '#ffffff', 1.8));
+        g.fill('M200,296 C186,284 172,290 178,304 C182,312 194,308 200,302 C206,308 218,312 222,304 C228,290 214,284 200,296Z', col2, 1.8); g.ell(200, 300, 4.6, 4.6, col2, 1.4);
         out.cuff = '#ffffff'; break;
-      case 'dress':
-        if (male) return garment(g, c, { style: 'suit' });
-        g.fill(T, c.skin); g.line('M170,246 Q184,252 196,248 M230,246 Q216,252 204,248', c.skinS, 1.8);
-        g.fill('M112,300 C140,286 176,300 200,306 C224,300 260,286 288,300 C300,340 290,380 272,414 L262,440 C300,520 320,620 330,720 L70,720 C80,620 100,520 138,440 L128,414 C110,380 100,340 112,300Z', col);
-        g.solid('M288,300 C300,340 290,380 272,414 L262,440 C300,520 320,620 330,720 L284,720 C272,600 254,500 242,440 C262,392 282,346 276,304Z', cS);
-        g.line('M160,460 Q150,580 136,700 M200,470 L200,700 M240,460 Q250,580 264,700', cD, 1.8); g.line('M122,306 C150,296 180,310 200,314', cH, 2.6);
-        g.line('M178,238 Q200,262 222,238', '#ffd54a', 2); g.ell(200, 262, 5.4, 5.4, o.stars ? '#ffd54a' : '#ffffff', 1.4);
-        if (o.stars) [[150, 480], [240, 520], [180, 600], [260, 650], [130, 660], [220, 440]].forEach(([a, b]) => star(g, a, b, 7, '#ffd54a', 1.4));
-        out.sleeve = 'none'; out.cuff = '#ffd54a'; break;
+      case 'dress': {
+        if (male) return garment(g, c, A, { style: 'suit' });
+        wearLegs(g, A, c.skin, c.skinS); wearTorso(g, A, c.skin, c.skinS, 0, 340);
+        g.save(); g.clip(A.torso); clipY(g, 330, 470); cel(g, A.torso, col, cS); g.restore();
+        g.fill(`M150,330 C176,320 190,336 200,340 C210,336 224,320 250,330`, col, 0); g.line('M148,332 C174,322 190,338 200,342 C210,338 226,322 252,332', g.LN, 2.4);
+        skirt(g, A, col, cS, 456, 720, 70, 5);
+        g.line('M176,276 Q200,300 224,276', '#ffd54a', 2.2); g.ell(200, 302, 5.6, 5.6, o.stars ? '#ffd54a' : '#ffffff', 1.6);
+        if (o.stars) [[160, 540], [240, 580], [190, 660], [262, 690], [130, 680], [226, 500]].forEach(([a, b]) => star(g, a, b, 8, '#ffd54a', 1.4));
+        out.sleeve = 'none'; out.cuff = null; break;
+      }
       case 'suit': {
-        g.fill(male ? `M${X(124)},466 L${X(276)},466 L${X(282)},720 L206,720 L200,580 L194,720 L${X(118)},720Z` : 'M132,476 L268,476 L274,720 L204,720 L200,570 L196,720 L126,720Z', '#15151c');
-        g.fill(T, '#1c1c26'); g.solid(`M${X(294)},250 C${X(308)},262 ${X(310)},292 ${X(306)},326 C${X(302)},370 ${X(286)},406 ${X(274)},438 L${X(252)},440 C${X(270)},380 ${X(284)},320 ${X(276)},258Z`, '#0e0e14');
-        g.fill('M186,222 L214,222 L226,234 L200,368 L174,234Z', '#f4f4f8', 1.8); g.fill('M190,244 L200,250 L210,244 L206,330 L200,340 L194,330Z', o.tie || '#8a1e2a', 1.6);
-        const lp = `M176,232 L${X(142)},300 L${X(164)},318 L${X(154)},334 L192,390 L198,366Z`; g.fill(lp, '#26263a', 1.8); g.save(); g.x.translate(400, 0); g.x.scale(-1, 1); g.fill(lp, '#26263a', 1.8); g.restore();
+        pants('#16161e', '#0a0a10'); wearTorso(g, A, '#f4f4f8', '#cfcfd8', 0, 480);
+        g.fill('M193,286 L200,292 L207,286 L205,390 L200,400 L195,390Z', o.tie || '#8a1e2a', 1.8);
+        panels('#1c1c26', '#0e0e14', 486, 16);
+        mirror(g, () => g.fill('M184,274 L158,330 L176,344 L168,358 L196,420 L196,300Z', '#26263a', 1.8));
         out.sleeveC = '#1c1c26'; out.sleeveS = '#0e0e14'; out.cuff = '#f4f4f8'; break;
       }
-      case 'coat':
-        g.fill(T.replace(/L(\d+),4(80|88|92) L(\d+),4(80|88|92)/, ''), col); g.fill(`M${X(126)},430 L${X(274)},430 L${X(290)},720 L${X(110)},720Z`, col); shadeR(); g.solid(`M${X(274)},430 L${X(290)},720 L${X(250)},720 L${X(240)},430Z`, cS);
-        g.line('M200,250 L200,720', cD, 2); [300, 360, 420, 480, 560].forEach(y => { g.ell(186, y, 4.4, 4.4, cD); g.ell(214, y, 4.4, 4.4, cD); });
-        g.fill(`M${X(136)},418 L${X(264)},418 L${X(264)},436 L${X(136)},436Z`, cD, 1.6);
-        for (let i = 0; i < 9; i++) g.ell(156 + i * 11, 232 + Math.sin(i / 8 * Math.PI) * 14, 9.5, 9.5, '#f6f4f0', 1.2);
-        g.fill('M160,222 C180,248 220,248 240,222 L248,240 C228,272 172,272 152,240Z', col2); g.fill('M216,250 C232,290 238,340 232,400 L214,402 C218,346 210,300 198,262Z', col2); g.line('M216,398 l0,12 M222,398 l1,12 M228,398 l2,12', col2, 3);
+      case 'coat': {
+        pants(male ? '#2a2b36' : '#3a3444', '#1c1a24');
+        wearTorso(g, A, col, cS); skirt(g, A, col, cS, 470, 720, 20, 3);
+        g.line('M200,290 L200,720', cD, 2); [340, 400, 460, 540, 620].forEach(y => { g.ell(186, y, 4.4, 4.4, cD); g.ell(214, y, 4.4, 4.4, cD); });
+        g.fill(`M${A.span(462)[0]},456 L${A.span(462)[1]},456 L${A.span(470)[1]},474 L${A.span(470)[0]},474Z`, cD, 2);
+        for (let i = 0; i < 9; i++) g.ell(154 + i * 11.5, 276 + Math.sin(i / 8 * Math.PI) * 16, 10, 10, '#f6f4f0', 1.4);
+        g.fill('M162,266 C182,294 218,294 238,266 L246,286 C226,318 174,318 154,286Z', col2, 2); g.fill('M216,300 C232,340 236,390 230,450 L212,452 C216,396 208,350 198,312Z', col2, 2);
         out.cuff = '#f6f4f0'; out.glove = o.mitten || null; break;
+      }
       case 'yukata': {
-        g.fill(T.replace(/L(\d+),4(80|88|92) L(\d+),4(80|88|92)/, ''), col); g.fill(`M${X(126)},430 L${X(274)},430 L${X(284)},720 L${X(116)},720Z`, col); shadeR();
-        [[150, 300], [244, 284], [182, 380], [262, 440], [140, 490], [226, 520], [170, 600], [252, 640], [134, 690], [210, 700]].forEach(([a, b]) => { for (let k = 0; k < 5; k++) g.ell(a + Math.cos(k * 1.256) * 5, b + Math.sin(k * 1.256) * 5, 3.8, 3.8, col3); g.ell(a, b, 2.4, 2.4, '#ffffff'); });
-        g.line('M178,226 L206,330', '#f6f2ea', 7); g.line('M222,226 L196,318', cD, 7); g.line('M176,228 L204,334', c.line, 1.6);
-        g.fill(male ? `M${X(120)},400 L${X(280)},400 L${X(282)},440 L${X(118)},440Z` : 'M126,396 L274,396 L276,452 L124,452Z', col2, 2); g.line(male ? `M${X(120)},420 L${X(280)},420` : 'M126,424 L274,424', col3, 3.4); g.line('M200,452 L200,720', cD, 1.8);
-        out.cuff = col; break;
+        wearTorso(g, A, col, cS); skirt(g, A, col, cS, 470, 720, 8, 2);
+        [[160, 350], [244, 330], [184, 430], [258, 500], [150, 560], [230, 600], [176, 660], [250, 690]].forEach(([a, b]) => { for (let k = 0; k < 5; k++) g.ell(a + Math.cos(k * 1.256) * 5, b + Math.sin(k * 1.256) * 5, 4, 4, col3); g.ell(a, b, 2.6, 2.6, '#ffffff'); });
+        g.line('M182,272 L208,372', '#f6f2ea', 8); g.line('M218,272 L196,360', cD, 8); g.line('M180,274 L206,376', c.line, 1.8);
+        const [a, b] = A.span(440); g.fill(`M${a - 4},424 L${b + 4},424 L${b + 6},470 L${a - 6},470Z`, col2, 2.2); g.line(`M${a - 4},446 L${b + 4},446`, col3, 3.4);
+        g.line('M200,470 L200,720', cD, 2); out.cuff = col; break;
       }
       default: return null;
     }
@@ -425,69 +463,64 @@ const PixelCast = (() => {
   function drawChar(x, id, st) {
     const c = CAST[id]; if (!c) return null;
     const g = G(x, c.line); g.markLine(c.hairL);
-    const e = EMO[st.emo] || EMO.neutral, P = POSES[st.pose] || POSES.default, B = BODY[c.body];
-    const t = st.t, sw = Math.sin(t * TAU), cw = Math.cos(t * TAU);
-    const an = c.anim || {};
-    const a = { t, sway: sw * (an.hair || 1), sway2: Math.sin(t * TAU - 1) * (an.hair || 1), bob2: Math.sin(t * TAU * 2), frame: st.frame, spark: an.spark };
-    // body language: tilt, droop, lean, jolt, bounce
+    const A = ANAT[c.body], e = EMO[st.emo] || EMO.neutral, P = POSES[st.pose] || POSES.default;
+    const t = st.t, sw = Math.sin(t * TAU), cw = Math.cos(t * TAU), an = c.anim || {};
+    const a = { t, sway: sw * (an.hair || 1), sway2: Math.sin(t * TAU - 1) * (an.hair || 1), bob2: Math.sin(t * TAU * 2), frame: st.frame, spark: an.spark, hero: !(st.of && st.of !== 'hero' && OUTFITS[id] && OUTFITS[id][st.of]) };
+    // body language: tilt, droop, lean, jolt, bounce, hop, shake, float
     let tilt = (P.tilt || 0) + (e.tilt || 0), dy = (e.droop || 0), dx = (P.lean || 0) + (e.lean || 0);
     if (e.sway) tilt += sw * 3 * e.sway;
     tilt += cw * (an.headSway || .8);
-    if (e.shake) { const m = [[1, 0], [-1, 1], [0, -1], [-1, 0], [1, 1], [0, 0]][st.frame % 6]; dx += m[0] * 2.4 * e.shake; dy += m[1] * 2.4 * e.shake; }
+    if (e.shake) { const m = PX.motion('shake', st.frame, 6); dx += m[0] * 2.4 * e.shake; dy += m[1] * 2.4 * e.shake; }
     if (e.jolt) dy -= 5 * e.jolt * Math.max(0, cw);
     if (e.bob) dy -= Math.round(Math.abs(sw) * 3 * e.bob);
     if (e.hop) dy -= Math.round(Math.abs(Math.sin(t * TAU * 2)) * 9);
     if (P.cheer) dy -= Math.round(Math.abs(Math.sin(t * TAU * 2)) * 5);
     if (an.float) dy += Math.round(sw * 7);
-    const st2 = { t, frame: st.frame, lift: (P.lift || 0) * -1, waveArm: P.waveArm, cheer: P.cheer, pump: P.pump, outfit: null };
-    const breath = st.breath ? 2.2 * (an.breath || 1) : 0;
-    x.save(); x.translate(dx, dy);
-    // outfit resolution
+    const breath = st.breath ? 2.4 * (an.breath || 1) : 0;
+    const st2 = { t, frame: st.frame, lift: -(P.lift || 0), waveArm: P.waveArm, cheer: P.cheer, pump: P.pump, outfit: null };
     const of = st.of && st.of !== 'hero' && OUTFITS[id] && OUTFITS[id][st.of];
-    // layers
-    const headRot = () => { x.translate(200, 222); x.rotate(tilt * Math.PI / 180); x.translate(-200, -222 - breath); };
+    const headRot = () => { x.translate(200, 244); x.rotate(tilt * Math.PI / 180); x.translate(-200, -244 - breath); };
+    x.save(); x.translate(dx, dy);
     if (c.aura) c.aura(g, c, a, 'back');
     x.save(); headRot(); c.back && c.back(g, c, a, of); x.restore();
     // body
     x.save(); x.translate(0, breath * .5);
-    let o = of ? garment(g, c, of) : null;
-    if (!o) { c.outfit(g, c, a); const C = c.col || {}; o = { sleeve: c.sleeve || 'long', sleeveC: c.sleeveC || C.jacket || C.suit, sleeveS: c.sleeveS || C.jacketS || C.suitS, cuff: c.cuffC || C.trim, glove: c.hand === 'glove' ? (C.glove || C_BLUE) : c.hand && c.hand !== 'skin' ? c.hand : null }; }
+    const [n0, n1] = A.neck;
+    cel(g, `M${n0},176 L${n0},286 Q200,294 ${n1},286 L${n1},176Z`, c.skin, c.skinS, 2.2, c.line, [-5, -2]);
+    g.solid(`M${n0},206 Q200,236 ${n1},206 L${n1},226 Q200,248 ${n0},226Z`, c.skinS);
+    if (A.chest) g.line('M172,296 Q184,302 194,298 M228,296 Q216,302 206,298', c.skinS, 1.6);
+    let o = of ? garment(g, c, A, of) : null;
+    if (!o) o = c.outfit(g, c, A, a) || c.hero;
+    if (c.collar && !of) c.collar(g, c, a);
     st2.outfit = o;
-    // neck
-    const [n0, n1] = B.neck;
-    g.fill(`M${n0},172 L${n0},240 Q200,248 ${n1},240 L${n1},172Z`, c.skin, 2.2); g.solid(`M${n0},190 Q200,214 ${n1},190 L${n1},210 Q200,228 ${n0},210Z`, c.skinS);
-    if (c.collar) c.collar(g, c, a, of);
     x.restore();
     // head
     x.save(); headRot();
-    const head = c.body === 'f' ? HEAD_F : c.old ? HEAD_O : HEAD_M;
-    g.ell(140, 146, 7, 12, c.skin, 2); g.ell(260, 146, 7, 12, c.skin, 2);
-    g.fill(head, c.skin, 2.4);
-    g.solid(c.body === 'f' ? 'M257,112 C257,146 246,172 223,192 L226,182 C244,164 252,140 252,112Z' : 'M259,108 C259,148 250,176 228,196 L231,184 C249,164 254,138 254,108Z', c.skinS);
-    // bang shadow on forehead
-    g.solid(c.bangShadow || 'M146,98 L146,118 Q160,126 172,116 Q186,128 200,118 Q214,128 228,116 Q240,126 254,118 L254,98Z', c.skinS);
+    const hk = c.old ? 'o' : A.head, ex = A.eye;
+    g.ell(141, 160, 7, 13, c.skin, 2.2); g.ell(259, 160, 7, 13, c.skin, 2.2); g.line('M140,154 q3,6 0,12 M260,154 q-3,6 0,12', c.skinS, 1.6);
+    cel(g, HEAD[hk], c.skin, c.skinS, 2.6, c.line, [-8, -5]);
+    g.solid(c.bangShadow || 'M146,100 L146,140 Q160,148 172,138 Q186,150 200,140 Q214,150 228,138 Q240,148 254,140 L254,100Z', c.skinS);
     if (c.faceExtra) c.faceExtra(g, c, a);
-    const look = e.look || 0, ET = Array.isArray(e.e) ? e.e : [e.e, e.e];
-    const eyL = st.blink && !['happy', 'closed', 'flat', 'sleepy'].includes(ET[0]) ? 'closed' : ET[0], eyR = st.blink && !['happy', 'closed', 'flat', 'sleepy'].includes(ET[1]) ? 'closed' : ET[1];
-    (e.fx || []).forEach(k => manpu(g, c, k, t, 'under'));
-    const ey = c.eyeY || 142;
-    eye(g, c, 174, ey, true, eyL, look, t); eye(g, Object.assign({}, c, c.eye2 ? { eye: c.eye2, eyeD: c.eyeD2, eyeL: c.eyeL2, eyeP: shade(c.eyeD2, -1, 12) } : {}), 226, ey, false, eyR, look, t);
-    // nose + mouth
-    g.line('M201,160 l-2,5', c.skinD, 2);
+    const look = e.look || 0, ET = Array.isArray(e.e) ? e.e : [e.e, e.e], shut = ['happy', 'closed', 'flat', 'sleepy'];
+    const eyL = st.blink && !shut.includes(ET[0]) ? 'closed' : ET[0], eyR = st.blink && !shut.includes(ET[1]) ? 'closed' : ET[1];
+    g.save(); g.tr(0, 20); (e.fx || []).forEach(k => manpu(g, c, k, t, 'under')); g.restore();
+    const c2 = c.eye2 ? Object.assign({}, c, { eye: c.eye2, eyeD: c.eyeD2, eyeL: c.eyeL2, eyeP: shade(c.eyeD2, -1, 12) }) : c;
+    [[ex[0], true, eyL, c], [ex[1], false, eyR, c2]].forEach(([[px, py], flip, ty, cc]) => { g.save(); g.tr(px, py + (c.eyeDY || 0)); g.sc(ex[2], ex[3]); eye(g, cc, 0, 0, flip, ty, look, t); g.restore(); });
+    g.line('M201,184 l-2,4', c.skinD, 2);
     let m = e.m; if (st.talk) m = TALK[m] || 'open';
-    (MOUTH[m] || MOUTH.small)(g, c);
+    const [mx, my, ms] = A.mouth; g.save(); g.tr(mx, my); g.sc(ms); g.tr(-200, -180); (MOUTH[m] || MOUTH.small)(g, c); g.restore();
     if (c.facial) c.facial(g, c, a);
     c.front(g, c, a, of);
     const bl = e.b === 'smug' ? 'normal' : e.b === 'worried' ? 'sad' : e.b, br = e.b === 'smug' ? 'raised' : e.b === 'worried' ? 'normal' : e.b;
-    brow(g, c, 174, ey, true, bl); brow(g, c, 226, ey, false, br);
+    brow(g, c, ex[0][0], ex[0][1] - 8, true, bl); brow(g, c, ex[1][0], ex[1][1] - 8, false, br);
     if (c.glasses) c.glasses(g, c, a);
     x.restore();
     // arms
     x.save(); x.translate(0, breath * .5);
-    arm(g, c, 'L', P.L, st2); arm(g, c, 'R', P.R, st2);
+    arm(g, c, A, 'L', P.L, st2); arm(g, c, A, 'R', P.R, st2);
+    if (c.overArms && !of) c.overArms(g, c, a);
     x.restore();
-    // head accessories that sit in front of arms (none) + front fx
-    x.save(); headRot(); (e.fx || []).forEach(k => manpu(g, c, k, t, 'over')); x.restore();
+    x.save(); headRot(); g.tr(0, 20); (e.fx || []).forEach(k => manpu(g, c, k, t, 'over')); x.restore();
     if (c.aura) c.aura(g, c, a, 'front');
     x.restore();
     return g;
@@ -535,7 +568,7 @@ const PixelCast = (() => {
     const k = keyOf(id, emo, pose, of);
     PX.request(k, build(id, emo, pose, of), pri);
     const { src, tmp } = PX.srcFor(k, last[id]); last[id] = k;
-    const vb = portrait ? '122 34 156 172' : '0 0 400 720';
+    const vb = portrait ? '100 20 200 220' : '0 0 400 720';
     return `<svg class="csvg pixelart" viewBox="${vb}" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg"><image class="pxa" data-k="${k}"${tmp ? ' data-tmp="1"' : ''} href="${src}" x="0" y="0" width="400" height="720" preserveAspectRatio="none"/></svg>`;
   }
   const prewarm = (id, emo, pose, of) => CAST[id] && PX.request(keyOf(id, emo, pose, of), build(id, emo, pose, of), 0);
@@ -555,5 +588,5 @@ const PixelCast = (() => {
     return proj;
   }
 
-  return { CAST, EMO, POSES, OUTFITS, sprite, exportPxs, prewarm, render, drawChar, keyOf, W, H, S, K, G, ribbon, hairLock, cap, angelRing, star, star4, heartD, garment, hiPaint };
+  return { CAST, EMO, POSES, OUTFITS, ANAT, garment, sprite, exportPxs, cel, clipY, wearTorso, wearLegs, skirt, shorts, mirror, fringe, limbPath, limbPts, prewarm, render, drawChar, keyOf, W, H, S, K, G, ribbon, hairLock, cap, angelRing, star, star4, heartD, garment, hiPaint };
 })();
