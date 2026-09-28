@@ -459,13 +459,19 @@ const PixelCast = (() => {
     return out;
   }
 
+  // sitting, seen from the front: thighs foreshortened toward the viewer, knees together, shins hanging
+  function sitLegs(g, c, A, of) {
+    const col = of ? (of.legs === 'skirt' || of.legs === 'shorts' || of.style === 'dress' ? c.skin : of.col2 || '#2a2b36') : c.legC || c.skin, sh = shade(col, -1, 13);
+    mirror(g, () => { cel(g, 'M150,610 L154,740 L186,740 L194,612Z', col, sh); cel(g, 'M134,540 C126,574 132,606 150,618 C168,628 190,622 197,604 L199,548Z', col, sh); });
+  }
+
   // ---------- one frame ----------
   function drawChar(x, id, st) {
     const c = CAST[id]; if (!c) return null;
     const g = G(x, c.line); g.markLine(c.hairL);
     const A = ANAT[c.body], e = EMO[st.emo] || EMO.neutral, P = POSES[st.pose] || POSES.default;
     const t = st.t, sw = Math.sin(t * TAU), cw = Math.cos(t * TAU), an = c.anim || {};
-    const a = { t, sway: sw * (an.hair || 1), sway2: Math.sin(t * TAU - 1) * (an.hair || 1), bob2: Math.sin(t * TAU * 2), frame: st.frame, spark: an.spark, hero: !(st.of && st.of !== 'hero' && OUTFITS[id] && OUTFITS[id][st.of]) };
+    const wind = st.wind || 1, a = { t, sway: sw * (an.hair || 1) * wind, sway2: Math.sin(t * TAU - 1) * (an.hair || 1) * wind, bob2: Math.sin(t * TAU * 2), frame: st.frame, spark: an.spark, hero: !(st.of && st.of !== 'hero' && OUTFITS[id] && OUTFITS[id][st.of]) };
     // body language: tilt, droop, lean, jolt, bounce, hop, shake, float
     let tilt = (P.tilt || 0) + (e.tilt || 0), dy = (e.droop || 0), dx = (P.lean || 0) + (e.lean || 0);
     if (e.sway) tilt += sw * 3 * e.sway;
@@ -482,18 +488,40 @@ const PixelCast = (() => {
     const headRot = () => { x.translate(200, 244); x.rotate(tilt * Math.PI / 180); x.translate(-200, -244 - breath); };
     x.save(); x.translate(dx, dy);
     if (c.aura) c.aura(g, c, a, 'back');
-    x.save(); headRot(); c.back && c.back(g, c, a, of); x.restore();
+    if (st.view !== 'back') { x.save(); headRot(); c.back && c.back(g, c, a, of); x.restore(); }
     // body
     x.save(); x.translate(0, breath * .5);
     const [n0, n1] = A.neck;
     cel(g, `M${n0},176 L${n0},286 Q200,294 ${n1},286 L${n1},176Z`, c.skin, c.skinS, 2.2, c.line, [-5, -2]);
     g.solid(`M${n0},206 Q200,236 ${n1},206 L${n1},226 Q200,248 ${n0},226Z`, c.skinS);
     if (A.chest) g.line('M172,296 Q184,302 194,298 M228,296 Q216,302 206,298', c.skinS, 1.6);
+    const back = st.view === 'back';
+    if (st.sit && !back) sitLegs(g, c, A, of);
+    if (st.sit) { g.save(); clipY(g, -999, 572); }
     let o = of ? garment(g, c, A, of) : null;
     if (!o) o = c.outfit(g, c, A, a) || c.hero;
-    if (c.collar && !of) c.collar(g, c, a);
+    if (st.sit) g.restore();
+    if (back) { const bc = o.sleeveC || c.backC || c.skin; wearTorso(g, A, bc, shade(bc, -1, 13), 0, c.backY || 470); }
+    else if (c.collar && !of) c.collar(g, c, a);
     st2.outfit = o;
     x.restore();
+    if (back) {
+      // seen from behind: arms, then the back of the head and all the hair over the shoulders
+      x.save(); x.translate(0, breath * .5); arm(g, c, A, 'L', P.L, st2); arm(g, c, A, 'R', P.R, st2); x.restore();
+      x.save(); headRot();
+      g.ell(141, 160, 7, 13, c.skin, 2.2); g.ell(259, 160, 7, 13, c.skin, 2.2);
+      cel(g, HEAD[c.old ? 'o' : A.head], c.hair, c.hairS, 2.4, c.hairL, [-8, -5]);
+      c.back && c.back(g, c, a, of);
+      const nape = c.shortHair ? 214 : 262, mass = `M132,150 C118,70 160,28 200,28 C240,28 282,70 268,150 C272,196 262,236 ${248 + a.sway * 3},${nape} L${152 + a.sway * 3},${nape} C138,236 128,196 132,150Z`;
+      cel(g, mass, c.hair, c.hairS, 2.2, c.hairL, [-10, -6]); g.markLine(c.hairL);
+      for (let k = 0; k < 7; k++) { const x0 = 150 + k * 17; g.line(`M${200 + (x0 - 200) * .3},40 C${x0},100 ${x0 + (x0 - 200) * .1},170 ${x0 + a.sway * 3 + (x0 - 200) * .12},${nape - 6}`, c.hairS, 2); }
+      g.solid('M150,74 C170,48 190,40 200,40 C188,54 176,68 170,90Z', c.hairH); angelRing(g, c, 92);
+      if (c.backAcc) c.backAcc(g, c, a);
+      x.restore();
+      if (c.aura) c.aura(g, c, a, 'front');
+      x.restore();
+      return g;
+    }
     // head
     x.save(); headRot();
     const hk = c.old ? 'o' : A.head, ex = A.eye;
@@ -505,14 +533,17 @@ const PixelCast = (() => {
     const eyL = st.blink && !shut.includes(ET[0]) ? 'closed' : ET[0], eyR = st.blink && !shut.includes(ET[1]) ? 'closed' : ET[1];
     g.save(); g.tr(0, 20); (e.fx || []).forEach(k => manpu(g, c, k, t, 'under')); g.restore();
     const c2 = c.eye2 ? Object.assign({}, c, { eye: c.eye2, eyeD: c.eyeD2, eyeL: c.eyeL2, eyeP: shade(c.eyeD2, -1, 12) }) : c;
-    [[ex[0], true, eyL, c], [ex[1], false, eyR, c2]].forEach(([[px, py], flip, ty, cc]) => { g.save(); g.tr(px, py + (c.eyeDY || 0)); g.sc(ex[2], ex[3]); eye(g, cc, 0, 0, flip, ty, look, t); g.restore(); });
+    const tn = st.turn || 0;
+    [[ex[0], true, eyL, c, -1], [ex[1], false, eyR, c2, 1]].forEach(([[px, py], flip, ty, cc, sd]) => { g.save(); g.tr(px + tn * 13, py + (c.eyeDY || 0)); g.sc(ex[2] * (1 - Math.max(0, tn * sd) * .28), ex[3]); eye(g, cc, 0, 0, flip, ty, look + tn * 3, t); g.restore(); });
+    g.save(); g.tr(tn * 16, 0);
     g.line('M201,184 l-2,4', c.skinD, 2);
     let m = e.m; if (st.talk) m = TALK[m] || 'open';
     const [mx, my, ms] = A.mouth; g.save(); g.tr(mx, my); g.sc(ms); g.tr(-200, -180); (MOUTH[m] || MOUTH.small)(g, c); g.restore();
     if (c.facial) c.facial(g, c, a);
-    c.front(g, c, a, of);
+    g.restore();
+    g.save(); g.tr(tn * 6, 0); c.front(g, c, a, of); g.restore();
     const bl = e.b === 'smug' ? 'normal' : e.b === 'worried' ? 'sad' : e.b, br = e.b === 'smug' ? 'raised' : e.b === 'worried' ? 'normal' : e.b;
-    brow(g, c, ex[0][0], ex[0][1] - 8, true, bl); brow(g, c, ex[1][0], ex[1][1] - 8, false, br);
+    brow(g, c, ex[0][0] + tn * 13, ex[0][1] - 8, true, bl); brow(g, c, ex[1][0] + tn * 13, ex[1][1] - 8, false, br);
     if (c.glasses) c.glasses(g, c, a);
     x.restore();
     // arms

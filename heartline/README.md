@@ -90,7 +90,16 @@ The drawings use anime proportions, about 6 heads tall. Each character has a lar
   - Aya: hair sway and a glasses glint
 - **B.I.T.:** a float loop, a thruster flicker, a blinking antenna and 10 screen faces.
 - **Monsters:** the Rift Hound, the Glass Leviathan and the Glazier, with a pulsing core, a working jaw, glinting shards and coils.
-- **CGs:** all 48 are recomposed as unique animated pixel scenes (400 × 225, 6 frames). Each one has its own framing (close-ups, dutch angles, mirrored doubles, a gondola window, prison bars) and effects (lightning, tendrils, hex shields, spotlights, glow sticks, fireworks, snow, petals, embers, command rings and a glitch tear).
+- **CGs:** all 48 are painted as staged VN scenes (400 × 225, 8 frames) rather than characters lined up facing the camera. They use:
+  - back and over-the-shoulder shots (Hikari on the rooftop ledge at sunset, the squad facing the Rift, the festival crowd under the fireworks)
+  - characters sitting on ledges, benches, steps, café chairs and gondola seats
+  - 3/4 head turns
+  - afterimages (Kaede's dash) and cracked-mirror doubles (Kyouya)
+  - hands held in the foreground
+  - painted props in front of the cast: railings, a red umbrella in the rain, café tables with steam, prison bars, fire, lanterns, a sparkler, a camera viewfinder
+  - a key light and rim light per character, a background tone per scene and a slow camera drift
+  
+  The animation covers hair in the wind, blinks, particles, fire, fireworks, shooting stars and a glitch tear.
 - **Backgrounds:** re-rasterised onto a 400 × 225 grid with a 40-colour palette per scene and ordered dithering. Animated scenes keep 8 frames.
 - **Settings:** *Pixel-Art Graphics* switches back to the original vector art. *Smooth Pixels* applies Pixel Studio's Scale2x.
 - **Pixel Studio round trip:** the Character Viewer can export any sprite (character, expression, pose and outfit) as a `.pxs.json` project. Open it in Moonkai Pixel Studio (`pixel/index.html`) with **Open**. Ready-made projects for the whole cast are in [`../pixel-studio/cast/`](../pixel-studio/cast/).

@@ -375,3 +375,12 @@
     }
   });
 })();
+
+// Colours used by the CG views: the back of each hero costume, and the legs when sitting.
+(() => {
+  const C = PixelCast.CAST, set = (id, backC, legC) => Object.assign(C[id], { backC, legC });
+  set('hikari', '#f8f8ff', '#232846'); set('rei', '#1b1826', '#231d35'); set('mira', '#fbfdff', '#fbfdff'); set('kaede', '#2fbf7a');
+  set('sora', '#ffffff', '#ffffff'); set('tetsu', '#3a3d46', '#2a2b30'); ['tetsu', 'kyouya', 'kuroda', 'saeki', 'natsuki', 'rin'].forEach(k => C[k].shortHair = 1); set('kyouya', '#eef2f6', '#15161c'); set('rin', '#2e3a52', '#2e3a52');
+  set('shiori', '#233056', '#f4f5fa'); set('kuroda', '#1c1c26', '#16161e'); set('saeki', '#f2f2f6', '#e6e6ee'); set('natsuki', '#ff7a2a', '#3a3f52'); set('aya', '#23222c', '#4a3038');
+  C.hikari.backAcc = g => { for (const sg of [-1, 1]) g.ell(200 + 60 * sg, 80, 10, 13, '#2f5be0', 2); };
+})();
