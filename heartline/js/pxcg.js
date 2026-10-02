@@ -96,8 +96,12 @@ const PixelCG = (() => {
     viewfinder: () => (g, t, i) => { const c = '#ffffff'; [[80, 60, 1, 1], [1520, 60, -1, 1], [80, 840, 1, -1], [1520, 840, -1, -1]].forEach(([x, y, a, b]) => g.line(`M${x},${y + 90 * b} L${x},${y} L${x + 90 * a},${y}`, c, 8)); if (i % 2) g.ell(150, 130, 16, 16, '#ff2a4a'); g.text('REC', 230, 146, 44, c); g.text('LIVE · 12,004,381', 1320, 146, 40, c); g.text(`00:4${i}:1${i}`, 1340, 820, 44, c); g.line('M760,450 l80,0 M800,410 l0,80', c, 4); },
     shadowPool: () => (g, t) => { const p = Math.sin(t * TAU) * 20; g.ell(800, 800, 520 + p, 110, '#140a24', 4, '#5a2e9a'); g.ell(800, 800, 380 + p, 70, '#0a0514', 0); g.markLine('#5a2e9a'); },
     window: () => g => { const p = new Path2D('M0,0 L1600,0 L1600,900 L0,900Z M90,70 Q800,10 1510,70 L1530,830 L70,830Z'); g.x.fillStyle = '#e0c8e8'; g.used.add('#e0c8e8'); g.x.fill(p, 'evenodd'); g.line('M90,70 Q800,10 1510,70 L1530,830 L70,830Z', '#3a2440', 10); cel(g, 'M0,830 L1600,830 L1600,900 L0,900Z', '#c8a8d8', '#a888b8', 4); },
-    gondolaSeat: col => g => { cel(g, 'M300,380 L1300,380 L1320,900 L280,900Z', col, PX.shade(col, -1, 14), 4); for (let k = 1; k < 6; k++) g.line(`M${160 + k * 213},430 L${150 + k * 216},750`, PX.shade(col, -1, 20), 3); }
-  };
+    gondolaSeat: col => g => {
+      const d = PX.shade(col, -1, 14), l = PX.shade(col, 1, 10);
+      cel(g, 'M250,900 L270,520 Q280,330 520,330 L1080,330 Q1320,330 1330,520 L1350,900Z', col, d, 4);
+      for (let r = 0; r < 4; r++) for (let k = 0; k < 7; k++) { const bx = 380 + k * 140 + (r % 2) * 70, by = 430 + r * 110; if (bx < 1250) { g.line(`M${bx},${by} l70,55 l-70,55 l-70,-55Z`, d, 3); g.ell(bx, by + 55, 6, 6, l, 1.5); } }
+      cel(g, 'M150,760 Q800,720 1450,760 L1470,900 L130,900Z', l, d, 4);
+    },  };
 
   // ---------- placing the cast ----------
   // o: of, rot, flip, view ('back'), sit, turn (-1..1), wind, clip (CG y), ghost { col, mode: 'solid'|'dither' },
@@ -196,10 +200,10 @@ const PixelCG = (() => {
     cg_blacksite: { bg: 'blacksite', tone: { col: '#0a1020', amt: .4 }, back: [FX.spot(800, '#cfe0ff', .22)], mid: [ch('hikari', 'sad', 'shy', 800, 190, 1.55, { sit: 1, turn: .2, light: cold, rim: { col: '#cfe0ff', side: 't' } }), FX.bars()] },
     cg_broadcast: { bg: 'dome', back: [FX.spot(300, '#ffd6ea'), FX.spot(1300, '#d6e8ff'), FX.rays(800, 200, '#ff9ad8', 12, .2)], mid: [ch('sora', 'singing', 'heart', 800, 20, 2.05, { of: 'formal', turn: .15, rim: { col: '#ffe0f0', side: 't' } }), FX.crowd(), PR.viewfinder()] },
     cg_ascension: { bg: 'ascension', back: [FX.sun(800, 250, 150)], mid: [...['kaede', 'rei', 'hikari', 'sora', 'tetsu'].map((id, k) => ch(id, 'determined', 'default', 520 + k * 140, 560, .62, { view: 'back', wind: 2, rim: { col: '#ffe0f0', side: 't' } })), PR.ledge(840, '#3a2a4a')], front: [FX.sparkles(12, '#ffe0f0', 19)] },
-    cg_chairman: { bg: 'ascension', tone: { col: '#200010', amt: .4 }, back: [FX.rings(800, 300, '#ff3a6a')], mid: [ch('kuroda', 'ominous', 'point', 800, -300, 3.6, { light: { col: '#ff3a6a', amt: .1 }, rim: { col: '#ff8aa8', side: 'b' } })] },
-    cg_truth: { bg: 'memorial', back: [FX.glow(800, 300, 700, '#fff0d0', 360)], mid: [ch('kyouya', 'crysmile', 'default', 900, 40, 1.9, { turn: -.35, light: warm }), ch('rin', 'love', 'reach', 700, 140, 1.8, { view: 'back', light: warm, rim: { col: '#fff4d0', side: 't' } }), ch('aya', 'tender', 'heart', 1380, 150, 1.45, { turn: -.45, light: warm })], front: [FX.petals(14, '#ffe0c0', 51)] },
-    cg_festival: { bg: 'festival', pan: 4, back: [FX.fireworks([[300, 170, 190, '#ff5d85', 0], [800, 110, 230, '#ffd54a', .35], [1300, 180, 180, '#5ef0a0', .7]])],
-      mid: [['kaede', 260], ['rei', 1060], ['sora', 1330], ['mira', 530], ['hikari', 800]].map(([id, x], k) => ch(id, 'happy', id === 'hikari' ? 'cheer' : id === 'sora' ? 'wave' : 'default', x, 300, 1.2, { of: 'yukata', view: 'back', ph: k * .2, rim: { col: '#ffe6a0', side: 't' } })) },
+    cg_chairman: { bg: 'ascension', tone: { col: '#200010', amt: .45 }, back: [FX.rings(800, 300, '#ff3a6a'), FX.glow(800, 260, 420, '#ff3a6a', 300)], mid: [ch('kuroda', 'smile', 'point', 800, -80, 2.45, { turn: .22, light: { col: '#ff3a6a', amt: .1 }, rim: { col: '#ff8aa8', side: 'b' } })], front: [FX.shards(8, 12)] },
+    cg_truth: { bg: 'memorial', tone: { col: '#3a2a50', amt: .3 }, back: [FX.glow(800, 300, 700, '#ffe0b0', 360)], mid: [ch('rin', 'love', 'reach', 560, 120, 1.7, { turn: .4, light: warm, rim: { col: '#fff4d0', side: 'r' } }), ch('kyouya', 'crysmile', 'default', 960, 40, 1.9, { turn: -.4, light: warm, rim: { col: '#fff4d0', side: 'l' } }), ch('aya', 'tender', 'heart', 1400, 160, 1.4, { turn: -.5, light: warm, rim: { col: '#fff4d0', side: 'l' } })], front: [FX.petals(14, '#ffe0c0', 51)] },
+    cg_festival: { bg: 'festival', pan: 4, tone: { col: '#0a0620', amt: .2 }, back: [FX.fireworks([[300, 170, 190, '#ff5d85', 0], [800, 110, 230, '#ffd54a', .35], [1300, 180, 180, '#5ef0a0', .7]])],
+      mid: [['kaede', 220, .45, 'laugh', 'hip'], ['mira', 510, .3, 'delighted', 'heart'], ['rei', 1090, -.3, 'smile', 'cross'], ['sora', 1380, -.45, 'happy', 'wave'], ['hikari', 800, 0, 'excited', 'cheer']].map(([id, x, tr, e, po], k) => ch(id, e, po, x, id === 'hikari' ? 190 : 250, id === 'hikari' ? 1.3 : 1.18, { of: 'yukata', turn: tr, ph: k * .2, light: { col: '#ffd070', amt: .07 }, rim: { col: '#ffe6a0', side: 't' } })) },
     cg_snowsquad: { bg: 'snow_city', mid: [ch('kaede', 'smirk', 'point', 330, 130, 1.3, { of: 'winter', turn: .5 }), ch('tetsu', 'laugh', 'cross', 620, 150, 1.25, { of: 'winter', turn: .3 }), ch('mira', 'tender', 'heart', 1360, 170, 1.2, { of: 'winter', turn: -.4 }), ch('rin', 'awe', 'cheer', 1110, 170, 1.2, { of: 'winter', turn: -.3 }), ch('hikari', 'shocked', 'shy', 880, 110, 1.35, { of: 'winter', turn: -.4 }), PR.snowball()], front: [FX.snow(80)] }
   };
   // Route CGs: one festival night, one snowfall and one Ferris-wheel ride per heroine, each staged differently
@@ -207,12 +211,12 @@ const PixelCG = (() => {
     hikari: { fest: [ch('hikari', 'excited', 'fist', 800, -30, 2.4, { of: 'yukata', turn: .3, light: { col: '#ffd54a', amt: .08 } }), PR.sparkler(1010, 560)], col: '#ffd54a',
       snow: [ch('hikari', 'tease', 'cheer', 800, 10, 2.1, { of: 'winter', turn: .2, wind: 1.4 })], ferris: [ch('hikari', 'laugh', 'point', 800, 10, 2.25, { of: 'casual', sit: 1, turn: .55 })], gc: '#ffe6a0' },
     rei: { fest: [ch('rei', 'blush', 'shy', 800, -30, 2.4, { of: 'yukata', turn: -.55, light: { col: '#ff8a5a', amt: .08 } }), PR.lanterns()], col: '#b99bff',
-      snow: [ch('rei', 'tender', 'heart', 860, -30, 2.4, { of: 'winter', turn: -.4 }), PR.scarf(900, 520)], ferris: [ch('rei', 'shy', 'cross', 800, 10, 2.25, { of: 'casual', sit: 1, turn: -.65 })], gc: '#d8c8ff' },
+      snow: [ch('rei', 'tender', 'heart', 860, -30, 2.4, { of: 'winter', turn: -.4 })], ferris: [ch('rei', 'shy', 'cross', 800, 10, 2.25, { of: 'casual', sit: 1, turn: -.65 })], gc: '#d8c8ff' },
     mira: { fest: [ch('mira', 'tender', 'heart', 800, -30, 2.4, { of: 'yukata', turn: .25 }), PR.goldfish(1080, 640)], col: '#ff8fb8',
       snow: [ch('mira', 'blush', 'think', 800, -40, 2.5, { of: 'winter', turn: -.3 }), PR.breath(880, 520)], ferris: [ch('mira', 'love', 'heart', 800, 10, 2.25, { of: 'casual', sit: 1, turn: .15 })], gc: '#ffd0e0' },
     sora: { fest: [PR.steps(640), ch('sora', 'happy', 'wave', 800, 60, 1.75, { of: 'yukata', sit: 1, turn: -.2 })], col: '#ff6fae',
       snow: [ch('sora', 'awe', 'cheer', 800, 30, 2.0, { of: 'winter', rot: 10, wind: 3 })], ferris: [ch('sora', 'singing', 'wave', 800, 10, 2.25, { of: 'casual', sit: 1, turn: -.4 })], gc: '#e0d8ff' },
-    kaede: { fest: [ch('kaede', 'embarrassed', 'default', 800, 170, 1.6, { of: 'yukata', view: 'back', wind: 1.4, rim: { col: '#dcffea', side: 't' } })], col: '#5ef0a0',
+    kaede: { fest: [ch('kaede', 'embarrassed', 'default', 800, -20, 2.35, { of: 'yukata', turn: .6, wind: 1.4, rim: { col: '#dcffea', side: 't' } }), PR.lanterns()], col: '#5ef0a0',
       snow: [PR.bench(620, '#6a5a50'), ch('kaede', 'smirk', 'hip', 800, -20, 1.45, { of: 'winter', sit: 1, turn: .3 }), PR.benchSeat(790, '#6a5a50')], ferris: [ch('kaede', 'flustered', 'shy', 800, 10, 2.25, { of: 'casual', sit: 1, turn: .35 })], gc: '#c8f5dc' }
   };
   Object.keys(ROUTE).forEach((id, n) => {
