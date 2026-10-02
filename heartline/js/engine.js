@@ -437,6 +437,7 @@ const Game = (() => {
   function learnTell(hero, key, text) {
     G.tells = G.tells || {}; const k = hero + '_' + key; if (G.tells[k]) return; G.tells[k] = text;
     Sys.journal(G, `Notebook — ${WHO[hero] ? WHO[hero].n : hero}: ${text}`);
+    const have = Object.keys(G.tells).length; if (have >= 6) unlock('notebook'); if (['hikari_count', 'rei_scarf', 'mira_tidy', 'kaede_heel', 'sora_stage', 'tetsu_polite', 'rin_hum', 'shiori_cuffs'].every(k => G.tells[k])) unlock('tell_all');
     if (!skipping()) { Sound.sfx('page'); toast('📓 Notebook · ' + (WHO[hero] ? WHO[hero].n : hero), text, 'tell'); }
   }
   function toast(t, s, cls = '') {
@@ -814,9 +815,10 @@ const Game = (() => {
       await seq(convo.msgs);
       if (!convo.replies) return finish();
       const pr = $('#preply'); if (!pr) return;
-      pr.innerHTML = convo.replies.map((r, i) => `<button class="btn reply" data-i="${i}">${T(r.t)}</button>`).join('');
+      const reps = convo.replies.filter(r => !r.read || (G.tells && G.tells[r.read]));
+      pr.innerHTML = reps.map((r, i) => `<button class="btn reply" data-i="${i}">${r.read ? '📓 ' : ''}${T(r.t)}</button>`).join('');
       $$('#preply .reply').forEach(b => b.onclick = async () => {
-        const r = convo.replies[+b.dataset.i]; pr.innerHTML = ''; add(r.t, true); G.replies++; if (G.replies >= 3) unlock('night');
+        const r = reps[+b.dataset.i]; pr.innerHTML = ''; add(r.t, true); G.replies++; if (G.replies >= 3) unlock('night');
         if (r.aff) addAff(who, r.aff); await sleep(400); await seq(r.resp || []); finish();
       });
     })();
