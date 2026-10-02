@@ -764,3 +764,8 @@ img.pxa:not([src]), img.pxa[src=""] { visibility: hidden; }
 body.nomotion .bg.kb .bgpx > img { animation: none; }
 .dlbg, .pimg { position: relative; }
 .cgscene.pxcg .cgtint { position: absolute; inset: 0; pointer-events: none; }
+
+/* Notebook (tells) */
+.choice .rd { position: absolute; left: 50px; top: 50%; transform: translateY(-50%); font-size: 15px; filter: drop-shadow(0 0 6px #ffd24a); }
+.toast.tell { border-left-color: #ffd24a; background: rgba(40, 32, 12, .95); }
+.tells { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 10px; } .tl { padding: 12px 14px; border-radius: 14px; background: rgba(255, 255, 255, .05); border-left: 4px solid var(--c); } .tl b { display: block; color: var(--c); margin-bottom: 4px; } .tl p { margin: 4px 0; font-size: 13px; color: #ddd8f4; line-height: 1.5; }

@@ -49,7 +49,7 @@ const Game = (() => {
       heroes: { hikari: HB(6, 5, 4, 4, 2), rei: HB(5, 3, 6, 1, 6), kaede: HB(3, 3, 8, 4, 3), tetsu: HB(5, 8, 2, 4, 3), sora: HB(4, 4, 3, 8, 4), rin: HB(4, 4, 5, 3, 7), natsuki: HB(3, 7, 6, 6, 3), shiori: HB(7, 6, 5, 5, 4) }, roster: ['hikari', 'rei'],
       day: 1, slot: 0, energy: 100, credits: 300, rep: 10, inv: {}, gifted: {}, seen: {}, ev: {}, texts: {}, chap: 0, chapT: 'Prologue', goal: null,
       calls: 0, trains: 0, bought: 0, replies: 0, eyes: 0, eyesOk: 0, today: {}, weather: 0, score: 0, shifts: [],
-      morale: 60, hq: {}, pairs: {}, nem: {}, chains: {}, album: [], gearInv: {}, journal: [], mood: {}, saved: 0, dates: 0, skillsK: {},
+      morale: 60, tells: {}, hq: {}, pairs: {}, nem: {}, chains: {}, album: [], gearInv: {}, journal: [], mood: {}, saved: 0, dates: 0, skillsK: {},
       stack: [], vis: { bg: 'black', fx: null, music: null, chars: {}, tint: null }
     };
   }
@@ -164,6 +164,7 @@ const Game = (() => {
       case 'breach': breachOp(a || {}); return WAIT;
       case 'morale': G.morale = clamp((G.morale === undefined ? 60 : G.morale) + a, 0, 100); if (!skipping()) toast(a > 0 ? '📈 Morale up' : '📉 Morale down', `Squad morale: ${G.morale}`); return NEXT;
       case 'journal': Sys.journal(G, a); return NEXT;
+      case 'tell': learnTell(a, b, d); return NEXT;
       case 'hero': Object.assign(G.heroes[a].st, b); return NEXT;
     }
     console.warn('unknown op', op); return NEXT;
@@ -395,9 +396,10 @@ const Game = (() => {
     }
     opts.forEach((o, k) => {
       if (o.if && !o.if(G)) return;
+      if (o.read && !(G.tells && G.tells[o.read])) return;
       const btn = document.createElement('button'); btn.className = 'choice'; btn.style.animationDelay = k * 80 + 'ms';
       const hint = settings.hints && o.aff ? Object.entries(o.aff).filter(([, v]) => v > 0).map(([w]) => `<b style="color:${WHO[w].c}">♥</b>`).join('') : '';
-      btn.innerHTML = `<span class="k">${k + 1}</span>${T(o.t)}${hint ? `<span class="hint">${hint}</span>` : ''}`;
+      btn.innerHTML = `<span class="k">${k + 1}</span>${o.read ? '<span class="rd">📓</span>' : ''}${T(o.t)}${hint ? `<span class="hint">${hint}</span>` : ''}`;
       btn.onmouseenter = () => Sound.sfx('hover');
       btn.onclick = () => pick(o, eyeCfg);
       box.appendChild(btn);
@@ -431,6 +433,11 @@ const Game = (() => {
   function unlock(id) {
     if (meta.ach[id] || !ACH[id]) return; meta.ach[id] = Date.now(); saveMeta();
     Sound.sfx('chime'); toast('🏆 ' + ACH[id][0], ACH[id][1], 'ach');
+  }
+  function learnTell(hero, key, text) {
+    G.tells = G.tells || {}; const k = hero + '_' + key; if (G.tells[k]) return; G.tells[k] = text;
+    Sys.journal(G, `Notebook — ${WHO[hero] ? WHO[hero].n : hero}: ${text}`);
+    if (!skipping()) { Sound.sfx('page'); toast('📓 Notebook · ' + (WHO[hero] ? WHO[hero].n : hero), text, 'tell'); }
   }
   function toast(t, s, cls = '') {
     const d = document.createElement('div'); d.className = 'toast ' + cls; d.innerHTML = `<b>${t}</b><span>${s || ''}</span>`;
@@ -637,9 +644,10 @@ const Game = (() => {
     $$('#modal .alb').forEach(b => b.onclick = () => { const v = $('#viewer'); v.innerHTML = `<div class="photowrap">${Sys.photoHtml(list[+b.dataset.i], true)}</div>`; v.className = 'on'; v.onclick = () => { v.className = ''; v.innerHTML = ''; }; });
   }
   function journalModal(tab) {
-    const tabs = [['notes', '📓 Notes'], ['album', '📷 Album'], ['cases', '🗂 Case Files'], ['bonds', '💞 Pair Bonds']];
+    const tabs = [['notes', '📓 Notes'], ['tells', '👁 Tells'], ['album', '📷 Album'], ['cases', '🗂 Case Files'], ['bonds', '💞 Pair Bonds']];
     let body = '';
     if (tab === 'notes') body = `<div class="jrnl">${(G.journal || []).slice().reverse().map(e => `<div><em>Day ${e.d}</em><p>${T(e.t)}</p></div>`).join('') || '<p class="sub">Nothing written yet.</p>'}</div>`;
+    if (tab === 'tells') { const T0 = G.tells || {}, by = {}; Object.entries(T0).forEach(([k, t]) => { const [h, ...r] = k.split('_'); (by[h] = by[h] || []).push(t); }); body = `<div class="tells">${Object.keys(by).length ? Object.entries(by).map(([h, l]) => `<div class="tl" style="--c:${(WHO[h] || { c: '#fff' }).c}"><b>${(WHO[h] || { n: h }).n}</b>${l.map(t => `<p>${T(t)}</p>`).join('')}</div>`).join('') : '<p class="sub">You haven\'t noticed anything yet. Watch people. They give themselves away.</p>'}</div>`; }
     if (tab === 'album') body = `<div class="album">${(G.album || []).map((ph, i) => `<button class="alb" data-i="${i}">${Sys.photoHtml(ph, false, true)}</button>`).join('') || '<p class="sub">No photos yet. Go on a date!</p>'}</div>`;
     if (tab === 'cases') body = `<div class="cases">${Object.entries(Sys.NEMESES).map(([k, v]) => { const n = (G.nem || {})[k] || 0, seen = meta.codex['nem_' + k]; return `<div class="case ${n >= 3 ? 'closed' : ''}"><span>${seen ? v.icon : '❔'}</span><div><b>${seen ? v.n : '??? (Chapter ' + v.ch + '+)'}</b><small>${seen ? v.d : 'No sightings yet.'}</small><i>${'●'.repeat(n)}${'○'.repeat(3 - n)} ${n >= 3 ? 'CAPTURED' : ''}</i></div></div>`; }).join('')}
       ${Sys.CHAINS.map(c => `<div class="case ${(G.chains || {})[c.id] ? 'closed' : ''}"><span>🔗</span><div><b>${(G.chap || 0) >= c.ch ? c.n : '???'}</b><small>${c.steps.length}-part incident chain</small><i>${(G.chains || {})[c.id] ? 'SOLVED' : 'open'}</i></div></div>`).join('')}</div>`;
@@ -940,8 +948,8 @@ const Game = (() => {
     const ofs = ['hero'].concat(Object.keys(CharArt.OUTFITS[sel] || {}));
     modal(`<h2>Character Viewer</h2><div class="cview"><div class="cvlist">${ids.map(k => `<button class="dtab ${k === sel ? 'on' : ''}" data-id="${k}" style="--c:${(WHO[k] || { c: '#fff' }).c}">${(WHO[k] || { n: k }).n}</button>`).join('')}</div>
       <div class="cvstage" style="--c:${(WHO[sel] || { c: '#fff' }).c}">${Art.char(sel, emo, pose, false, of)}</div>
-      <div class="cvctl"><h4>Expression</h4><div class="cvgrid">${Object.keys(CharArt.EMO).map(e => `<button class="cvb ${e === emo ? 'on' : ''}" data-e="${e}">${e}</button>`).join('')}</div>
-      <h4>Pose</h4><div class="cvgrid">${Object.keys(CharArt.POSES).map(p => `<button class="cvb ${p === pose ? 'on' : ''}" data-p="${p}">${p}</button>`).join('')}</div>
+      <div class="cvctl"><h4>Expression</h4><div class="cvgrid">${Object.keys(settings.pixel && typeof PixelCast !== 'undefined' ? PixelCast.EMO : CharArt.EMO).map(e => `<button class="cvb ${e === emo ? 'on' : ''}" data-e="${e}">${e}</button>`).join('')}</div>
+      <h4>Pose</h4><div class="cvgrid">${Object.keys(settings.pixel && typeof PixelCast !== 'undefined' ? PixelCast.POSES : CharArt.POSES).map(p => `<button class="cvb ${p === pose ? 'on' : ''}" data-p="${p}">${p}</button>`).join('')}</div>
       <h4>Outfit</h4><div class="cvgrid">${ofs.map(o => `<button class="cvb ${o === of ? 'on' : ''}" data-o="${o}">${o}</button>`).join('')}</div>
       ${settings.pixel && typeof PixelCast !== 'undefined' && PixelCast.CAST[sel] ? '<button class="btn" id="pxexp">⬇ Open in Moonkai Pixel Studio (.pxs.json)</button>' : ''}</div></div>`, { wide: 1 });
     const ex = $('#pxexp'); if (ex) ex.onclick = () => { Sound.sfx('confirm'); PixelCast.exportPxs(sel, emo, pose, of); };

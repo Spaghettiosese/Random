@@ -278,6 +278,7 @@ const PixelCast = (() => {
     fond: { e: 'smileeye', b: 'sad', m: 'gentle', fx: ['blushlite'], tilt: 3 }, scheming: { e: 'narrow', b: 'smug', m: 'smirkfang', tilt: -4, lean: 1 },
     numb: { e: 'dots', b: 'normal', m: 'flat' }, sulk: { e: 'lidded', b: 'sad', m: 'pout', look: 4, tilt: 6 },
     nervous: { e: 'soft', b: 'worried', m: 'bite', fx: ['blushlite'], look: 3, tilt: 4 }, resolve: { e: 'open', b: 'angry', m: 'tight', lean: 1 },
+    tight: { e: 'open', b: 'normal', m: 'tight' }, halfsmile: { e: 'open', b: 'normal', m: 'halfsmile', tilt: -2 },
     stunned: { e: 'wide', b: 'raised', m: 'hmm', jolt: 1 }, hurt: { e: 'sad', b: 'sad', m: 'tight', droop: 3, look: -3 }
   };
   // how this particular face wears an emotion: component swaps (face.map), whole overrides (face.emo), softened or amplified body language
