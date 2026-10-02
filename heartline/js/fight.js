@@ -354,6 +354,7 @@ const Fight = (() => {
   function start(cfg, ctx) {
     const F = mk(cfg, ctx.G, ctx.WHO); U = { F, ctx, sel: null, armed: null, busy: false, tries: 0, cfg };
     F.team.forEach(h => ctx.art.warm && ctx.art.warm(h.id)); build(); ctx.music(cfg.music || 'boss'); draw(); intro();
+    if (!Fight.auto && !(ctx.G.flags && ctx.G.flags.fightHowto)) { ctx.G.flags.fightHowto = 1; howto(); }
   }
   function intro() {
     const F = U.F, d = F.def; const t = teleOf(F);
@@ -361,16 +362,27 @@ const Fight = (() => {
     flushEvents();
     if (Fight.auto) setTimeout(autoTurn, 20);
   }
+  function howto() {
+    const el = $('#fover'); if (!el) return;
+    el.innerHTML = `<div class="fres howto"><h2>HOW A STANDOFF WORKS</h2><ul>
+      <li><b>Read the banner.</b> The foe's next move and its target are always on the board. Nothing is hidden from the Handler.</li>
+      <li><b>Give orders.</b> Tap a hero: <i>Strike</i>, <i>Guard</i> (parry what is aimed at you), <i>Cover</i> (take a hit for an ally) or their <i>Skill</i>. Anyone you skip will Strike.</li>
+      <li><b>Break its Poise.</b> Parries and Binds chip it; at zero the foe is staggered and takes +60%. Heavy moves telegraph a round early.</li>
+      <li><b>Spend Focus ◆.</b> Scan shows weaknesses, Brace softens the round, Stand Up frees a hero. <b>📓 Reads</b> are free, but only exist for tells you wrote down.</li>
+      <li><b>Losing isn't the end.</b> You can retry, or press on and pay for it.</li></ul>
+      <div class="frow"><button class="btn primary" id="fhgo">Got it</button></div></div>`;
+    el.classList.add('on'); $('#fhgo').onclick = () => { U.ctx.sfx('confirm'); el.classList.remove('on'); el.innerHTML = ''; };
+  }
   function build() {
     const { F, cfg } = U, host = U.ctx.host;
-    host.innerHTML = `<div class="fight"><div class="fhead"><div><b>${T(cfg.title || F.foe.n)}</b>${cfg.sub ? `<small>${T(cfg.sub)}</small>` : ''}</div><div class="fchips"><span id="fround">Round 1</span><span class="focus" id="ffocus" title="Handler's Focus. Spent on Scan, Brace and Stand Up. +1 every round."></span></div></div>
+    host.innerHTML = `<div class="fight"><div class="fhead"><div><b>${T(cfg.title || F.foe.n)}</b>${cfg.sub ? `<small>${T(cfg.sub)}</small>` : ''}</div><div class="fchips"><button class="fq" id="fq" title="How a Standoff works">?</button><span id="fround">Round 1</span><span class="focus" id="ffocus" title="Handler's Focus. Spent on Scan, Brace and Stand Up. +1 every round."></span></div></div>
       <div class="farena">${cfg.bg && U.ctx.art.bg ? `<div class="fbg">${U.ctx.art.bg(cfg.bg)}</div>` : ''}<div class="ffoe ${isHuman(F.def) ? 'human' : ''}" id="ffoe"><div class="fsp">${foeArt()}</div><div class="fname"><b>${F.foe.n}</b><span id="ffst"></span></div><div class="fbar foe"><i id="ffhp"></i><em id="ffhpt"></em></div><div class="fpoise" id="ffpoise" title="Poise. Parries and Binds break it; at zero the foe is staggered."></div><div class="fknown" id="ffknown"></div></div>
         <div class="fparty n${F.team.length}" id="fparty"></div></div>
       <div class="ftele" id="ftele"></div>
       <div class="fcmd" id="fcmd"></div>
       <div class="forders" id="forders"></div>
       <div class="fbot"><div class="flog" id="flog"></div><button class="btn primary fgo" id="fgo">Resolve round ▸</button></div><div class="fover" id="fover"></div></div>`;
-    $('#fgo').onclick = () => go();
+    $('#fgo').onclick = () => go(); $('#fq').onclick = () => { U.ctx.sfx('click'); howto(); };
   }
   const pct = (a, b) => Math.max(0, Math.min(100, a / b * 100));
   function draw() {
@@ -385,12 +397,12 @@ const Fight = (() => {
     const tl = teleOf(F), nxt = F.scan > 0 ? peek(F, 2) : [];
     const tgt = tl && tl.tgt ? `→ <b>${tl.tgt.n}</b>` : tl && (tl.k === 'sweep') ? '→ <b>everyone</b>' : '';
     const hint = tl ? (tl.k === 'single' || tl.k === 'bind' ? (tl.heavy ? 'Heavy. Guard on the target parries it and breaks 2 Poise. Binding it cancels it.' : 'Guard on the target parries it. Cover steps in front.') : tl.k === 'sweep' ? 'Hits everyone. Guard softens it, Brace helps the team.' : tl.k === 'charge' ? `It is gathering for ${tl.rel ? tl.rel.n : 'something big'}. Bind it, or hit hard now.` : tl.k === 'shield' ? 'Hits will bounce next round. Pierce it, guard, or support.' : tl.k === 'mirror' ? 'Strikes will be thrown back. Use skills, or hold.' : tl.k === 'stag' ? 'Open window: hit it with everything.' : '') : '';
-    $('#ftele').innerHTML = tl ? `<div class="tl ${tl.heavy ? 'heavy' : ''} ${tl.k}"><span class="tic">${tl.ic}</span><div><b>${tl.n} ${tgt}</b><small>${tl.t || ''} <i>${hint}</i></small></div>${nxt.length ? `<div class="tnx">then ${nxt.map(m => m.ic).join(' ')}</div>` : ''}</div>` : '';
+    $('#ftele').innerHTML = tl ? `<div class="ftl ${tl.heavy ? 'heavy' : ''} ${tl.k}"><span class="ftic">${tl.ic}</span><div><b>${tl.n} ${tgt}</b><small>${tl.t || ''} <i>${hint}</i></small></div>${nxt.length ? `<div class="ftnx">then ${nxt.map(m => m.ic).join(' ')}</div>` : ''}</div>` : '';
     // party
     $('#fparty').innerHTML = F.team.map(h => {
       const a = h.act, ico = a ? { strike: '⚔', guard: '🛡', cover: '🤝', skill: KIT[h.id].sk.ic }[a.k] : '';
       const stt = [h.guard ? '🛡' : '', h.frozen ? '🥶' : '', h.kneel ? '⛓' : '', h.spent ? '💤' : '', h.safe ? '🫥' : '', h.evade ? '💨' : '', h.crit ? '✦' : ''].join('');
-      return `<button class="fh ${h.down ? 'down' : ''} ${U.sel === h.id ? 'sel' : ''} ${U.armed ? 'pick' : ''} ${h.kneel ? 'kneel' : ''} ${a ? 'set' : ''}" data-h="${h.id}" style="--c:${F.WHO[h.id].c}"><div class="fpt">${U.ctx.art.char(h.id, h.down ? 'sad' : h.kneel ? 'sad' : h.hp < h.max * .35 ? 'scared' : 'smile', 'default', true)}</div>
+      return `<button class="fh ${h.down ? 'down' : ''} ${U.sel === h.id ? 'sel' : ''} ${U.armed ? 'pick' : ''} ${h.kneel ? 'kneel' : ''} ${a ? 'acted' : ''}" data-h="${h.id}" style="--c:${F.WHO[h.id].c}"><div class="fpt">${U.ctx.art.char(h.id, h.down ? 'sad' : h.kneel ? 'sad' : h.hp < h.max * .35 ? 'scared' : 'smile', 'default', true)}</div>
         <div class="fhi"><b>${h.n}</b><div class="fbar"><i style="width:${pct(h.hp, h.max)}%"></i><em>${h.hp}/${h.max}</em></div><div class="fst">${stt}${h.cd > 0 ? `<span title="Skill cooldown">⏳${h.cd}</span>` : ''}${ico ? `<span class="fact">${ico}</span>` : ''}</div></div></button>`;
     }).join('');
     $$('#fparty .fh').forEach(b => b.onclick = () => pickHero(b.dataset.h));

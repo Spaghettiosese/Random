@@ -521,7 +521,7 @@ const Game = (() => {
   function hideHub(keepHud) { $('#hub').classList.remove('on'); if (!keepHud) $('#hud').classList.remove('on'); }
   function hubTip() {
     const tips = [];
-    if (G.bday) tips.push(`It's ${WHO[G.bday].n}'s birthday! A gift today counts double. Beep-beep-boop, that's the birthday song.`);
+    if (G.bday) tips.push(`It's ${WHO[G.bday].n}'s birthday! A gift today counts double. I have prepared a birthday song. It is one note.`);
     G.roster.forEach(k => { if (Sys.perkDue(G, k) >= 0) tips.push(`${WHO[k].n} can learn a new PERK! Open the Dossier and pick one. They change how shifts play out.`); });
     G.roster.forEach(k => { const h = G.heroes[k]; if (h.sp) tips.push(`${WHO[k].n} has ${h.sp} unspent skill point${h.sp > 1 ? 's' : ''}! Open the Dossier to boost a stat.`); });
     G.roster.forEach(k => { if (G.heroes[k].fat > 60) tips.push(`${WHO[k].n} is worn out. Fatigue lowers success odds and slows recovery during shifts. Rest helps!`); });
@@ -555,11 +555,16 @@ const Game = (() => {
     return n;
   }
   const DRILLS = [['com', '🥊', 'Sparring', 'Combat · timing strikes'], ['mob', '👟', 'Agility Course', 'Mobility · reflex targets'], ['int', '⌨', 'Breach Sim', 'Intellect · code puzzle'], ['cha', '🎤', 'Stage Practice', 'Charisma · rhythm game'], ['vig', '🏋️', 'Endurance', 'Vigor · timing strikes']];
-  const DINNER = [['hikari', 'kaede', 'Hikari: The last gyoza is MINE.', 'Kaede: Faster hands win, Amane.'], ['rei', 'hikari', 'Rei silently slides her pickled plums onto Hikari\'s plate.', 'Hikari: …Rei. Are we… FRIENDS?! Rei: Don\'t make it weird.'],
-    ['tetsu', 'sora', 'Tetsu: I made the curry mild, so everyone can have some.', 'Sora: Tetsu, marry me. …Kidding! Mostly!'], ['mira', 'rei', 'Mira: Vegetables, Rei. I\'m watching.', 'Rei: …I will eat one carrot. Under protest.'],
-    ['kaede', 'tetsu', 'Kaede: Bet I finish my bowl before you finish saying "itadakimasu."', 'Tetsu: Itada— oh. She\'s done.'], ['sora', 'hikari', 'Sora teaches everyone the chorus of her new single.', 'Hikari: ♪ Shining star, shining sta— ♪ Rei: Please stop.'],
-    ['rin', 'kaede', 'Rin: This is the first hot meal I\'ve had at a table in two years.', 'Kaede: Then have mine too. I\'m fast, I\'ll get more.'], ['natsuki', 'tetsu', 'Natsuki: Squad One used to do this. Every Friday.', 'Tetsu: Then we\'ll do it every Friday. It\'s tradition now.'],
-    ['shiori', 'mira', 'Shiori: The Board fed us nutrient bars. This is… inefficient.', 'Mira: It\'s called flavor, Shiori. Have seconds.'], ['hikari', 'mira', 'Hikari: Mira, is there more rice? For science?', 'Mira: There is always more rice, Hikari. I made four kilos.']];
+  const DINNER = [['hikari', 'kaede', 'Hikari narrates her own chopsticks plan out loud. "Three gyoza. I take the one on the left, then —"', 'Kaede takes the one on the left. "You counted. I didn\'t."'],
+    ['rei', 'hikari', 'Rei slides her pickled plums onto Hikari\'s plate without looking at her.', 'Hikari: "…Are we friends?" Rei: "It is a plum. Eat the plum."'],
+    ['tetsu', 'sora', 'Tetsu made the curry mild so everyone could have seconds. He has labelled the pots.', 'Sora, reading the label: "*Sora\'s: extra mild, she pretends otherwise.* How does he know."'],
+    ['mira', 'rei', 'Mira taps the carrot on Rei\'s plate. "That is a vegetable. I am watching it. I am also watching you."', 'Rei eats one carrot with the expression of a person signing a treaty.'],
+    ['kaede', 'tetsu', 'Kaede finishes her bowl before Tetsu has finished saying itadakimasu.', 'Tetsu, gently: "You can taste it if you slow down." Kaede slows down for exactly one bite. "…Fine. That one was good."'],
+    ['sora', 'hikari', 'Sora tries the chorus of her new single out on the table, quietly, in her real voice.', 'Hikari joins in on the wrong note, loudly. Sora: "No. You\'re nowhere near it. Again."'],
+    ['rin', 'kaede', 'Rin: "This is the first hot meal I have eaten at a table in eight years. I am going to be slow about it."', 'Kaede puts her chopsticks down and waits for her, the whole bowl, without tapping her heel once.'],
+    ['natsuki', 'tetsu', 'Natsuki: "Squad One did this every Friday. Daichi always burned the rice."', 'Tetsu writes FRIDAY on the kitchen whiteboard in marker and underlines it twice.'],
+    ['shiori', 'mira', 'Shiori: "The Board fed us nutrient bars. This is… inefficient."', 'Mira: "It\'s called flavor. Have seconds. That is a medical instruction."'],
+    ['hikari', 'mira', 'Hikari: "Mira, is there more rice? For research."', 'Mira: "There is always more rice. I made four kilos because I know you."']];
   const JOB = ['A salaryman buys forty onigiri and says nothing. You respect him.', 'The hero broadcast on the tiny TV shows one of YOUR calls from today. You don\'t tell the night manager.', 'A kid asks if you\'re "the HandlerZero guy." You deny everything and give him a free pudding.', 'Nothing happens for six hours. It is the most peaceful you\'ve felt in weeks.', 'A cat walks in, inspects aisle four, and leaves. Standards are standards.', 'Your old manager cries a little and says the store hasn\'t been the same. The new guy keeps rotating the onigiri wrong.'];
 
   const ACTS = {
@@ -656,7 +661,7 @@ const Game = (() => {
     const tabs = [['notes', '📓 Notes'], ['tells', '👁 Tells'], ['album', '📷 Album'], ['cases', '🗂 Case Files'], ['bonds', '💞 Pair Bonds']];
     let body = '';
     if (tab === 'notes') body = `<div class="jrnl">${(G.journal || []).slice().reverse().map(e => `<div><em>Day ${e.d}</em><p>${T(e.t)}</p></div>`).join('') || '<p class="sub">Nothing written yet.</p>'}</div>`;
-    if (tab === 'tells') { const T0 = G.tells || {}, by = {}; Object.entries(T0).forEach(([k, t]) => { const [h, ...r] = k.split('_'); (by[h] = by[h] || []).push(t); }); body = `<div class="tells">${Object.keys(by).length ? Object.entries(by).map(([h, l]) => `<div class="tl" style="--c:${(WHO[h] || { c: '#fff' }).c}"><b>${(WHO[h] || { n: h }).n}</b>${l.map(t => `<p>${T(t)}</p>`).join('')}</div>`).join('') : '<p class="sub">You haven\'t noticed anything yet. Watch people. They give themselves away.</p>'}</div>`; }
+    if (tab === 'tells') { const T0 = G.tells || {}, by = {}; Object.entries(T0).forEach(([k, t]) => { const [h, ...r] = k.split('_'); (by[h] = by[h] || []).push([t, k]); }); body = `<div class="tells">${Object.keys(by).length ? Object.entries(by).map(([h, l]) => `<div class="tl" style="--c:${(WHO[h] || { c: '#fff' }).c}"><b>${(WHO[h] || { n: h }).n}</b>${l.map(([t, k]) => `<p>${T(t)}${Fight.READS[k] ? `<small class="rdn">📓 Read in Standoffs: <b>${Fight.READS[k].n}</b>. ${Fight.READS[k].d}</small>` : ''}</p>`).join('')}</div>`).join('') : '<p class="sub">You haven\'t noticed anything yet. Watch people. They give themselves away.</p>'}</div>`; }
     if (tab === 'album') body = `<div class="album">${(G.album || []).map((ph, i) => `<button class="alb" data-i="${i}">${Sys.photoHtml(ph, false, true)}</button>`).join('') || '<p class="sub">No photos yet. Go on a date!</p>'}</div>`;
     if (tab === 'cases') body = `<div class="cases">${Object.entries(Sys.NEMESES).map(([k, v]) => { const n = (G.nem || {})[k] || 0, seen = meta.codex['nem_' + k]; return `<div class="case ${n >= 3 ? 'closed' : ''}"><span>${seen ? v.icon : '❔'}</span><div><b>${seen ? v.n : '??? (Chapter ' + v.ch + '+)'}</b><small>${seen ? v.d : 'No sightings yet.'}</small><i>${'●'.repeat(n)}${'○'.repeat(3 - n)} ${n >= 3 ? 'CAPTURED' : ''}</i></div></div>`; }).join('')}
       ${Sys.CHAINS.map(c => `<div class="case ${(G.chains || {})[c.id] ? 'closed' : ''}"><span>🔗</span><div><b>${(G.chap || 0) >= c.ch ? c.n : '???'}</b><small>${c.steps.length}-part incident chain</small><i>${(G.chains || {})[c.id] ? 'SOLVED' : 'open'}</i></div></div>`).join('')}</div>`;

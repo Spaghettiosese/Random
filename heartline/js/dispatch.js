@@ -247,12 +247,12 @@ const Dispatch = (() => {
   function pingPin(c) { const p = document.createElement('div'); p.className = 'dping' + (c.nem ? ' nem' : ''); p.style.left = (c.x / 800 * 100) + '%'; p.style.top = (c.y / 470 * 100) + '%'; $('.dmap').appendChild(p); setTimeout(() => p.remove(), 1500); }
 
   // ---------- tutorial ----------
-  const TIPS = ['Shift started! Calls will pop up on the city map. I\'ll walk you through the first one. Beep!',
-    'A call came in! Click the flashing pin — or the card on the right — to open it.',
-    'The red outline is what the call NEEDS. Click heroes in the roster below to assign them. Try to cover the shape!',
-    'See the success %? Heroes stack their stats. When you\'re happy, hit DISPATCH!',
-    'They\'re en route! Travel time depends on Mobility. You can keep taking calls meanwhile.',
-    'Resolved! After a call, heroes return and need to REST — Vigor shortens it. Don\'t let calls expire! Use ▶▶ to speed up time.'];
+  const TIPS = ['Shift started. Calls will appear on the city map. I will walk you through the first one. This is the part where I am useful.',
+    'A call came in. Click the flashing pin, or its card on the right, to open it.',
+    'The red outline is what the call needs. Click heroes in the roster below to assign them. Try to cover the shape.',
+    'See the success percentage? Heroes stack their stats. When you are happy with it, press DISPATCH. Below it you can choose how they go in: Rush in, Standard, or Careful.',
+    'They are en route. Travel time depends on Mobility. You can take other calls in the meantime.',
+    'Resolved. Heroes need to rest afterwards; Vigor shortens it. Do not let calls expire. Use ▶▶ to speed up the clock. Also, you will start writing things in the notebook. Anything you learn about a hero helps when you send them out.'];
   function tip(i) {
     if (!S.cfg.tutorial || i < 0) { $('#dtip').classList.remove('on'); return; }
     S.tip = i; const el = $('#dtip'); el.innerHTML = `<div class="bitface">${ctx.bit}</div><p>${TIPS[i]}</p>${i === 5 ? '<button id="dtipx">Got it</button>' : ''}`; el.classList.add('on');
@@ -313,8 +313,7 @@ const Dispatch = (() => {
         <div class="dslots">${[...Array(c.slots)].map((_, i) => { const id = c.team[i]; return id ? `<div class="dslot on" style="--c:${ctx.WHO[id].c}">${ctx.portrait(id)}</div>` : `<div class="dslot">+</div>`; }).join('')}
           <div class="dchance ${p > .7 ? 'good' : p > .45 ? 'mid' : 'bad'}"><b>${Math.round(p * 100)}%</b><small>success</small></div></div>
         <div class="dsyn">${notes.length ? notes.map(n => `<div class="${n[0] === '+' ? 'pos' : 'neg'}">${ctx.T(n)}</div>`).join('') : c.team.length > 1 ? '<div>No special synergy.</div>' : ''}</div>
-        <div class="dappr">${Object.entries(APPR).map(([k, a]) => `<button data-a="${k}" class="${(c.appr || 'std') === k ? 'on' : ''}" title="${a[2]}"><b>${a[0]} ${a[1]}</b><small>${a[2]}</small></button>`).join('')}</div>
-        <div class="dexp">Expires in <b>${Math.max(0, Math.round(c.exp - S.t))} min</b></div>
+        <div class="dappr">${Object.entries(APPR).map(([k, a]) => `<button data-a="${k}" class="${(c.appr || 'std') === k ? 'on' : ''}" title="${a[2]}">${a[0]} ${a[1]}</button>`).join('')}</div><div class="dapprd">${APPR[c.appr || 'std'][2]} · Expires in <b>${Math.max(0, Math.round(c.exp - S.t))} min</b></div>
         <button class="ddisp" id="ddisp" ${c.team.length ? '' : 'disabled'}>DISPATCH ▸</button></div>`;
       $('#dback').onclick = () => { S.sel = null; side(); roster(); };
       el.querySelectorAll('.dappr button').forEach(b => b.onclick = () => { c.appr = b.dataset.a === 'std' ? null : b.dataset.a; ctx.sfx('click'); side(); });
@@ -377,7 +376,7 @@ const Dispatch = (() => {
       const ls = S.calls.map(x => x.id + x.state).join() + '|' + S.calls.filter(x => ['ok', 'fail', 'missed'].includes(x.state) && S.t - (x.done || x.exp) < 40).length;
       if (ls !== listSig) { listSig = ls; side(); }
       else S.calls.forEach(x => { const b = document.querySelector(`#dside .dcall[data-id="${x.id}"] .dtbar`); if (!b) return; const fr = x.state === 'open' ? clamp((x.exp - S.t) / (x.exp - x.born), 0, 1) : x.state === 'travel' ? clamp((S.t - x.sent) / (x.arrive - x.sent), 0, 1) : x.state === 'work' ? clamp((S.t - x.arrive) / (x.done - x.arrive), 0, 1) : 1; b.firstChild.style.width = fr * 100 + '%'; b.classList.toggle('urgent', x.state === 'open' && fr < .3); });
-    } else { const e = $('.dexp b'); if (e) e.textContent = Math.max(0, Math.round(c.exp - S.t)) + ' min'; }
+    } else { const e = $('.dapprd b'); if (e) e.textContent = Math.max(0, Math.round(c.exp - S.t)) + ' min'; }
   }
 
   // ---------- end of shift ----------
