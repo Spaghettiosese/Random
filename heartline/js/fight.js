@@ -498,7 +498,7 @@ const Fight = (() => {
       <p>${win ? (F.clean ? 'Nobody went down. Write that in the notebook.' : 'It is down, and so is someone. Mira is already on the radio.') : cfg.loseText || 'The line breaks. Everyone gets out, barely. This will cost you.'}</p>
       <div class="frow">${win ? '<button class="btn primary" id="fdone">Continue ▸</button>' : `<button class="btn primary" id="fretry">Try again</button><button class="btn" id="fdone">${cfg.noPress ? 'Leave' : 'Press on (setback)'}</button>`}</div></div>`;
     el.classList.add('on'); ctx.sfx(win ? 'success' : 'fail'); if (!win) ctx.music('sad');
-    const done = () => { ctx.sfx('confirm'); const my = U; U = null; ctx.host.innerHTML = ''; xp && F.team.forEach(h => ctx.xp(h.id, xp)); my.ctx.onDone(res); };
+    const done = () => { if (!U || U.F !== F) return; ctx.sfx('confirm'); const my = U; U = null; ctx.host.innerHTML = ''; xp && F.team.forEach(h => ctx.xp(h.id, xp)); my.ctx.onDone(res); };
     $('#fdone').onclick = done;
     const rt = $('#fretry'); if (rt) rt.onclick = () => { ctx.sfx('confirm'); const t = U.tries + 1; start(cfg, ctx); U.tries = t; };
     if (Fight.auto) setTimeout(() => { if (win || U.tries >= 2) done(); else rt.click(); }, 30);

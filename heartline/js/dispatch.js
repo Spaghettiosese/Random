@@ -416,7 +416,8 @@ const Dispatch = (() => {
     if (grade === 'S') ctx.unlock('srank');
     if (G.calls >= 25) ctx.unlock('deploy5');
     ctx.journal(`Shift “${ctx.T(S.cfg.title || 'Shift')}”: grade ${grade}, ${S.ok}/${total} calls${S.best >= 4 ? `, best streak ${S.best}` : ''}.`);
-    $('#repok').onclick = () => { ctx.sfx('confirm'); close(); ctx.onDone(res); };
+    let clocked = false;
+    $('#repok').onclick = () => { if (clocked) return; clocked = true; ctx.sfx('confirm'); const cb = ctx.onDone; close(); cb(res); };
     if (Dispatch.auto) setTimeout(() => $('#repok') && $('#repok').click(), 50);
   }
   function close() { cancelAnimationFrame(raf); const el = $('#dispatch'); if (el) { el.classList.remove('on'); setTimeout(() => el.remove(), 400); } S = null; rosterSig = listSig = objSig = ''; }

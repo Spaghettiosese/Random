@@ -57,3 +57,15 @@ One in ten thousand wake with a Spark. The Handler is Spark-negative: a night-cl
 ## Engine contract (do not break)
 Labels used by engine/systems: `prologue, ch1..ch12, chN_dayX, chN_afterX, chN_climax, finale, arc1_end, end_*, promise_*, eve_*, fin_*, save_*, true_end, epilogue, hang_<hero>_<n|x>, hang_generic`, events in `STORY.events`, `STORY.calls/callEvents/quips/synergy/phone/phoneFallback/feed/giftLine/trainQuip/profiles/items/codex/credits/chapterTitles/sceneNames/ach`.
 Flags read by systems/dispatch: `c1_spores c2_prism c2_concert c3_trap1 c3_server c4_rei c6_hum c8_bridge c8_raid …` (set by `special.flag` in shift configs), `rogue restored hubbg`, `route`, `promise`, `good`, `city`, plus `aff` thresholds and hero ids. Keep script ops exactly as in engine.js `step()`.
+
+## Standoffs (the `fight` op)
+`['fight', { id, foe, team, title, sub, bg, music, prep, name, loseText, hpx, atkx, focus, medic, xp }]`
+
+- `foe`: `hound | leviathan | glazier | aegis | rift | chairman` (see `Fight.FOES` in `js/fight.js`). `name` overrides the display name.
+- `team`: up to five hero ids with a kit (hikari, rei, kaede, tetsu, sora, rin, natsuki, shiori). Mira is never on the field: she is the Handler's Triage.
+- `prep`: a flag name. If a dispatch special set it positive, the team starts with +1 Focus (the squad came prepared).
+- After the fight the script can branch on `G.flags['f_' + id]` (`'win'` or `'lose'`), `f_<id>_clean` (nobody was downed), `f_<id>_reads` (count) and `f_<id>_r_<hero>_<tell>` (a specific Read was used).
+- Losing never blocks the story: the player can retry or press on. Write a `lose` branch that continues the scene with a cost (the Director's backup arrives, somebody gets out through the stockroom).
+- Reads exist only for tells the player has learned (`['tell', hero, key, text]`). If a fight should reward a tell, teach it in an earlier scene. Current Reads: hikari_count, rei_scarf, rei_still, mira_tidy, kaede_heel, sora_stage, tetsu_polite, rin_hum, shiori_cuffs (this one also works when Shiori is the foe: it ends her fight).
+
+Fights in the story: Certification Day (Leviathan, ch1), Mirror Mall (Glazier, ch2), Operation Heartline (Rift Heart, ch5), Aisle Four (Aegis, ch8), Floor 100 (Chairman, ch12). After a foe has been fought once it unlocks in the Sim Room (Train → Sim Room).
