@@ -312,7 +312,7 @@ Object.assign(STORY.scripts, (() => {
       ['music', 'romance'], ['fx', 'hearts'],
       ['n', 'The five shapes in the glass turn toward Kyouya. For a moment their voices come through the comms, faint and warm and impossible.'],
       ['n', '*"Kyouya. Stop listening for us. Start living for us."*'],
-      ['say', KY, '…Daichi. Haruka. Tomo. Everyone. I\'m sorry. I\'m so sorry I didn\'t come sooner.', 'cry'],
+      ['say', KY, '…Daichi. Mei. Tomo. Everyone. I\'m sorry. I\'m so sorry I didn\'t come sooner.', 'cry'],
       ['say', KY, 'Handler. I can\'t close it from out here. It has to be pushed from both sides. I\'ll push. Your squad pulls.', 'determined', 'point'],
       ['set', 'good']
     ], [
