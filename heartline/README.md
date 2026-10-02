@@ -71,8 +71,8 @@ The whole cast was redrawn as pixel art for the Moonkai Pixel Engine (`js/px*.js
 
 The drawings use anime proportions, about 6 heads tall. Each character has a large round head with big, low-set eyes, a small chin and a tiny mouth. The body has a slender neck, sloped shoulders about 1.3 head-widths across, a narrow waist, flared hips and long legs. Limbs are curved, with rounded elbows and small jointed hands. Torsos and legs are built from width profiles, so every costume is cut to the same body. Cel shading is lit from the upper left. Each frame snaps to exactly the colours it drew, line art takes priority in the snap, and the result gets the Pixel Studio outline pass.
 
-- **Cast:** 13 characters with new hair, new hero costumes and face details, plus the casual, formal, winter and yukata outfits. Sprites are 176 × 316.
-- **Expressions:** all 40, with pixel eyes (star, heart, swirl, shadow, teary and so on), brows and mouths. The manpu (blushes, tears, sweat, anger marks, steam, notes, Zzz, dizzy stars) are animated. Expressions also change body language: head tilt, drooping, leaning, bouncing, hopping, shaking and swaying.
+- **Cast:** 13 characters with new hair, new hero costumes and a hand-built face each (`js/pxface.js`: eye size, tilt, iris and highlight, lashes and lids, brow shape and angle, mouth, head shape, nose, blush, a few marks such as Kaede's fang and Sora's stage smile), plus the casual, formal, winter and yukata outfits. Sprites are 176 × 316.
+- **Expressions:** 58, each one reinterpreted by the character wearing it (Rei's whole face works at a tenth of the volume, Rin practises hers, Kaede's smile always has a fang in it), with pixel eyes (star, heart, swirl, shadow, teary and so on), brows and mouths. The manpu (blushes, tears, sweat, anger marks, steam, notes, Zzz, dizzy stars) are animated. Expressions also change body language: head tilt, drooping, leaning, bouncing, hopping, shaking and swaying.
 - **Poses:** 12, each with its own left and right arm rig and hands (open, fist, point, wave, clasp, chin, palm, reach, hip), plus head tilt and lean. Waving waves, cheering pumps both fists, and a raised fist pulses.
 - **Animation:** a 12-frame idle loop (breathing, hair sway), a 4-frame talk loop (the mouth opens from the current expression) and random blinks. Each character also has a signature loop:
   - Hikari: static crackle in her twin tails and a bouncing ahoge
@@ -111,6 +111,27 @@ Each story day has three parts:
 1. **Dispatch shift (real time).** Calls pop up across a city map with countdown timers. Each call needs certain stats (Combat, Vigor, Mobility, Charisma, Intellect). Build a team whose combined stats fill the red outline on the call's pentagon, and dispatch. Heroes travel, work the scene, return and rest. Some calls pause for live decisions or a hacking minigame. Handler skills, weather, morale, perks, gear and pair bonds all change the odds.
 2. **Evening.** Two time slots for Hang Out, Date, Train, Rest, Squad Dinner or a konbini Night Shift. The Dossier, HQ upgrades, Shop, HeroNet and Handler Notes are free.
 3. **Night.** Texts from whoever you're closest to, with reply choices.
+
+### The Notebook and Standoffs
+
+You keep a notebook. Every hero has *tells*: small involuntary habits you only learn by paying attention in scenes (Hikari counts out loud when she is frightened, Rei touches the end of her scarf before she says something true, Mira tidies when she is hurt, Kaede's heel stops tapping when she is really hurt, Tetsu gets quieter and more polite the angrier he is). Each tell goes into the Notes (📓) tab and does three things:
+
+- unlocks 📓 dialogue and reply options in later scenes ("Match her heel to the quiet");
+- adds a small success bonus when that hero is on a dispatch call;
+- unlocks a one-time **Read** for that hero in Standoffs.
+
+**Standoffs** are the turn-based boss fights (the Glass Leviathan at Certification, the Glazier at the Mirror Mall, the Rift Heart, Shiori at the konbini door, Chairman Kuroda on Floor 100). The foe always shows its next move and its target. You answer it:
+
+- **Strike** (every hero has an element; foes are weak to some), **Guard** (take 65% less and *parry* what is aimed at you), **Cover** (take the hit meant for an ally) or a signature **Skill** (Hikari's Lightning Lance, Rei's Shadow Bind, Kaede's Gale Rush, Tetsu's Hold the Line, Sora's Rally Song, Rin's Resonance, Natsuki's Fireman's Carry, Shiori's Hard-Light Lance).
+- Parries and Binds break the foe's **Poise**; at zero it is staggered and takes +60%.
+- Heavy attacks are telegraphed a round early ("Coil", "Gather", "Final Warning"). Bind it, Parry it or take the hit.
+- The Handler spends **Focus** on Scan (weaknesses and the next two moves), Brace (the team takes 30% less) and Stand Up; Mira's Triage heals or raises a fallen hero.
+- **Reads** are free, once per fight, and only exist if you learned the tell. Rin's hum shows the next three moves, Tetsu's "please" draws every attack, Rei's scarf frees a bound team, and Shiori's cuffs end her fight with her.
+- Chairman Kuroda's *Kneel* locks two heroes every round. You are the one person he cannot order, so you stand them back up.
+
+Losing a Standoff never ends the run: you can retry, or press on with a setback (the story carries on and morale drops). Story difficulty softens the foes; Hard sharpens them. After you have fought a foe once, **Train → Sim Room** lets you rematch it for XP and credits.
+
+On dispatch calls you also choose an **approach**: *Rush in* (travel −35%, success −8%), *Standard*, or *Careful* (success +8%, slower on scene, half the injury chance).
 
 ## Features
 
@@ -362,6 +383,7 @@ heartline/
   js/pxmon.js         pixel B.I.T., Rift Hound, Glass Leviathan, the Glazier
   js/pxbg.js          backgrounds re-rasterised to the pixel grid
   js/pxcg.js          the 48 pixel CGs
+  js/pxface.js        per-character face specs: eyes, brows, mouths, head shapes, marks, emotion overrides
   js/chars.js         vector character sprites (vector style): hair, eyes, 40 expressions, poses, outfits
   js/art.js           backgrounds, CGs, B.I.T.
   js/art2.js          Arc Two backgrounds and CGs
@@ -375,7 +397,10 @@ heartline/
   js/story_data2.js   Arc Two data, codex, achievements
   js/systems.js       perks, gear, HQ, morale, weather, nemeses, chains, minigames, dates
   js/dispatch.js      real-time dispatch shifts
+  js/fight.js         Standoffs: turn-based boss fights, hero kits, Notebook reads, Sim Room core
   js/engine.js        VN runner, UI, hub, saves, extras
 ```
+
+Story bible and engine contract: [`docs/STORY_BIBLE.md`](docs/STORY_BIBLE.md).
 
 Story scripts are plain JS arrays, for example `['say', 'hikari', 'Text!', 'happy', 'wave']`.

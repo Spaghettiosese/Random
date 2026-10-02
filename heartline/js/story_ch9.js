@@ -638,18 +638,17 @@ Object.assign(STORY.scripts, (() => {
     ['say', H, "You froze my mom for *seven years*."],
     ['say', NA, "And you did it with a Board-issue freezer. Rude.", 'glare'],
     ['hideall'],
-    ['eye', { prompt: 'The last Aegis loyalists and Engine-born glass guardians fill the roof. Kuroda is at the center. Formation?', time: 9000, opts: [
-      { t: "\"Shiori and Tetsu, shields. Rei and Kaede, flank. Sora, pin the guardians. Rin, find the Engine's note. Hikari, Natsuki, on my mark.\"", ok: 1, set: 'z_form', aff: { shiori: 1, tetsu: 1 } },
-      { t: "\"Everyone at Kuroda. Now.\"" },
-      { t: "\"Hold position.\"", timeout: 1 }
-    ] }],
-    ['if', G => G.flags.z_form, [
-      ['cutin', SH, 'Aegis — FULL WALL!', 'determined'], ['cutin', T, 'Steel skin! Nobody gets past!', 'determined'],
-      ['cutin', SO, 'Gravity — DOWN!', 'furious'], ['sfx', 'boom'], ['impact'],
-      ['cutin', K, "Two seconds EARLY this time!", 'smirk'], ['cutin', R, 'Nightveil.', 'cold'],
-      ['n', "Twenty guardians shatter in the same heartbeat. The loyalists drop their weapons one by one."]
+    ['n', "The roof fills: the last Aegis loyalists, glass guardians the Engine has grown out of the floor, and in the middle of them Kuroda, one hand resting on the microphone like a man at a lectern."],
+    ['t', "The Engine does not need a chip. It needs a name and a voice, and everyone on this roof has heard his. When he says *kneel*, they will. Two at a time, every few seconds. I am the one person up here he cannot give an order to, and that is not a gift. It is a job. Somebody has to stand people back up."],
+    ['fight', { id: 'kuroda', foe: 'chairman', team: [H, NA, R, SH, T], title: 'Floor 100', sub: 'The Engine', bg: 'ascension', music: 'finale', prep: 'z_doors',
+      loseText: 'Nine heroes on their knees in a ring of light, and one clerk walking between them, getting them up one at a time. It is not enough. It will have to be.' }],
+    ['if', G => G.flags.f_kuroda === 'win', [
+      ['show', KU, 'shocked', 'default', 'c'],
+      ['say', KU, "That is not — I did not give that instruction.", 'shocked'],
+      ['n', "For the first time in forty years Genjirou Kuroda has said something that sounded like a question."],
+      ['do', G => { if (G.flags.f_kuroda_clean) G.hope2++; }], ['hide', KU]
     ], [
-      ['sfx', 'boom'], ['shake', 12], ['n', "It works, barely. Tetsu takes a hit that cracks the steel of his arm. Shiori's shield splinters. They keep moving."],
+      ['sfx', 'boom'], ['shake', 12], ['n', "It works, barely. Shiori's shield splinters. Tetsu's arm cracks like cooling steel. They keep moving."],
       ['do', G => { G.hope2 = Math.max(0, G.hope2 - 1); }]
     ]],
     ['music', 'finale'],

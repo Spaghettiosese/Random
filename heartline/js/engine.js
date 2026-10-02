@@ -27,7 +27,7 @@ const Game = (() => {
     route_hikari: ['Lightning Heart', 'See Hikari\'s rooftop scene'], route_rei: ['Shadow Heart', 'See Rei\'s rooftop scene'], route_mira: ['Healing Heart', 'See Mira\'s rooftop scene'],
     ch1: ['Squad Zero', 'Clear Chapter 1'], ch2: ['Glass Hearts', 'Clear Chapter 2'], ch3: ['Fractures', 'Clear Chapter 3'], ch4: ['Shattered City', 'Clear Chapter 4'], finale: ['Heartline', 'Finish the story'], goodend: ['Nobody Left Behind', 'Bring Kyouya home'],
     route_sora: ['Gravity Heart', 'See Sora\'s rooftop scene'], fin_squad: ['Found Family', 'See the Squad ending'], veteran: ['Veteran', 'Raise a hero to Lv 5'],
-    log: ['Rewind', 'Open the backlog'], deploy5: ['Dispatcher', 'Resolve 25 calls'], coach: ['Coach', 'Run 5 training sessions']
+    fight_win: ['Standoff', 'Win your first Standoff'], fight_clean: ['Nobody Down', 'Win a Standoff without losing a hero'], fight_parry: ['Read the Room', 'Land 3 parries in one Standoff'], fight_reads: ['Studied', 'Use 4 different Notebook Reads in Standoffs'], fight_kneel: ['Not On My Knees', 'Stand up a Kneeling hero'], log: ['Rewind', 'Open the backlog'], deploy5: ['Dispatcher', 'Resolve 25 calls'], coach: ['Coach', 'Run 5 training sessions']
   };
   let settings = { textSpeed: 45, autoDelay: 1.4, music: .55, sfx: .7, voice: true, hints: false, motion: true, parallax: true, textSize: 23, boxAlpha: .88, skipUnread: false, wheelBack: true, pixel: true, pixelSmooth: false };
   let meta = { ach: {}, gallery: {}, cleared: false, scenes: {}, codex: {}, endings: {}, chaps: {}, maxChap: 0, met: { hikari: 1 }, stats: { lines: 0, choices: 0, calls: 0, shifts: 0, sranks: 0, dates: 0, gifts: 0, playSec: 0, clears: 0 } };
@@ -162,6 +162,7 @@ const Game = (() => {
       case 'photo': photoCard(); return WAIT;
       case 'rhythm': rhythmOp(a || {}); return WAIT;
       case 'breach': breachOp(a || {}); return WAIT;
+      case 'fight': fightOp(a || {}); return WAIT;
       case 'morale': G.morale = clamp((G.morale === undefined ? 60 : G.morale) + a, 0, 100); if (!skipping()) toast(a > 0 ? '📈 Morale up' : '📉 Morale down', `Squad morale: ${G.morale}`); return NEXT;
       case 'journal': Sys.journal(G, a); return NEXT;
       case 'tell': learnTell(a, b, d); return NEXT;
@@ -501,7 +502,7 @@ const Game = (() => {
     const ch = G.chap || 0;
     const acts = [
       ['hang', '💗', 'Hang Out', 'Spend the evening together', 10], ['date', '💞', 'Date', ch >= 1 ? 'Pick a place · deepen a bond' : 'Unlocks in Chapter 1', 15, ch < 1],
-      ['train', '🥊', 'Train', 'Five drills · hero XP', 20], ['rest', '🛏️', 'Rest', 'Squad recovers fatigue', 0],
+      ['train', '🥊', 'Train', 'Five drills or a Sim fight · XP', 20], ['rest', '🛏️', 'Rest', 'Squad recovers fatigue', 0],
       ['dinner', '🍲', 'Squad Dinner', ch >= 2 ? '💴120 · morale & bonds' : 'Unlocks in Chapter 2', 0, ch < 2 || G.credits < 120], ['job', '🏪', 'Night Shift', 'Work the konbini · +💴', 25]
     ];
     const frees = [['dossier', '📁', 'Dossier', perkAlert()], ['hq', '🏗️', 'HQ', ''], ['shop', '🛍️', 'Shop', ''], ['heronet', '📱', 'HeroNet', ''], ['journal', '📓', 'Notes', '']];
@@ -563,6 +564,13 @@ const Game = (() => {
 
   const ACTS = {
     train() {
+      if (Object.keys(G.foeSeen || {}).length) {
+        modal(`<h2>Training</h2><p class="sub">What kind of evening is it?</p><div class="trainpick"><button class="tp" id="tpd"><b>🥊 Drills</b><small>One hero · five drills · stat gains</small></button><button class="tp" id="tps"><b>🎯 Sim Room</b><small>The squad against a foe you have fought · XP and credits</small></button></div>`, {});
+        $('#tpd').onclick = () => { Sound.sfx('click'); closeModal(); ACTS.drills(); }; $('#tps').onclick = () => { Sound.sfx('click'); simRoom(); }; return;
+      }
+      ACTS.drills();
+    },
+    drills() {
       heroPick('Training', h => {
         modal(`<h2>Training · ${WHO[h].n}</h2><p class="sub">Pick a drill. Great results can permanently raise that stat. Costs 20 energy and adds fatigue.</p><div class="drills">${DRILLS.map(([k, i, n, d]) => `<button class="drill" data-k="${k}"><span>${i}</span><b>${n}</b><small>${d}</small><em>${Dispatch.SI[k]} ${G.heroes[h].st[k]}</em></button>`).join('')}</div>`, { wide: 1 });
         $$('#modal .drill').forEach(b => b.onclick = () => { Sound.sfx('confirm'); drill(h, b.dataset.k); });
@@ -742,6 +750,53 @@ const Game = (() => {
       if (my !== run) return; const f = cfg.flag || 'rhythm'; G.flags[f] = res.grade; G.flags[f + '_score'] = res.score; if (res.grade === 'S') unlock('rhythm_s');
       closeModal(); toast(`🎤 Grade ${res.grade}`, `${Math.round(res.acc * 100)}% accuracy · max combo ${res.combo}`); advance();
     });
+  }
+  function fightCtx(onDone) {
+    return {
+      G, WHO, T, unlock, host: $('#fighthost'), sfx: n => Sound.sfx(n), music: m => { G.vis.music = m; Sound.play(m); }, shake: n => shake(n), xp: (id, n) => giveXP(id, n),
+      art: { warm: id => { if (window.PIXEL_ON !== false && typeof PixelCast !== 'undefined') ['smile', 'scared', 'sad'].forEach(e => PixelCast.prewarm(id, e, 'default', 'hero')); }, bg: n => Art.bg(n), char: (id, emo, pose, port) => Art.char(id, emo, pose, port), monster: kind => (window.PIXEL_ON !== false && typeof PixelMon !== 'undefined') ? PixelMon.monSprite(kind) : Art.monster(kind === 'leviathan' || kind === 'glazier') },
+      onDone
+    };
+  }
+  function fightOp(cfg) {
+    wait = 'modal'; const my = run; $('#textbox').classList.add('hide'); Object.keys(G.vis.chars).forEach(hideChar); autosave();
+    const prevMusic = G.vis.music;
+    modal('<div id="fighthost"></div>', { noclose: 1, wide: 1, cls: 'fightwrap' });
+    Fight.start(cfg, fightCtx(res => {
+      if (my !== run) return; const id = cfg.id || cfg.foe; G.flags['f_' + id] = res.win ? 'win' : 'lose'; G.flags['f_' + id + '_clean'] = res.clean ? 1 : 0; G.flags['f_' + id + '_reads'] = res.reads; (res.readKeys || []).forEach(k => { G.flags['f_' + id + '_r_' + k] = 1; });
+      G.foeSeen = G.foeSeen || {}; G.foeSeen[cfg.foe] = 1;
+      meta.stats.fights = (meta.stats.fights || 0) + 1; if (res.win) { unlock('fight_win'); if (res.clean) unlock('fight_clean'); } if (res.parries >= 3) unlock('fight_parry');
+      if (Object.keys(G.readsUsed || {}).length >= 4) unlock('fight_reads');
+      if (!res.win) G.morale = clamp((G.morale === undefined ? 60 : G.morale) - 8, 0, 100);
+      saveMeta(); closeModal(); if (prevMusic) { G.vis.music = prevMusic; Sound.play(prevMusic); } hist = []; advance();
+    }));
+  }
+  // Sim Room: rematch any foe you have already fought, for XP and credits (no story flags)
+  function simRoom() {
+    const foes = Object.keys(G.foeSeen || {}).filter(k => Fight.FOES[k]);
+    if (!foes.length) { toast('Sim Room', 'Fight something for real first.'); return; }
+    let foe = foes[0], team = G.roster.slice(0, 3);
+    const draw = () => {
+      const ft = Fight.FOES[foe];
+      modal(`<h2>Sim Room</h2><p class="sub">A Standoff against a foe you have already met. Costs 25 energy. Wins pay XP and credits; nothing here changes the story.</p>
+        <div class="simfoes">${foes.map(k => `<button class="simf ${k === foe ? 'on' : ''}" data-f="${k}"><b>${Fight.FOES[k].n}</b><small>Tier ${Fight.FOES[k].tier}</small></button>`).join('')}</div>
+        <h4>Team (2–5)</h4><div class="simteam">${G.roster.filter(h => Fight.KIT[h]).map(h => `<button class="simh ${team.includes(h) ? 'on' : ''}" data-h="${h}" style="--c:${WHO[h].c}"><div class="pp">${Art.char(h, 'smile', 'default', true)}</div><b>${WHO[h].n}</b><small>Lv ${G.heroes[h].lvl}</small></button>`).join('')}</div>
+        <div class="row"><button class="btn" id="simx">Back</button><button class="btn primary" id="simgo" ${team.length < 2 || G.energy < 25 ? 'disabled' : ''}>${G.energy < 25 ? 'Too tired' : 'Start ▸'}</button></div>`, { wide: 1 });
+      $$('#modal .simf').forEach(b => b.onclick = () => { foe = b.dataset.f; Sound.sfx('click'); draw(); });
+      $$('#modal .simh').forEach(b => b.onclick = () => { const h = b.dataset.h; team = team.includes(h) ? team.filter(x => x !== h) : team.length < 5 ? team.concat(h) : team; Sound.sfx('click'); draw(); });
+      $('#simx').onclick = () => { Sound.sfx('cancel'); closeModal(); };
+      $('#simgo').onclick = () => {
+        Sound.sfx('confirm'); G.energy -= 25; const my = run, prev = G.vis.music;
+        modal('<div id="fighthost"></div>', { noclose: 1, wide: 1, cls: 'fightwrap' });
+        Fight.start({ id: 'sim', foe, team, title: 'Sim Room', sub: ft.n, bg: 'training', music: 'boss', sim: 1, xpMul: .5, noPress: 1, loseText: 'The sim shuts down. Mira is already writing up what went wrong.' }, fightCtx(res => {
+          if (my !== run) return; closeModal(); if (prev) { G.vis.music = prev; Sound.play(prev); }
+          if (res.win) { const c = 40 * ft.tier; G.credits += c; G.morale = clamp((G.morale || 60) + 3, 0, 100); toast('🎯 Sim cleared', `+💴${c} · morale +3`); }
+          team.forEach(h => { G.heroes[h].fat = clamp(G.heroes[h].fat + 10, 0, 100); });
+          Sys.journal(G, `Sim Room: ${ft.n}, ${res.win ? 'cleared' : 'failed'}.`); useSlot(0);
+        }));
+      };
+    };
+    draw();
   }
   function breachOp(cfg) {
     wait = 'modal'; const my = run;

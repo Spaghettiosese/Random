@@ -280,20 +280,19 @@ Object.assign(STORY.scripts, (() => {
     ['n', 'And somewhere at the center there is a heartbeat on my screen. Mira\'s.'],
     ['cgoff'], ['letterbox', 0],
     ['sfx', 'roar'], ['shake', 8],
-    ['eye', { prompt: 'Glass guardians pour off the bridges, a dozen of them. Formation?', time: 9000, opts: [
-      { t: '"Tetsu front. Rei and Kaede flank. Sora pins them. Hikari, finish on my mark."', ok: 1, set: 'f1', aff: { tetsu: 1 } },
-      { t: '"Everyone hit the biggest one. Now."' },
-      { t: '"Fall back to the entrance."', timeout: 1 }
-    ] }],
-    ['if', G => G.flags.f1, [
-      ['show', T, 'determined', 'cross', 'l'], ['say', T, 'Steel skin. Come on, then.'],
-      ['show', SO, 'determined', 'point', 'r'], ['cutin', SO, 'Gravity — DOWN!', 'furious'], ['sfx', 'boom'], ['impact'],
-      ['show', H, 'angry', 'fist', 'c'], ['say', H, 'Now?'], ['me', 'Now.'],
-      ['cutin', H, 'THUNDER GODDESS — FULL VOLTAGE!', 'furious'], ['sfx', 'thunder'], ['flash', '#fff'], ['n', 'Twelve guardians shatter in the same heartbeat.'], ['hideall']
+    ['n', 'The bridges let go of a dozen glass guardians at once. Behind them, larger than any of them, something with a red core like a heart turns to look at us.'],
+    ['t', 'Twelve small ones and one very large one. The board lays out the large one\'s next move before it makes it. All I have to do is stay calmer than it is.'],
+    ['fight', { id: 'rift', foe: 'rift', name: 'The Rift Heart', team: [T, R, K, SO, H], title: 'Operation Heartline', sub: 'Inside the Shibuya Rift', bg: 'rift', music: 'boss',
+      loseText: 'The glass comes down on all of them. Somehow, five people get up again, because behind that wall there is a heartbeat on my screen that isn\'t theirs.' }],
+    ['if', G => G.flags.f_rift === 'win', [
+      ['cutin', H, 'THUNDER GODDESS — FULL VOLTAGE!', 'furious'], ['sfx', 'thunder'], ['flash', '#fff'],
+      ['n', 'The core rings once, like a struck bell, and the whole guard comes apart into a few thousand pieces that hang in the air before they fall.'],
+      ['set', 'f1'], ['hideall']
     ], [
-      ['sfx', 'boom'], ['shake', 12], ['n', 'It works, barely. Tetsu takes a spike through the shoulder that would have killed anyone else. Kaede\'s ankle cracks. They keep moving.'],
+      ['sfx', 'boom'], ['shake', 12], ['n', 'It works, barely. Tetsu takes a spike through the shoulder that would have killed anyone else. Kaede\'s ankle cracks. They keep moving, because stopping is worse.'],
       ['do', G => { G.hope = Math.max(0, G.hope - 1); }]
     ]],
+    ['do', G => { if (G.flags.f_rift === 'win' && G.flags.f_rift_clean) G.hope++; }],
     ['bg', 'rift'], ['music', 'sad'],
     ['n', 'The center. A platform of perfect glass. Mira hangs inside a crystal column, eyes closed, hands glowing, holding the Rift together with her own body.'],
     ['n', 'Around her, faintly, five shapes flicker in the glass. Shadows of people. A squad.'],

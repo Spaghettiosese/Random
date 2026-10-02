@@ -258,56 +258,44 @@ const STORY = (() => {
     ['say', H, 'It helps. Your hands are shaking too.', 'sulk', 'fist'],
     ['say', R, '……', 'sad', 'default'],
     ['t', 'They are both terrified, and they are both looking at me.'],
-    ['eye', { prompt: 'Its shards re-form faster than they break. Opening move?', time: 10000, opts: [
-      { t: '"Rei — bind it with shadows. Use the pier floodlights to make them darker."', ok: 1, set: 't1', aff: { rei: 2 } },
-      { t: '"Hikari, hit it with everything. Now."', aff: { hikari: 1 } },
-      { t: '"Both of you fall back. Wait for backup."', timeout: 1 }
-    ] }],
-    ['if', G => G.flags.t1, [
-      ['say', R, 'More light, so the shadows are deeper. That is not stupid.', 'wry', 'point'],
-      ['sfx', 'shadow'], ['fx', 'shadow'], ['shake', 6],
-      ['n', 'Shadows peel off every crane and container, whipping across the water to coil around the serpent\'s body.']
-    ], [
-      ['say', H, 'Okay. Here goes.', 'resolve', 'fist'], ['sfx', 'zap'], ['flash', '#fff'],
-      ['n', 'The blast glances off, just like last time. The serpent lashes back and the pier buckles under all of us.'], ['shake', 10], ['sfx', 'boom'],
-      ['say', R, 'It\'s glass. Light bends through it, but it still casts a shadow. *Think*, Handler.', 'angry'],
-      ['t', 'Shadows need light. The pier has floodlights.'],
-      ['say', R, 'I\'ll hold it. Try not to make me regret that.', 'determined', 'point'], ['sfx', 'shadow'], ['fx', 'shadow']
-    ]],
-    ['say', R, 'It\'s too strong. I can\'t hold it long.', 'scared', 'point'],
-    ['t', 'She isn\'t moving at all. Not her shoulders, not her hands. Her whole body has gone very still.'],
+    ['n', 'Rei has stopped shaking. She has gone perfectly, unnaturally still, the way a deer goes still on a road.'],
     ['tell', R, 'still', 'Goes completely still when she is afraid.'],
-    ['say', M, '(comms) Rei\'s vitals are spiking. The core is exposed. You have a few seconds.', 'scared'],
-    ['eye', { prompt: 'The red core is exposed. Who finishes it, and how?', time: 9000, opts: [
-      { t: '"Hikari — the whole bay is salt water. Charge the harbor."', ok: 1, set: 't2', aff: { hikari: 2 } },
-      { t: '"Rei, crush the core with your shadows."', aff: { rei: 1 } },
-      { t: '"Mira — get them out of there."', aff: { mira: 1 }, timeout: 1 }
-    ] }],
-    ['if', G => G.flags.t2, [
-      ['say', H, 'Salt water conducts even better than rain. I\'ve got it.', 'determined', 'fist']
-    ], [
-      ['say', R, 'I can\'t—', 'cry', 'default'],
-      ['say', H, 'Then I will. The water, right? Same as the puddle.', 'resolve', 'fist'],
-      ['t', 'She remembered the puddle. She actually did.']
-    ]],
-    ['say', H, 'Rei. One more second. One. Two—', 'determined', 'fist'],
-    ['say', R, 'Don\'t miss, Hikari.', 'wry', 'point'],
+    ['say', M, '(comms) Handler, I\'m putting the board on your screen. It shows you what the thing is about to do before it does it. Tell them how to answer.', 'resolve'],
+    ['t', 'Fine. The fight is a notebook page. Read what it does next. Decide who stands where.'],
+    ['fight', { id: 'lev', foe: 'leviathan', team: [H, R], title: 'Certification: Harbor', sub: 'Tier-4 Rift, glass serpent', bg: 'harbor', music: 'boss',
+      loseText: 'The pier folds under both of them. For a few seconds I only hear water and my own earpiece, repeating a name.' }],
     ['letterbox', 1], ['speed', 1],
-    ['cg', 'cg_combo'], ['sfx', 'thunder'], ['flash', '#fff'], ['shake', 16], ['wait', 1400],
-    ['n', 'Shadow and lightning, together. The bay turns into a sheet of white fire.'],
-    ['sfx', 'shatter'], ['fx', 'glass'],
-    ['n', 'The serpent sings one last note, high enough to hurt, and comes apart into a trillion bright pieces that fall like snow.'],
+    ['if', G => G.flags.f_lev === 'win', [
+      ['cg', 'cg_combo'], ['sfx', 'thunder'], ['flash', '#fff'], ['shake', 16], ['wait', 1400],
+      ['n', 'Shadow and lightning, together. The bay turns into a sheet of white fire.'],
+      ['sfx', 'shatter'], ['fx', 'glass'],
+      ['n', 'The serpent sings one last note, high enough to hurt, and comes apart into a trillion bright pieces that fall like snow.']
+    ], [
+      ['sfx', 'boom'], ['shake', 12],
+      ['say', A, '(comms) Pull back. Both of you. That is an order, Amane.', 'cold'],
+      ['n', 'A hex-wall of hard light slides across the mouth of the bay. Somebody senior has finally arrived, and the serpent breaks itself against the glass.'],
+      ['t', 'We did not win that. We lived through it. The Director will have a word for that and it will not be "certified."']
+    ]],
     ['cgoff'], ['speed', 0], ['letterbox', 0], ['music', 'victory'],
+    ['do', G => { G.flags.t1 = G.flags.f_lev === 'win' ? 1 : 0; G.flags.t2 = G.flags.f_lev_clean ? 1 : 0; if (G.flags.f_lev_reads) G.flags.team_talk = 1; }],
     ['do', G => {
       const sh = G.shifts.slice(-3), ok = sh.reduce((s, x) => s + x.ok, 0) / Math.max(1, sh.reduce((s, x) => s + x.total, 0));
       G.score = Math.round(ok * 50 + (G.flags.t1 ? 15 : 0) + (G.flags.t2 ? 15 : 0) + (G.flags.team_talk ? 5 : 0) + (G.flags.c1_spores > 0 ? 5 : 0) + Math.min(G.rep, 40) / 4);
       G.flags.hr_bond = 1;
     }],
-    ['show', H, 'crysmile', 'default', 'l'], ['show', R, 'sad', 'default', 'r'],
-    ['say', H, 'We did it. We actually — Rei, you called me Hikari.', 'delighted', 'wave'],
-    ['say', R, 'I did not.', 'blush', 'cross'],
-    ['say', H, 'You did. Before the last one. You said, "Don\'t miss, Hikari."', 'wry', 'hip'],
-    ['say', R, '…Once. It won\'t happen again.', 'shy', 'cross'],
+    ['if', G => G.flags.f_lev === 'win', [
+      ['show', H, 'crysmile', 'default', 'l'], ['show', R, 'sad', 'default', 'r'],
+      ['say', H, 'We did it. We actually — Rei, you called me Hikari.', 'delighted', 'wave'],
+      ['say', R, 'I did not.', 'blush', 'cross'],
+      ['say', H, 'You did. Before the last one. You said, "Don\'t miss, Hikari."', 'wry', 'hip'],
+      ['say', R, '…Once. It won\'t happen again.', 'shy', 'cross']
+    ], [
+      ['show', H, 'sad', 'default', 'l'], ['show', R, 'sad', 'default', 'r'],
+      ['say', H, 'We lost. I don\'t say that. I\'m not allowed to say that. We lost.', 'sad', 'shy'],
+      ['say', R, 'We were rescued. It is a different word. Write it down properly.', 'guarded', 'cross'],
+      ['say', H, '…You called me Hikari. Out there.', 'stunned'],
+      ['say', R, 'Once. Under duress.', 'wry', 'cross']
+    ]],
     ['bg', 'office'], ['fx', null], ['hideall'], ['music', 'hq'],
     ['show', A, 'neutral', 'cross', 'c'],
     ['if', G => G.score >= 75, [

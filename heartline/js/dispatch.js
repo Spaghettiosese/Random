@@ -5,6 +5,8 @@ const Dispatch = (() => {
   const SN = { com: 'Combat', vig: 'Vigor', mob: 'Mobility', cha: 'Charisma', int: 'Intellect' };
   const SI = { com: '👊', vig: '❤️', mob: '👟', cha: '💬', int: '🧠' };
   const HQ = [400, 235];
+  const APPR = { fast: ['⚡', 'Rush in', 'Travel −35% · success −8% · more tiring'], std: ['⚖', 'Standard', 'No modifiers'], care: ['🛡', 'Careful', 'Success +8% · slower on scene · half injury chance'] };
+  const apprP = c => c.appr === 'fast' ? -.08 : c.appr === 'care' ? .08 : 0;
   const DIST = { harbor: ['Harbor', 680, 385], shibuya: ['Shibuya', 215, 300], akiba: ['Akiba', 560, 110], oldtown: ['Old Town', 135, 125], uptown: ['Uptown', 380, 80], industrial: ['Industrial', 705, 190], riverside: ['Riverside', 360, 400], park: ['Ueno Park', 560, 295] };
   const TIERC = ['#6fffb0', '#6fffb0', '#ffd24a', '#ff8a3a', '#ff3355'];
   const STATE = { ready: 'READY', travel: 'EN ROUTE', work: 'ON SCENE', ret: 'RETURNING', rest: 'RESTING', hurt: 'INJURED' };
@@ -30,7 +32,7 @@ const Dispatch = (() => {
     const t = teamStats(team, call); let need = 0, got = 0, over = 0;
     ST.forEach(k => { need += call.req[k]; got += Math.min(t[k], call.req[k]); over += Math.max(0, t[k] - call.req[k]); });
     const cover = need ? got / need : 1, fat = team.reduce((s, id) => s + H(id).fat, 0) / team.length;
-    return clamp(.06 + .9 * Math.pow(cover, 1.35) + Math.min(.08, over / 120) + synergy(team)[0] + Sys.bonus(ctx.G, S, call, team)[0] + (call.ow || 0) - fat / 500, .03, .98);
+    return clamp(.06 + .9 * Math.pow(cover, 1.35) + Math.min(.08, over / 120) + synergy(team)[0] + Sys.bonus(ctx.G, S, call, team)[0] + (call.ow || 0) + apprP(call) - fat / 500, .03, .98);
   }
 
   // ---------- setup ----------
@@ -110,8 +112,9 @@ const Dispatch = (() => {
   }
   const restTime = id => Math.max(8, (42 - H(id).st.vig * 2.6 + H(id).fat * .35) * Sys.restMul(ctx.G, id));
   function send(c) {
-    const team = c.team, mob = Math.min(...team.map(id => Sys.stat(ctx.G, S, id, 'mob', c, team))), travel = (6 + dist(HQ, [c.x, c.y]) / (7 + mob * 2.4)) * Sys.travelMul(ctx.G, team, S);
-    c.p = chance(c, team); c.state = 'travel'; c.sent = S.t; c.arrive = S.t + travel; c.done = c.arrive + 20 + c.tier * 14; c.travel = travel;
+    const team = c.team, mob = Math.min(...team.map(id => Sys.stat(ctx.G, S, id, 'mob', c, team))), travel = (6 + dist(HQ, [c.x, c.y]) / (7 + mob * 2.4)) * Sys.travelMul(ctx.G, team, S) * (c.appr === 'fast' ? .65 : 1);
+    c.p = chance(c, team); c.state = 'travel'; c.sent = S.t; c.arrive = S.t + travel; c.done = c.arrive + (20 + c.tier * 14) * (c.appr === 'care' ? 1.3 : 1); c.travel = travel;
+    if (c.appr === 'fast') team.forEach(id => { H(id).fat = clamp(H(id).fat + 4, 0, 100); });
     if (S.t - c.born <= 10) S.fast++;
     team.forEach(id => { S.hero[id].s = 'travel'; S.hero[id].call = c.id; });
     ctx.sfx('siren'); quip(team[0], 'go'); radio(`${team.map(N).join(' & ')} → ${c.dname} (${Math.round(c.p * 100)}%)`, 'go');
@@ -124,7 +127,7 @@ const Dispatch = (() => {
     if (ok) { S.ok++; S.streak++; S.best = Math.max(S.best, S.streak); if (c.tier >= 3) S.hiOk++; if (c.team.length === 1) S.soloOk++; }
     else { S.fail++; S.streak = 0; }
     if (c.flag) S.flags[c.flag] = ok ? 1 : -1;
-    const cand = c.team[(S.r() * c.team.length) | 0], injured = !ok && S.r() < .35 * Sys.injMul(G, c.team, cand) ? cand : null;
+    const cand = c.team[(S.r() * c.team.length) | 0], injured = !ok && S.r() < .35 * Sys.injMul(G, c.team, cand) * (c.appr === 'care' ? .5 : 1) ? cand : null;
     const xm = Sys.xpMul(G, c.team);
     c.team.forEach(id => {
       const h = S.hero[id], hero = H(id); hero.fat = clamp(hero.fat + 9 + c.tier * 3, 0, 100);
@@ -310,9 +313,11 @@ const Dispatch = (() => {
         <div class="dslots">${[...Array(c.slots)].map((_, i) => { const id = c.team[i]; return id ? `<div class="dslot on" style="--c:${ctx.WHO[id].c}">${ctx.portrait(id)}</div>` : `<div class="dslot">+</div>`; }).join('')}
           <div class="dchance ${p > .7 ? 'good' : p > .45 ? 'mid' : 'bad'}"><b>${Math.round(p * 100)}%</b><small>success</small></div></div>
         <div class="dsyn">${notes.length ? notes.map(n => `<div class="${n[0] === '+' ? 'pos' : 'neg'}">${ctx.T(n)}</div>`).join('') : c.team.length > 1 ? '<div>No special synergy.</div>' : ''}</div>
+        <div class="dappr">${Object.entries(APPR).map(([k, a]) => `<button data-a="${k}" class="${(c.appr || 'std') === k ? 'on' : ''}" title="${a[2]}"><b>${a[0]} ${a[1]}</b><small>${a[2]}</small></button>`).join('')}</div>
         <div class="dexp">Expires in <b>${Math.max(0, Math.round(c.exp - S.t))} min</b></div>
         <button class="ddisp" id="ddisp" ${c.team.length ? '' : 'disabled'}>DISPATCH ▸</button></div>`;
       $('#dback').onclick = () => { S.sel = null; side(); roster(); };
+      el.querySelectorAll('.dappr button').forEach(b => b.onclick = () => { c.appr = b.dataset.a === 'std' ? null : b.dataset.a; ctx.sfx('click'); side(); });
       $('#ddisp').onclick = () => send(c);
       return;
     }

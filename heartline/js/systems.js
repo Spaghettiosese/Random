@@ -190,6 +190,7 @@ const Sys = (() => {
     if ((G.aff[id] || 0) >= 12 && k === bestStat(h)) v += 1;
     return v;
   }
+  const tellsOf = (G, id) => Object.keys(G.tells || {}).filter(k => k.startsWith(id + '_')).length;
   const pairKey = (a, b) => [a, b].sort().join('|');
   const pairLv = (G, a, b) => Math.min(3, Math.floor(((G.pairs && G.pairs[pairKey(a, b)]) || 0) / 3));
   const MOOD = { cheer: ['😊', 'Cheerful', 'Extra ♥ from time together'], fired: ['🔥', 'Fired Up', '+5% success on calls'], tired: ['😪', 'Tired', '−5% success on calls'], moody: ['🌧️', 'Moody', 'Bad topics sting double'], calm: ['🍵', 'Calm', 'No effect'] };
@@ -200,6 +201,7 @@ const Sys = (() => {
       const g = G.heroes[id].gear && GEAR[G.heroes[id].gear]; if (g && g.chance) v += g.chance;
       if ((G.aff[id] || 0) >= 22) { v += .05; notes.push(`+ ${api ? api.WHO[id].n : id} fights for you (♥ Heartline)`); }
       const m = G.mood && G.mood[id]; if (m === 'fired') v += .05; if (m === 'tired') v -= .05;
+      const nt = tellsOf(G, id); if (nt) { v += Math.min(3, nt) * .015; notes.push(`+ 📓 You know how ${api ? api.WHO[id].n : id} works`); }
     });
     for (let i = 0; i < team.length; i++) for (let j = i + 1; j < team.length; j++) { const l = pairLv(G, team[i], team[j]); if (l) { v += l * .03; notes.push(`+ Bond Lv ${l}: ${api.WHO[team[i]].n} & ${api.WHO[team[j]].n}`); } }
     v += hq(G, 'drone') * .03 + ((G.morale === undefined ? 60 : G.morale) - 50) / 500;

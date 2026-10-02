@@ -441,14 +441,35 @@ Object.assign(STORY.scripts, (() => {
     ['hideall']
   ];
   S.ch8_climax = [
-    ['bg', 'konbini', 'flash'], ['tint', 'night'], ['music', 'boss'], ['fx', 'sparks'],
-    ['if', G => G.flags.c8_raid > 0, [
-      ['n', "Aegis came through the front door at 23:10. Squad Zero was already gone through the back, with Mr. Oba, the police scanner, the ramen-box map, and the pudding."],
-      ['n', "*Oba:* \"I have worked nights for thirty years. That was the best one.\""]
+    ['autosave'], ['bg', 'konbini_hq', 'flash'], ['tint', 'night'], ['music', 'boss'], ['fx', 'sparks'],
+    ['n', "23:10. The bell above the door rings, which it has never once done for a hero."],
+    ['show', SH, 'serious', 'default', 'c'],
+    ['say', SH, "Mr. Oba, please stand behind the counter. This will be brief."],
+    ['n', "Mr. Oba picks up the mop. He does not stand behind the counter."],
+    ['say', SH, "Squad Zero. Surrender your licenses and come with me. I would prefer to ask only once.", 'cold'],
+    ['hide', SH],
+    ['t', "She has brought the whole manual: hex walls, volleys, and the one move the manual calls a last resort. She is not hurrying. That is the first thing I write down."],
+    ['fight', { id: 'aeg', foe: 'aegis', team: [H, R, K, T], title: 'Aisle Four', sub: 'Aegis Prime at the konbini door', bg: 'konbini_hq', music: 'boss', prep: 'c8_raid',
+      loseText: 'Frost and hard light, and the shelves are in the street. Somebody has dragged somebody else through the stockroom door. Oba is the last one out, carrying the pudding.' }],
+    ['show', SH, 'serious', 'default', 'c'],
+    ['if', G => G.flags.f_aeg_r_shiori_cuffs, [
+      ['n', "In the middle of an order she stops. She touches her left cuff, then her right, and does not touch the third thing. Nothing happens. Her hands go very quiet."],
+      ['say', SH, "I was about to say a sentence. I find I do not know whose it was.", 'confused'],
+      ['say', SH, "Aegis Prime has not located Squad Zero tonight. Mr. Oba, I am sorry about the door.", 'serious'],
+      ['set', 'shiori_trust'], ['aff', SH, 3]
     ], [
-      ['n', "Aegis came through the front door at 23:10. It was close. Tetsu held the stockroom door. Kaede made eleven trips. Mr. Oba threatened an Aegis trooper with a mop and won."],
-      ['morale', -5]
+      ['if', G => G.flags.f_aeg === 'win', [
+        ['n', "She goes down on one knee with the lance across it, breathing like a person who has never been out of breath before."],
+        ['say', SH, "Noted.", 'cold'],
+        ['n', "She stands. Left cuff, right cuff. She does not arrest anyone. The door rings again behind her."],
+        ['aff', SH, 1]
+      ], [
+        ['n', "Behind us the door rings again, softly, the way a person leaves who has won and does not enjoy it."],
+        ['morale', -5]
+      ]]
     ]],
+    ['hide', SH],
+    ['n', "*Oba:* \"I have worked nights for thirty years. That was the best one.\""],
     ['bg', 'mountain', 'wipe'], ['music', 'sad'], ['fx', null],
     ['n', "03:00. The old road up to the hilltop shrine. Eight heroes, a drone, and a Handler, climbing in the dark with everything they own."],
     ['show', H, 'sleepy', 'default', 'c'],
