@@ -89,7 +89,7 @@ The drawings use anime proportions, about 6 heads tall. Each character has a lar
   - Natsuki: rising embers and flame-tipped hair
   - Aya: hair sway and a glasses glint
 - **B.I.T.:** a float loop, a thruster flicker, a blinking antenna and 10 screen faces.
-- **Monsters:** the Rift Hound, the Glass Leviathan and the Glazier, with a pulsing core, a working jaw, glinting shards and coils.
+- **Monsters:** the Rift Hound, the Glass Leviathan, the Glazier and the Rift Heart, with a pulsing core, a working jaw, glinting shards and coils.
 - **CGs:** all 48 are painted as staged VN scenes (400 × 225, 8 frames) rather than characters lined up facing the camera. They use:
   - back and over-the-shoulder shots (Hikari on the rooftop ledge at sunset, the squad facing the Rift, the festival crowd under the fireworks)
   - characters sitting on ledges, benches, steps, café chairs and gondola seats
@@ -100,6 +100,11 @@ The drawings use anime proportions, about 6 heads tall. Each character has a lar
   - a key light and rim light per character, a background tone per scene and a slow camera drift
   
   The animation covers hair in the wind, blinks, particles, fire, fireworks, shooting stars and a glitch tear.
+- **Standoff art (`js/pxfight.js`):** the turn-based fights are pixel art end to end. Heroes stand on a pixel floor as full-body animated sprites and change pose and expression with their orders (fist to strike, crossed arms to guard, a wince when hit, slumped when down). The foes are pixel monsters, including a new Rift Heart (a beating red crystal in a cage of glass ribs), or the full cast sprites for Shiori and Kuroda. Everything else comes from the engine too:
+  - 28 icons (elements, skills, statuses, enemy moves) drawn as vector shapes, snapped to a 16 × 16 palette grid and outlined
+  - 16 effects painted frame by frame on a 120 × 120 grid and snapped like the CGs: slash, lightning bolt, shadow bind, gale, hex guard, parry burst, heal, rally, impact, charge-up, nova, mirror pane, kneel chains, and looping stagger stars and hardened shell. The looping ones run on the same animator as the cast
+  - a 5 × 7 bitmap font for names, damage numbers (gold for weak hits, a star for crits), the round counter and the STANDOFF, VICTORY and DEFEAT banners
+  - pixel HP and Poise bars, floor tiles, shadows, and a speed-line cut-in strip with the hero's portrait whenever a Skill or Read fires
 - **Backgrounds:** re-rasterised onto a 400 × 225 grid with a 40-colour palette per scene and ordered dithering. Animated scenes keep 8 frames.
 - **Settings:** *Pixel-Art Graphics* switches back to the original vector art. *Smooth Pixels* applies Pixel Studio's Scale2x.
 - **Pixel Studio round trip:** the Character Viewer can export any sprite (character, expression, pose and outfit) as a `.pxs.json` project. Open it in Moonkai Pixel Studio (`pixel/index.html`) with **Open**. Ready-made projects for the whole cast are in [`../pixel-studio/cast/`](../pixel-studio/cast/).
@@ -380,9 +385,10 @@ heartline/
   js/pxengine.js      Moonkai Pixel Engine: palette snap, outline, dither, Scale2x, motion presets, frame cache, animator
   js/pxchars.js       pixel cast rig: anime anatomy, faces, 40 expressions, 12 poses, limbs and hands, outfits, Hikari
   js/pxcast.js        pixel cast: the other twelve characters and their signature animations
-  js/pxmon.js         pixel B.I.T., Rift Hound, Glass Leviathan, the Glazier
+  js/pxmon.js         pixel B.I.T., Rift Hound, Glass Leviathan, the Glazier, the Rift Heart
   js/pxbg.js          backgrounds re-rasterised to the pixel grid
   js/pxcg.js          the 48 pixel CGs
+  js/pxfight.js       Standoff art: icons, effects, bitmap font, bars, cut-ins
   js/pxface.js        per-character face specs: eyes, brows, mouths, head shapes, marks, emotion overrides
   js/chars.js         vector character sprites (vector style): hair, eyes, 40 expressions, poses, outfits
   js/art.js           backgrounds, CGs, B.I.T.

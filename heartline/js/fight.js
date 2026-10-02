@@ -48,7 +48,7 @@ const Fight = (() => {
       mv: { shatter: M('Shatter', '💎', 'sweep', { d: .7, t: 'Every surface lets go at once.' }), grip: M('Cold Grip', '🥶', 'bind', { d: .7, tg: 'strong', t: 'Frost climbs the leg of whoever hits hardest.' }), mirror: M('Mirror Pane', '🪞', 'mirror', { t: 'It raises a mirror. Whatever strikes it, strikes back.' }), pane: M('Pane Through', '🔪', 'single', { d: 1.6, tg: 'weak', t: 'A pane of glass, edge first.' }) } },
     aegis: { n: 'Shiori Kagami', art: 'shiori', hp: 170, atk: 12, poise: 3, tier: 4, weak: ['shadow', 'wind'], res: ['light'], yield: 'shiori_cuffs', seq: ['lance', 'wall', 'warn', 'volley', 'command', 'lance', 'wall', 'warn', 'volley', 'command'],
       mv: { lance: M('Hard-Light Lance', '✨', 'single', { d: 1.8, tg: 'strong', t: 'Textbook form. No wasted motion.' }), warn: M('Final Warning', '⚠️', 'charge', { rel: 'exec', t: 'She squares her shoulders. This is the move the manual calls a last resort.' }), exec: M('Execute Order', '🗡️', 'single', { d: 2.5, tg: 'weak', heavy: 1 }), wall: M('Aegis Wall', '🛡️', 'shield', { heal: 0, t: 'A hex wall goes up between her and you.' }), volley: M('Volley', '🔆', 'sweep', { d: .9, t: 'Eight beams, one for each exit.' }), command: M('Stand Down!', '📣', 'bind', { d: .5, tg: 'strong', t: 'An order in a voice that expects obedience. One of you will be unable to disobey it.' }) } },
-    rift: { n: 'The Rift Heart', art: 'leviathan', hp: 220, atk: 11, poise: 3, tier: 5, weak: ['lightning', 'light'], res: ['shadow'], phase2: .5, seq: ['pulse', 'spear', 'coil', 'reform', 'pulse', 'spear', 'coil'], seq2: ['collapse', 'spear', 'spear', 'coil2', 'collapse', 'spear', 'coil2'],
+    rift: { n: 'The Rift Heart', art: 'heart', hp: 220, atk: 11, poise: 3, tier: 5, weak: ['lightning', 'light'], res: ['shadow'], phase2: .5, seq: ['pulse', 'spear', 'coil', 'reform', 'pulse', 'spear', 'coil'], seq2: ['collapse', 'spear', 'spear', 'coil2', 'collapse', 'spear', 'coil2'],
       mv: { pulse: M('Rift Pulse', '🔴', 'sweep', { d: .75, t: 'The red core beats once. The street flinches.' }), spear: M('Glass Spear', '🗡️', 'single', { d: 1.35, tg: 'rand', t: 'A lance of the city\'s own windows.' }), coil: M('Gather', '🌀', 'charge', { rel: 'nova', t: 'Everything nearby leans toward the core.' }), nova: M('Heartbreak', '💥', 'single', { d: 2.5, tg: 'weak', heavy: 1 }), reform: M('Reform', '🛡️', 'shield', { heal: .05, t: 'The core rolls under armor.' }), collapse: M('Collapse', '🌋', 'sweep', { d: 1.0, t: 'The sky starts coming down in sheets.' }), coil2: M('Overload', '☀️', 'charge', { rel: 'nova2', t: 'The core goes white. Whatever this is, it ends something.' }), nova2: M('Whiteout', '☀️', 'sweep', { d: 1.6, heavy: 1 }) } },
     chairman: { n: 'Chairman Kuroda', art: 'kuroda', hp: 190, atk: 11, poise: 4, tier: 5, weak: [], res: [], kneel: 2, seq: ['verdict', 'decree', 'verdict', 'edict', 'decree', 'verdict'],
       mv: { verdict: M('Verdict', '⚖️', 'single', { d: 1.5, tg: 'strong', t: 'Said gently. The worst things he says are always kind.' }), decree: M('Decree', '📜', 'sweep', { d: .6, t: 'Everyone is addressed by name, one at a time.' }), edict: M('Edict', '🔒', 'shield', { heal: .05, t: 'He rewrites the rules of the room so that he cannot be hurt in it.' }) } }
@@ -141,9 +141,9 @@ const Fight = (() => {
     if (f.shield && !o.pierce && !h.pierce) d *= .4;
     const crit = h.crit || F.r() < h.st.int * .025; if (crit) { d *= 1.6; h.crit = 0; F.stats.crits++; }
     d *= .92 + F.r() * .16; d = Math.max(1, Math.round(d));
-    if (f.mirror && o.phys) { const back = Math.round(d * .6); hurt(F, h, back, { src: 'mirror' }); say(F, `🪞 ${h.n}'s strike is thrown back at them for ${back}.`, 'bad'); ev(F, { t: 'reflect', who: h.id }); return 0; }
+    if (f.mirror && o.phys) { const back = Math.round(d * .6); ev(F, { t: 'fx', kind: 'mirror', pal: 'glass', on: 'foe' }); hurt(F, h, back, { src: 'mirror' }); say(F, `🪞 ${h.n}'s strike is thrown back at them for ${back}.`, 'bad'); ev(F, { t: 'reflect', who: h.id }); return 0; }
     f.hp = Math.max(0, f.hp - d); F.stats.damage += d;
-    ev(F, { t: 'foe', n: d, crit: !!crit, weak, res, who: h.id, shield: !!(f.shield && !o.pierce && !h.pierce) });
+    ev(F, { t: 'foe', n: d, crit: !!crit, weak, res, who: h.id, el, via: o.via || 'strike', hp: f.hp, shield: !!(f.shield && !o.pierce && !h.pierce) });
     if (f.phase === 1 && F.def.phase2 && f.hp > 0 && f.hp <= f.max * F.def.phase2) { f.phase = 2; f.i = 0; f.pend = null; f.poise = f.maxPoise; f.shield = 0; say(F, `${f.n} changes. The red core goes white.`, 'warn'); ev(F, { t: 'phase' }); if (f.next && f.next.k === 'charge') {} }
     return d;
   }
@@ -161,12 +161,12 @@ const Fight = (() => {
     if (F.brace) d *= .7;
     if (h.evade || h.immune) d = 0;
     d = Math.round(d);
-    if (d <= 0) { ev(F, { t: 'hero', who: h.id, n: 0 }); return 0; }
-    h.hp = Math.max(0, h.hp - d); ev(F, { t: 'hero', who: h.id, n: d, guard: !!h.guard });
+    if (d <= 0) { ev(F, { t: 'hero', who: h.id, n: 0, hp: h.hp }); return 0; }
+    h.hp = Math.max(0, h.hp - d); ev(F, { t: 'hero', who: h.id, n: d, hp: h.hp, guard: !!h.guard });
     if (h.hp <= 0) { h.down = 1; h.act = null; F.stats.downs++; say(F, `${h.n} is down.`, 'bad'); ev(F, { t: 'down', who: h.id }); }
     return d;
   }
-  const heal = (F, h, n) => { if (h.down || n <= 0) return; n = Math.round(n); h.hp = Math.min(h.max, h.hp + n); ev(F, { t: 'heal', who: h.id, n }); };
+  const heal = (F, h, n) => { if (h.down || n <= 0) return; n = Math.round(n); h.hp = Math.min(h.max, h.hp + n); ev(F, { t: 'heal', who: h.id, n, hp: h.hp }); };
 
   // ---------- actions ----------
   function canAct(F, h) { return !h.down && !h.frozen && !h.kneel; }
@@ -202,7 +202,7 @@ const Fight = (() => {
     if (k === 'read') {
       const r = READS[arg]; if (!r || F.usedRead[arg] || !(F.G.tells && F.G.tells[arg])) return false;
       const h = F.team.find(x => x.id === r.who), foeRead = arg === 'shiori_cuffs' && F.def.yield === 'shiori_cuffs'; if (r.who !== 'mira' && !foeRead && (!h || h.down)) return false;
-      F.usedRead[arg] = 1; F.stats.reads++; ev(F, { t: 'read', k: arg });
+      F.usedRead[arg] = 1; F.stats.reads++; ev(F, { t: 'read', k: arg, who: r.who, label: r.n });
       F.G.readsUsed = F.G.readsUsed || {}; F.G.readsUsed[arg] = 1;
       if (arg === 'hikari_count') { h.cd = 0; h.spent = 0; h.crit = 1; say(F, `📓 ${r.n}. “…three, four — okay.” ${h.n} steadies, and the numbers stop.`, 'read'); }
       if (arg === 'rei_scarf') { F.team.forEach(x => { x.kneel = 0; x.frozen = 0; x.noKneelNow = 1; }); h.cd = 0; say(F, `📓 ${r.n}. Her hand finds the scarf. “…Fine. Let go of them.”`, 'read'); }
@@ -231,7 +231,7 @@ const Fight = (() => {
     // phase 1: stances (guard, cover, support skills, bind)
     L.forEach(h => {
       const a = h.act; if (!a || !canAct(F, h)) return;
-      if (a.k === 'guard') { h.guard = 1; if (h.hp < h.max) heal(F, h, 2 + h.st.vig * .5); }
+      if (a.k === 'guard') { h.guard = 1; ev(F, { t: 'fx', kind: 'guard', pal: 'guard', on: h.id, small: 1 }); if (h.hp < h.max) heal(F, h, 2 + h.st.vig * .5); }
       if (a.k === 'cover') { const t = F.team.find(x => x.id === a.tgt); if (t && !t.down && t !== h) { h.guard = 1; h.covering = t; say(F, `🤝 ${h.n} steps in front of ${t.n}.`); } else h.guard = 1; }
       if (a.k === 'skill') skillStance(F, h, a);
     });
@@ -240,7 +240,7 @@ const Fight = (() => {
     for (const h of queue) {
       if (F.foe.hp <= 0) break;
       const a = h.act; if (h.down) continue;
-      if (a.k === 'strike') { const d = toFoe(F, h, 1, { phys: 1 }); if (d) say(F, `${EL[h.el][0]} ${h.n} strikes for ${d}.`); if (h.pierce && d) { h.pierce = 0; breakPoise(F, 1, `${h.n}'s strike breaks its guard`); } }
+      if (a.k === 'strike') { const d = toFoe(F, h, 1, { phys: 1, via: 'strike' }); if (d) say(F, `${EL[h.el][0]} ${h.n} strikes for ${d}.`); if (h.pierce && d) { h.pierce = 0; breakPoise(F, 1, `${h.n}'s strike breaks its guard`); } }
       else if (a.k === 'skill') skillAttack(F, h, a);
     }
     if (f.hp <= 0) return end(F, 'win');
@@ -256,19 +256,19 @@ const Fight = (() => {
   }
   function skillStance(F, h, a) {
     const f = F.foe, k = h.id; a.done = 1;
-    if (k === 'rei') { f.bound = 1; breakPoise(F, 1, 'Shadows hold it'); say(F, `🌑 ${h.n} binds ${f.n}. It cannot move this round.`, 'good'); if (f.pend) f.pend = null; }
+    ev(F, { t: 'cutin', who: h.id, label: KIT[k].sk.n }); if (k === 'rei') { ev(F, { t: 'fx', kind: 'bind', pal: 'shadow', on: 'foe' }); f.bound = 1; breakPoise(F, 1, 'Shadows hold it'); say(F, `🌑 ${h.n} binds ${f.n}. It cannot move this round.`, 'good'); if (f.pend) f.pend = null; }
     if (k === 'kaede') { h.evade = 1; h.first = 1; }
-    if (k === 'tetsu') { h.taunt = 1; h.guard = 1; h.counter = 1.2; if (f.next && (f.next.k === 'single' || f.next.k === 'bind')) f.next.tgt = h; say(F, `🔩 ${h.n} plants his feet. “Come on, then.”`, 'good'); }
-    if (k === 'sora') { F.rally = Math.max(F.rally, 1.35); F.team.forEach(x => heal(F, x, x.max * .12)); say(F, `🎤 ${h.n}: “Okay — everybody, with me.” +35% for the team.`, 'good'); }
-    if (k === 'rin') { f.boost += .4; F.scan = 3; F.known.weak = F.def.weak.slice(); say(F, `🔔 ${h.n} hums the foe's crack out loud. Everyone hits harder.`, 'good'); }
-    if (k === 'natsuki') { const t = F.team.find(x => x.id === a.tgt) || h; t.safe = 1; heal(F, t, t.max * .25); h.guard = 1; if (f.next && f.next.tgt === t) f.next.tgt = pickTgt(F, 'rand'); say(F, `🧯 ${h.n} hauls ${t.n} clear of the line of fire.`, 'good'); }
+    if (k === 'tetsu') { ev(F, { t: 'fx', kind: 'guard', pal: 'steel', on: h.id }); h.taunt = 1; h.guard = 1; h.counter = 1.2; if (f.next && (f.next.k === 'single' || f.next.k === 'bind')) f.next.tgt = h; say(F, `🔩 ${h.n} plants his feet. “Come on, then.”`, 'good'); }
+    if (k === 'sora') { ev(F, { t: 'fx', kind: 'rally', pal: 'sound', on: 'party' }); F.rally = Math.max(F.rally, 1.35); F.team.forEach(x => heal(F, x, x.max * .12)); say(F, `🎤 ${h.n}: “Okay — everybody, with me.” +35% for the team.`, 'good'); }
+    if (k === 'rin') { ev(F, { t: 'fx', kind: 'rally', pal: 'light', on: 'foe' }); f.boost += .4; F.scan = 3; F.known.weak = F.def.weak.slice(); say(F, `🔔 ${h.n} hums the foe's crack out loud. Everyone hits harder.`, 'good'); }
+    if (k === 'natsuki') { const t = F.team.find(x => x.id === a.tgt) || h; ev(F, { t: 'fx', kind: 'heal', pal: 'fire', on: t.id }); t.safe = 1; heal(F, t, t.max * .25); h.guard = 1; if (f.next && f.next.tgt === t) f.next.tgt = pickTgt(F, 'rand'); say(F, `🧯 ${h.n} hauls ${t.n} clear of the line of fire.`, 'good'); }
   }
   function skillAttack(F, h, a) {
     const k = h.id, f = F.foe;
-    if (k === 'hikari') { const d = toFoe(F, h, 2.1, { pierce: 1 }); say(F, `⚡ ${h.n}: ‘Lightning Lance!’ ${d} damage.`, 'good'); h.spentNext = 1; }
-    if (k === 'kaede') { const d1 = toFoe(F, h, .7, { phys: 1 }), d2 = f.hp > 0 ? toFoe(F, h, .7, { phys: 1 }) : 0; say(F, `💨 ${h.n} is two places at once: ${d1} and ${d2}.`, 'good'); }
-    if (k === 'shiori') { const d = toFoe(F, h, 1.6, { pierce: 1 }); breakPoise(F, 1, 'Hard-light breaks its guard'); say(F, `✨ ${h.n}'s lance: ${d} damage.`, 'good'); h.pierce = 0; }
-    if (k === 'rei' && f.hp > 0) { const d = toFoe(F, h, .5, { pierce: 1 }); if (d) say(F, `🌑 The shadows bite for ${d}.`); }
+    if (k === 'hikari') { ev(F, { t: 'cutin', who: h.id, label: KIT.hikari.sk.n }); const d = toFoe(F, h, 2.1, { pierce: 1, via: 'bolt' }); say(F, `⚡ ${h.n}: ‘Lightning Lance!’ ${d} damage.`, 'good'); h.spentNext = 1; }
+    if (k === 'kaede') { ev(F, { t: 'cutin', who: h.id, label: KIT.kaede.sk.n }); const d1 = toFoe(F, h, .7, { phys: 1, via: 'gale' }), d2 = f.hp > 0 ? toFoe(F, h, .7, { phys: 1, via: 'gale' }) : 0; say(F, `💨 ${h.n} is two places at once: ${d1} and ${d2}.`, 'good'); }
+    if (k === 'shiori') { ev(F, { t: 'cutin', who: h.id, label: KIT.shiori.sk.n }); const d = toFoe(F, h, 1.6, { pierce: 1, via: 'lance' }); breakPoise(F, 1, 'Hard-light breaks its guard'); say(F, `✨ ${h.n}'s lance: ${d} damage.`, 'good'); h.pierce = 0; }
+    if (k === 'rei' && f.hp > 0) { const d = toFoe(F, h, .5, { pierce: 1, via: 'bite' }); if (d) say(F, `🌑 The shadows bite for ${d}.`); }
     if (k === 'tetsu' || k === 'sora' || k === 'rin' || k === 'natsuki') {}
   }
   function foeAct(F) {
@@ -276,12 +276,12 @@ const Fight = (() => {
     if (n.k === 'stag') { say(F, `💫 ${f.n} can't act.`, 'good'); return; }
     const m = mvOf(F, n.id), atk = f.atk * (1 + f.rage + (f.rageHit || 0));
     if (f.bound) { say(F, `${m.ic} ${f.n}'s ${m.n} dies in the shadows.`, 'good'); ev(F, { t: 'cancel' }); f.pend = null; return; }
-    if (n.k === 'charge') { f.pend = m.rel; say(F, `${m.ic} ${f.n}: ${m.n}. ${m.t}`, 'warn'); return; }
-    if (n.k === 'shield') { f.shield = 1; if (m.heal) { const hh = Math.round(f.max * m.heal); f.hp = Math.min(f.max, f.hp + hh); ev(F, { t: 'foeheal', n: hh }); } say(F, `${m.ic} ${f.n}: ${m.n}. ${m.t}`, 'warn'); return; }
-    if (n.k === 'mirror') { f.mirror = 1; say(F, `${m.ic} ${f.n}: ${m.n}. ${m.t}`, 'warn'); return; }
+    if (n.k === 'charge') { f.pend = m.rel; ev(F, { t: 'fx', kind: 'charge', pal: 'foe', on: 'foe' }); say(F, `${m.ic} ${f.n}: ${m.n}. ${m.t}`, 'warn'); return; }
+    if (n.k === 'shield') { f.shield = 1; ev(F, { t: 'fx', kind: 'guard', pal: 'glass', on: 'foe' }); if (m.heal) { const hh = Math.round(f.max * m.heal); f.hp = Math.min(f.max, f.hp + hh); ev(F, { t: 'foeheal', n: hh }); } say(F, `${m.ic} ${f.n}: ${m.n}. ${m.t}`, 'warn'); return; }
+    if (n.k === 'mirror') { f.mirror = 1; ev(F, { t: 'fx', kind: 'mirror', pal: 'glass', on: 'foe' }); say(F, `${m.ic} ${f.n}: ${m.n}. ${m.t}`, 'warn'); return; }
     ev(F, { t: 'foeact', ic: m.ic, n: m.n });
     if (n.k === 'sweep') {
-      say(F, `${m.ic} ${f.n}: ${m.n}!`, 'bad');
+      say(F, `${m.ic} ${f.n}: ${m.n}!`, 'bad'); ev(F, { t: 'fx', kind: m.heavy ? 'nova' : 'impact', pal: m.heavy ? 'light' : 'foe', on: 'party' });
       alive(F).forEach(h => { hurt(F, h, atk * m.d * (h.safe ? .5 : 1), { cover: 0 }); if (h.taunt && h.counter && !h.down) counter(F, h); });
       return;
     }
@@ -296,7 +296,7 @@ const Fight = (() => {
     if (t.counter && !t.down) counter(F, t);
     if (n.k === 'bind' && !t.down && !(parry) && !t.cmdImmune) { t.frozenNext = 1; say(F, `${m.ic} ${t.n} can't move next round.`, 'bad'); ev(F, { t: 'frozen', who: t.id }); }
   }
-  function counter(F, h) { const d = toFoe(F, h, h.counter, { phys: 0 }); if (d) say(F, `${h.n} answers with a counter: ${d}.`, 'good'); h.counter = 0; }
+  function counter(F, h) { const d = toFoe(F, h, h.counter, { phys: 0, via: 'counter' }); if (d) say(F, `${h.n} answers with a counter: ${d}.`, 'good'); h.counter = 0; }
   function end(F, res) {
     F.over = res; const f = F.foe;
     F.G.foeK = F.G.foeK || {}; F.G.foeK[F.cfg.foe] = F.known;
@@ -341,77 +341,123 @@ const Fight = (() => {
     return { res: F.over || 'timeout', rounds: F.round, clean: F.clean, hpLeft: F.team.map(h => h.down ? 0 : h.hp / h.max), parries: F.stats.parries, staggers: F.stats.staggers, reads: F.stats.reads };
   }
 
-  // ======================= UI =======================
-  let U = null; // { F, ctx, sel, armed, busy, results }
-  const sleep = ms => new Promise(r => setTimeout(r, Fight.auto ? 4 : ms));
+  // ======================= UI (pixel art by PixelFight / the Moonkai Pixel Engine) =======================
+  let U = null; // { F, ctx, sel, armed, busy, tries, cfg }
+  const sleep = ms => new Promise(r => setTimeout(r, Fight.auto ? 1 : ms));
   const T = s => (U && U.ctx.T ? U.ctx.T(s) : s);
+  const PF = () => PixelFight, $id = id => document.getElementById(id);
   const isHuman = def => ['shiori', 'kuroda'].includes(def.art);
+  const EMOJI = { '📓': 'book', '🛡': 'shield', '💫': 'star', '🌑': 'moon', '💨': 'wind', '✨': 'spark', '🩺': 'cross', '🩹': 'cross', '⚡': 'bolt', '🔩': 'steel', '🌀': 'spiral', '🪞': 'mirror', '☀': 'spark', '🤝': 'heart', '🎤': 'note', '🎵': 'note',
+    '🔔': 'bell', '🧯': 'flame', '🔥': 'flame', '🫥': 'ghost', '💥': 'heavy', '🥶': 'frozen', '🗡': 'sword', '⚔': 'sword', '📡': 'radar', '⛓': 'chain', '🔒': 'chain', '✦': 'star', '🐺': 'claw', '📢': 'wave', '🌊': 'wave', '🪢': 'claw', '🦷': 'heavy', '💎': 'spark',
+    '🔪': 'claw', '⚠': 'spiral', '🔆': 'wave', '📣': 'megaphone', '🔴': 'heart', '🌋': 'wave', '⚖': 'claw', '📜': 'wave', '😡': 'heavy', '💤': 'zz', '⏳': 'hourglass', '🔁': 'hourglass', '🔢': '', '🧣': '', '🥁': '', '🎙': '', '🙏': '', '〰': '', '⌚': '' };
+  const EMO_RE = new RegExp('(' + Object.keys(EMOJI).join('|') + ')\\uFE0F?', 'g');
+  const pix = str => String(str).replace(EMO_RE, (m, k) => EMOJI[k] ? PF().icon(EMOJI[k], 1, 'inl') : '');
+  const NUM = { foe: ['#ffffff', '#ffd24a'], weak: ['#fff6a8', '#ff9a3a'], soft: ['#dfe6f4', '#8892a8'], hurt: ['#ffd0d0', '#ff3355'], guard: ['#e0f8ff', '#4aa8ff'], heal: ['#e0ffe8', '#3fd078'], good: ['#fff6a8', '#ffb040'], stag: ['#e0f8ff', '#6fd8ff'], miss: ['#e8e8f0', '#9a9ab0'] };
+  const palOf = el => ({ lightning: 'lightning', shadow: 'shadow', wind: 'wind', steel: 'steel', sound: 'sound', fire: 'fire', light: 'light' }[el] || 'lightning');
+  const LOOK = { idle: ['determined', 'default'], strike: ['determined', 'fist'], guard: ['determined', 'cross'], cover: ['determined', 'cross'], skill: ['determined', 'fist'], low: ['wince', 'default'], hurt: ['wince', 'default'], down: ['sad', 'shy'], frozen: ['sad', 'shy'] };
+
   function foeArt() {
     const d = U.F.def;
-    if (isHuman(d)) return U.ctx.art.char(d.art, d.art === 'shiori' ? 'angry' : 'cold', 'default', true);
+    if (isHuman(d)) return U.ctx.art.char(d.art, d.art === 'shiori' ? 'angry' : 'cold', 'default', false);
     return U.ctx.art.monster(d.art);
   }
   function start(cfg, ctx) {
-    const F = mk(cfg, ctx.G, ctx.WHO); U = { F, ctx, sel: null, armed: null, busy: false, tries: 0, cfg };
-    F.team.forEach(h => ctx.art.warm && ctx.art.warm(h.id)); build(); ctx.music(cfg.music || 'boss'); draw(); intro();
+    const F = mk(cfg, ctx.G, ctx.WHO); U = { F, ctx, sel: null, armed: null, busy: false, tries: 0, cfg, fx: !Fight.auto };
+    build(); ctx.music(cfg.music || 'boss'); update(); intro();
+    if (U.fx) { PF().warm(['lightning', 'shadow', 'wind', 'steel', 'sound', 'fire', 'light']); const t = U; setTimeout(() => { if (U === t) F.team.forEach(h => [LOOK.strike, LOOK.guard, LOOK.hurt, LOOK.down].forEach(([e, po]) => PixelCast.prewarm(h.id, e, po, 'hero'))); }, 900); }
     if (!Fight.auto && !(ctx.G.flags && ctx.G.flags.fightHowto)) { ctx.G.flags.fightHowto = 1; howto(); }
   }
   function intro() {
-    const F = U.F, d = F.def; const t = teleOf(F);
-    say(F, `${F.foe.n} · ${d.hp ? 'HP ' + F.foe.max : ''}. Read the board, then give your orders.`, 'sys');
-    flushEvents();
+    const F = U.F; say(F, `${F.foe.n}. Read the board, then give your orders.`, 'sys'); flushNow();
+    if (U.fx) banner('STANDOFF', ['#fff6a8', '#ff6a8a'], 8);
     if (Fight.auto) setTimeout(autoTurn, 20);
   }
+  function banner(txt, cols, scale) {
+    const a = $id('farena'); if (!a) return; const d = document.createElement('div'); d.className = 'pban'; d.innerHTML = PF().textImg(txt, scale, { top: cols[0], bot: cols[1] }); a.appendChild(d); setTimeout(() => d.remove(), 1300);
+  }
   function howto() {
-    const el = $('#fover'); if (!el) return;
-    el.innerHTML = `<div class="fres howto"><h2>HOW A STANDOFF WORKS</h2><ul>
+    const el = $id('fover'); if (!el) return;
+    el.innerHTML = `<div class="fres howto"><div class="pt">${PF().textImg('HOW A STANDOFF WORKS', 3, { top: '#bff4ff', bot: '#6fd8ff' })}</div><ul>
       <li><b>Read the banner.</b> The foe's next move and its target are always on the board. Nothing is hidden from the Handler.</li>
       <li><b>Give orders.</b> Tap a hero: <i>Strike</i>, <i>Guard</i> (parry what is aimed at you), <i>Cover</i> (take a hit for an ally) or their <i>Skill</i>. Anyone you skip will Strike.</li>
       <li><b>Break its Poise.</b> Parries and Binds chip it; at zero the foe is staggered and takes +60%. Heavy moves telegraph a round early.</li>
-      <li><b>Spend Focus ◆.</b> Scan shows weaknesses, Brace softens the round, Stand Up frees a hero. <b>📓 Reads</b> are free, but only exist for tells you wrote down.</li>
+      <li><b>Spend Focus.</b> Scan shows weaknesses, Brace softens the round, Stand Up frees a hero. <b>Reads</b> are free, but only exist for tells you wrote down.</li>
       <li><b>Losing isn't the end.</b> You can retry, or press on and pay for it.</li></ul>
       <div class="frow"><button class="btn primary" id="fhgo">Got it</button></div></div>`;
-    el.classList.add('on'); $('#fhgo').onclick = () => { U.ctx.sfx('confirm'); el.classList.remove('on'); el.innerHTML = ''; };
+    el.classList.add('on'); $id('fhgo').onclick = () => { U.ctx.sfx('confirm'); el.classList.remove('on'); el.innerHTML = ''; };
   }
+
+  // ---------- markup ----------
+  const nameImg = (n, sc = 2, o) => PF().textImg(n, sc, o || { top: '#ffffff', bot: '#d8d0ff' });
+  const bar = (kind, w, pct, id) => `<div class="pbar ${kind}" ${id ? `id="${id}"` : ''} style="--bw:${w}px;width:${w + 4}px"><i style="width:${pct}%"></i></div>`;
   function build() {
-    const { F, cfg } = U, host = U.ctx.host;
-    host.innerHTML = `<div class="fight"><div class="fhead"><div><b>${T(cfg.title || F.foe.n)}</b>${cfg.sub ? `<small>${T(cfg.sub)}</small>` : ''}</div><div class="fchips"><button class="fq" id="fq" title="How a Standoff works">?</button><span id="fround">Round 1</span><span class="focus" id="ffocus" title="Handler's Focus. Spent on Scan, Brace and Stand Up. +1 every round."></span></div></div>
-      <div class="farena">${cfg.bg && U.ctx.art.bg ? `<div class="fbg">${U.ctx.art.bg(cfg.bg)}</div>` : ''}<div class="ffoe ${isHuman(F.def) ? 'human' : ''}" id="ffoe"><div class="fsp">${foeArt()}</div><div class="fname"><b>${F.foe.n}</b><span id="ffst"></span></div><div class="fbar foe"><i id="ffhp"></i><em id="ffhpt"></em></div><div class="fpoise" id="ffpoise" title="Poise. Parries and Binds break it; at zero the foe is staggered."></div><div class="fknown" id="ffknown"></div></div>
-        <div class="fparty n${F.team.length}" id="fparty"></div></div>
-      <div class="ftele" id="ftele"></div>
-      <div class="fcmd" id="fcmd"></div>
-      <div class="forders" id="forders"></div>
+    const { F, cfg } = U, host = U.ctx.host, pf = PF();
+    document.documentElement.style.setProperty('--pbar-frame', `url(${pf.barImg('frame')})`); ['hp', 'foe', 'poise'].forEach(k => document.documentElement.style.setProperty('--pbar-' + k, `url(${pf.barImg(k)})`));
+    host.innerHTML = `<div class="fight"><div class="fhead"><div><b>${T(cfg.title || F.foe.n)}</b>${cfg.sub ? `<small>${T(cfg.sub)}</small>` : ''}</div><div class="fchips"><button class="fq" id="fq" title="How a Standoff works">?</button><span id="fround"></span><span class="focus" id="ffocus" title="Handler's Focus. Spent on Scan, Brace and Stand Up. +1 every round."></span></div></div>
+      <div class="farena" id="farena">${cfg.bg && U.ctx.art.bg ? `<div class="fbg">${U.ctx.art.bg(cfg.bg)}</div>` : ''}<img class="ffloor" src="${pf.floorURL()}" alt="">
+        <div class="ffoe ${isHuman(F.def) ? 'human' : ''}" id="ffoe"><div class="fsp" id="ffsp">${foeArt()}<div class="ffxl" id="ffxl"></div></div><div class="ffhud"><div class="fname">${nameImg(F.foe.n.replace(/[^A-Za-z0-9 .'-]/g, ''), 2, { top: '#ffe0e0', bot: '#ff8aa0' })}<span id="ffst"></span></div>${bar('foe', 250, 100, 'ffbar')}<div class="fnums"><span id="ffhpt"></span><span class="fpoise" id="ffpoise" title="Poise. Parries and Binds break it; at zero the foe is staggered."></span></div><div class="fknown" id="ffknown"></div></div></div>
+        <div class="fparty n${F.team.length}" id="fparty">${F.team.map(h => heroHTML(h)).join('')}</div><div class="fxl" id="fxl"></div></div>
+      <div class="ftele" id="ftele"></div><div class="fcmd" id="fcmd"></div><div class="forders" id="forders"></div>
       <div class="fbot"><div class="flog" id="flog"></div><button class="btn primary fgo" id="fgo">Resolve round ▸</button></div><div class="fover" id="fover"></div></div>`;
-    $('#fgo').onclick = () => go(); $('#fq').onclick = () => { U.ctx.sfx('click'); howto(); };
-  }
-  const pct = (a, b) => Math.max(0, Math.min(100, a / b * 100));
-  function draw() {
-    const { F } = U, f = F.foe;
-    $('#fround').textContent = `Round ${F.round}`;
-    $('#ffocus').innerHTML = [...Array(F.maxFocus)].map((_, i) => `<i class="${i < F.focus ? 'on' : ''}"></i>`).join('') + `<small>Focus</small>`;
-    $('#ffhp').style.width = pct(f.hp, f.max) + '%'; $('#ffhpt').textContent = `${f.hp}/${f.max}`;
-    $('#ffpoise').innerHTML = `Poise ${[...Array(f.maxPoise)].map((_, i) => `<i class="${i < f.poise ? 'on' : ''}"></i>`).join('')}`;
-    const st = []; if (f.shield) st.push('🛡 Hardened'); if (f.mirror) st.push('🪞 Mirror'); if (f.next && f.next.k === 'stag') st.push('💫 Staggered'); if (f.phase === 2) st.push('☀ Phase 2'); if (f.rage) st.push('😡 Enraged');
-    $('#ffst').textContent = st.join(' · ');
-    $('#ffknown').innerHTML = (F.known.weak.length ? `Weak ${F.known.weak.map(e => EL[e][0]).join('')}` : 'Weak ?') + (F.known.res.length ? ` · Resists ${F.known.res.map(e => EL[e][0]).join('')}` : '');
-    const tl = teleOf(F), nxt = F.scan > 0 ? peek(F, 2) : [];
-    const tgt = tl && tl.tgt ? `→ <b>${tl.tgt.n}</b>` : tl && (tl.k === 'sweep') ? '→ <b>everyone</b>' : '';
-    const hint = tl ? (tl.k === 'single' || tl.k === 'bind' ? (tl.heavy ? 'Heavy. Guard on the target parries it and breaks 2 Poise. Binding it cancels it.' : 'Guard on the target parries it. Cover steps in front.') : tl.k === 'sweep' ? 'Hits everyone. Guard softens it, Brace helps the team.' : tl.k === 'charge' ? `It is gathering for ${tl.rel ? tl.rel.n : 'something big'}. Bind it, or hit hard now.` : tl.k === 'shield' ? 'Hits will bounce next round. Pierce it, guard, or support.' : tl.k === 'mirror' ? 'Strikes will be thrown back. Use skills, or hold.' : tl.k === 'stag' ? 'Open window: hit it with everything.' : '') : '';
-    $('#ftele').innerHTML = tl ? `<div class="ftl ${tl.heavy ? 'heavy' : ''} ${tl.k}"><span class="ftic">${tl.ic}</span><div><b>${tl.n} ${tgt}</b><small>${tl.t || ''} <i>${hint}</i></small></div>${nxt.length ? `<div class="ftnx">then ${nxt.map(m => m.ic).join(' ')}</div>` : ''}</div>` : '';
-    // party
-    $('#fparty').innerHTML = F.team.map(h => {
-      const a = h.act, ico = a ? { strike: '⚔', guard: '🛡', cover: '🤝', skill: KIT[h.id].sk.ic }[a.k] : '';
-      const stt = [h.guard ? '🛡' : '', h.frozen ? '🥶' : '', h.kneel ? '⛓' : '', h.spent ? '💤' : '', h.safe ? '🫥' : '', h.evade ? '💨' : '', h.crit ? '✦' : ''].join('');
-      return `<button class="fh ${h.down ? 'down' : ''} ${U.sel === h.id ? 'sel' : ''} ${U.armed ? 'pick' : ''} ${h.kneel ? 'kneel' : ''} ${a ? 'acted' : ''}" data-h="${h.id}" style="--c:${F.WHO[h.id].c}"><div class="fpt">${U.ctx.art.char(h.id, h.down ? 'sad' : h.kneel ? 'sad' : h.hp < h.max * .35 ? 'scared' : 'smile', 'default', true)}</div>
-        <div class="fhi"><b>${h.n}</b><div class="fbar"><i style="width:${pct(h.hp, h.max)}%"></i><em>${h.hp}/${h.max}</em></div><div class="fst">${stt}${h.cd > 0 ? `<span title="Skill cooldown">⏳${h.cd}</span>` : ''}${ico ? `<span class="fact">${ico}</span>` : ''}</div></div></button>`;
-    }).join('');
+    $id('fgo').onclick = () => go(); $id('fq').onclick = () => { U.ctx.sfx('click'); howto(); };
     $$('#fparty .fh').forEach(b => b.onclick = () => pickHero(b.dataset.h));
+    F.team.forEach(h => { U.look = U.look || {}; U.look[h.id] = 'determined|default'; });
+  }
+  function heroHTML(h) {
+    const pf = PF(), F = U.F, c = F.WHO[h.id] ? F.WHO[h.id].c : '#fff';
+    return `<button class="fh" data-h="${h.id}" style="--c:${c}"><div class="fspr">${U.ctx.art.char(h.id, 'determined', 'default', false)}<div class="fxh"></div></div><img class="fsh" src="${pf.shadowURL()}" alt="">
+      <div class="fhud"><div class="fnm">${nameImg(h.n.replace(/[^A-Za-z0-9 .'-]/g, ''), 2, { top: '#ffffff', bot: '#d8d0ff' })}</div>${bar('hp', 100, 100)}<div class="fnums"><span class="fhpt"></span></div><div class="fst"></div></div></button>`;
+  }
+
+  // ---------- sprite looks (poses and expressions swap without ever blanking the sprite) ----------
+  function look(id, emo, pose) {
+    if (!U || !U.fx) return; const el = heroEl(id); if (!el) return; const img = el.querySelector('.fspr image'); if (!img) return;
+    const key = PixelCast.keyOf(id, emo, pose, 'hero'); el._want = key; if (img.dataset.k === key) return;
+    PixelCast.prewarm(id, emo, pose, 'hero');
+    PF().onReady(key, e => { if (el._want !== key || !img.isConnected) return; img.dataset.k = key; PX.setSrc(img, e.seq.idle[0]); });
+  }
+  const lookFor = h => h.down ? LOOK.down : h.frozen ? LOOK.frozen : h.kneel ? LOOK.down : h.hurtFlash ? LOOK.hurt : h.hp < h.max * .35 ? LOOK.low : h.act ? (LOOK[h.act.k] || LOOK.idle) : U.sel === h.id ? LOOK.skill : LOOK.idle;
+
+  // ---------- drawing the state ----------
+  const pct = (a, b) => Math.max(0, Math.min(100, a / b * 100));
+  const heroEl = id => document.querySelector(`#fparty .fh[data-h="${id}"]`);
+  const statusHTML = h => { const pf = PF(), o = []; if (h.guard) o.push(pf.icon('shield', 1.5)); if (h.frozen) o.push(pf.icon('frozen', 1.5)); if (h.kneel) o.push(pf.icon('chain', 1.5)); if (h.spent) o.push(pf.icon('zz', 1.5)); if (h.safe) o.push(pf.icon('ghost', 1.5)); if (h.evade) o.push(pf.icon('wind', 1.5)); if (h.crit) o.push(pf.icon('star', 1.5)); if (h.cd > 0) o.push(pf.icon('hourglass', 1.25) + pf.textImg(h.cd, 1.5, { top: '#ffd24a', bot: '#ff9a3a' })); if (h.act) { const k = h.act.k; o.push(`<span class="fact">${pf.icon(k === 'strike' ? pf.ELEM[h.el][0] : k === 'guard' ? 'shield' : k === 'cover' ? 'heart' : pf.SKILL_ICON[h.id], 1.5)}</span>`); } return o.join(''); };
+  function update() {
+    if (!U) return; const { F } = U, f = F.foe, pf = PF();
+    $id('fround').innerHTML = pf.textImg('ROUND ' + F.round, 2, { top: '#ffffff', bot: '#d8d0ff' });
+    $id('ffocus').innerHTML = [...Array(F.maxFocus)].map((_, i) => `<span class="fdi ${i < F.focus ? 'on' : ''}">${pf.icon('diamond', 1.5)}</span>`).join('') + `<small>Focus</small>`;
+    setFoeHp(f.hp);
+    $id('ffpoise').innerHTML = [...Array(f.maxPoise)].map((_, i) => `<i class="pip ${i < f.poise ? 'on' : ''}"></i>`).join('');
+    foeStatus();
+    $id('ffknown').innerHTML = (F.known.weak.length ? `<span>Weak</span>${F.known.weak.map(e => pf.icon(pf.ELEM[e][0], 1.5)).join('')}` : '<span>Weak ?</span>') + (F.known.res.length ? `<span>Resists</span>${F.known.res.map(e => pf.icon(pf.ELEM[e][0], 1.5)).join('')}` : '');
+    const tl = teleOf(F), nxt = F.scan > 0 ? peek(F, 2) : [];
+    const mic = m => pf.icon(m.heavy ? 'heavy' : pf.MOVE_ICON[m.k] || 'claw', 3);
+    const tgt = tl && tl.tgt ? `<span class="arr">▸</span>${nameImg(tl.tgt.n.replace(/[^A-Za-z0-9 .'-]/g, ''), 2, { top: '#ffffff', bot: '#ffd0d8' })}` : tl && tl.k === 'sweep' ? `<span class="arr">▸</span>${nameImg('EVERYONE', 2, { top: '#ffffff', bot: '#ffd0d8' })}` : '';
+    const hint = tl ? (tl.k === 'single' || tl.k === 'bind' ? (tl.heavy ? 'Heavy. Guard on the target parries it and breaks 2 Poise. Binding it cancels it.' : 'Guard on the target parries it. Cover steps in front.') : tl.k === 'sweep' ? 'Hits everyone. Guard softens it, Brace helps the team.' : tl.k === 'charge' ? `It is gathering for ${tl.rel ? tl.rel.n : 'something big'}. Bind it, or hit hard now.` : tl.k === 'shield' ? 'Hits will bounce next round. Pierce it, guard, or support.' : tl.k === 'mirror' ? 'Strikes will be thrown back. Use skills, or hold.' : tl.k === 'stag' ? 'Open window: hit it with everything.' : '') : '';
+    $id('ftele').innerHTML = tl ? `<div class="ftl ${tl.heavy ? 'heavy' : ''} ${tl.k}"><span class="ftic">${pf.icon(tl.heavy ? 'heavy' : tl.k === 'stag' ? 'star' : pf.MOVE_ICON[tl.k] || 'claw', 3)}</span><div><div class="fth">${nameImg(tl.n.replace(/[^A-Za-z0-9 .'-]/g, ''), 2, { top: '#ffffff', bot: '#ffd0d8' })}${tgt}</div><small>${pix(T(tl.t || ''))} <i>${hint}</i></small></div>${nxt.length ? `<div class="ftnx"><span>then</span>${nxt.map(m => pf.icon(m.heavy ? 'heavy' : pf.MOVE_ICON[m.k] || 'claw', 2)).join('')}</div>` : ''}</div>` : '';
+    F.team.forEach(h => {
+      const el = heroEl(h.id); if (!el) return; const a = h.act;
+      el.classList.toggle('down', !!h.down); el.classList.toggle('sel', U.sel === h.id); el.classList.toggle('pick', !!U.armed); el.classList.toggle('kneel', !!h.kneel); el.classList.toggle('acted', !!a);
+      el.querySelector('.pbar i').style.width = pct(h.hp, h.max) + '%'; el.querySelector('.fhpt').innerHTML = pf.textImg(`${h.hp}/${h.max}`, 1.5, { top: '#ffffff', bot: '#cfe8d6' });
+      el.querySelector('.fst').innerHTML = statusHTML(h); const [e, po] = lookFor(h); look(h.id, e, po);
+      const kx = el.querySelector('.fxh'); const has = !!kx.querySelector('.loop');
+      if (h.kneel && !has && U.fx) kx.innerHTML = pf.loopImg('kneeled', 'kneel', 120); else if (!h.kneel && has) kx.innerHTML = '';
+    });
     cmd(); orders();
     const ready = alive(F).every(h => h.act || !can(F, h, 'strike') && !can(F, h, 'guard'));
-    $('#fgo').textContent = ready ? 'Resolve round ▸' : 'Resolve (idle heroes Strike) ▸';
-    $('#fgo').disabled = U.busy || !!F.over;
-    $('#flog').innerHTML = F.log.slice(-5).map(([t, c]) => `<div class="${c}">${T(t)}</div>`).join('');
+    $id('fgo').textContent = ready ? 'Resolve round ▸' : 'Resolve (idle heroes Strike) ▸'; $id('fgo').disabled = U.busy || !!F.over;
+    renderLog();
   }
+  function setFoeHp(hp) { const f = U.F.foe; const b = $id('ffbar'); if (b) b.querySelector('i').style.width = pct(hp, f.max) + '%'; const t = $id('ffhpt'); if (t) t.innerHTML = PF().textImg(`${hp}/${f.max}`, 1.5, { top: '#ffffff', bot: '#ffd0d8' }); }
+  function foeStatus() {
+    const f = U.F.foe, pf = PF(), L = $id('ffxl'), st = []; if (f.next && f.next.k === 'stag') st.push('STAGGERED'); if (f.shield) st.push('HARDENED'); if (f.mirror) st.push('MIRROR'); if (f.phase === 2) st.push('PHASE 2'); if (f.rage) st.push('ENRAGED');
+    $id('ffst').innerHTML = st.map(t => pf.textImg(t, 1, { top: '#ffe28a', bot: '#ffb040' })).join(' ');
+    const want = { stagger: f.next && f.next.k === 'stag', shield: !!f.shield, mirror: !!f.mirror };
+    if (U.fx) Object.entries(want).forEach(([k, on]) => { const cur = L.querySelector('.' + k); if (on && !cur) { const w = document.createElement('div'); w.className = 'ffl ' + k; w.innerHTML = pf.loopImg(k, k === 'stagger' ? 'light' : 'glass', k === 'stagger' ? 120 : 200); L.appendChild(w); } else if (!on && cur) cur.remove(); });
+  }
+  function renderLog() { const l = $id('flog'); if (l && U) l.innerHTML = U.F.log.slice(-5).map(([t, c]) => `<div class="${c}">${pix(T(t))}</div>`).join(''); }
+  const flushNow = () => { U.F.events.length = 0; };
+
   function pickHero(id) {
     if (U.busy || U.F.over) return;
     const h = U.F.team.find(x => x.id === id); if (!h) return;
@@ -420,87 +466,113 @@ const Fight = (() => {
       if (A.k === 'triage') { if (order(U.F, 'triage', id)) U.ctx.sfx('heal'); else U.ctx.sfx('fail'); }
       else if (A.k === 'standup') { if (order(U.F, 'standup', id)) { U.ctx.sfx('confirm'); U.ctx.unlock && U.ctx.unlock('fight_kneel'); } else U.ctx.sfx('fail'); }
       else if (A.k === 'cover' || A.k === 'skill') { if (h.id !== A.h && !h.down) { setAct(U.F, A.h, A.k, id); U.ctx.sfx('confirm'); } else U.ctx.sfx('fail'); }
-      flushEvents(); return draw();
+      return flushEvents(true).then(update);
     }
-    U.sel = id; U.ctx.sfx('click'); draw();
+    U.sel = id; U.ctx.sfx('click'); update();
   }
   function cmd() {
-    const { F } = U, el = $('#fcmd'), h = F.team.find(x => x.id === U.sel);
-    if (U.armed) { el.innerHTML = `<div class="fhint">${U.armed.msg}</div><button class="btn" id="fcancel">Cancel</button>`; $('#fcancel').onclick = () => { U.armed = null; draw(); }; return; }
+    const { F } = U, el = $id('fcmd'), h = F.team.find(x => x.id === U.sel), pf = PF();
+    if (U.armed) { el.innerHTML = `<div class="fhint">${U.armed.msg}</div><button class="btn" id="fcancel">Cancel</button>`; $id('fcancel').onclick = () => { U.armed = null; update(); }; return; }
     if (!h) { el.innerHTML = `<div class="fhint">${alive(F).length ? 'Pick a hero, then give them an order. Anyone you skip will Strike.' : ''}</div>`; return; }
     const kit = KIT[h.id], sk = kit.sk, a = h.act ? h.act.k : '';
     const reason = h.down ? 'Down' : h.frozen ? 'Frozen: loses this round' : h.kneel ? 'Kneeling. Spend Focus on Stand Up, or find a Read' : '';
     if (reason) { el.innerHTML = `<div class="fhint"><b>${h.n}</b>: ${reason}.</div>`; return; }
-    const btn = (k, ic, lab, sub, on) => `<button class="fc ${a === k ? 'on' : ''}" data-k="${k}" ${on ? '' : 'disabled'}><b>${ic} ${lab}</b><small>${sub}</small></button>`;
-    el.innerHTML = `<div class="fcrow">${btn('strike', '⚔', 'Strike', `${EL[h.el][0]} ~${estimate(F, h, 'strike')} dmg`, can(F, h, 'strike'))}${btn('guard', '🛡', 'Guard', 'Take 65% less. Parry what is aimed at you', true)}${btn('cover', '🤝', 'Cover', 'Take the hit meant for an ally', F.team.some(x => x !== h && !x.down))}${btn('skill', sk.ic, sk.n, h.spent ? 'Spent: Guard only' : h.cd ? `Ready in ${h.cd}` : sk.d, can(F, h, 'skill'))}</div>`;
+    const btn = (k, ic, lab, sub, on) => `<button class="fc ${a === k ? 'on' : ''}" data-k="${k}" ${on ? '' : 'disabled'}><span class="fci">${pf.icon(ic, 2)}</span><span><b>${lab}</b><small>${sub}</small></span></button>`;
+    el.innerHTML = `<div class="fcrow">${btn('strike', pf.ELEM[h.el][0], 'Strike', `~${estimate(F, h, 'strike')} dmg`, can(F, h, 'strike'))}${btn('guard', 'shield', 'Guard', 'Take 65% less. Parry what is aimed at you', true)}${btn('cover', 'heart', 'Cover', 'Take the hit meant for an ally', F.team.some(x => x !== h && !x.down))}${btn('skill', pf.SKILL_ICON[h.id], sk.n, h.spent ? 'Spent: Guard only' : h.cd ? `Ready in ${h.cd}` : sk.d, can(F, h, 'skill'))}</div>`;
     $$('#fcmd .fc').forEach(b => b.onclick = () => {
       const k = b.dataset.k; U.ctx.sfx('click');
-      if (needsTgt(h, k)) { U.armed = { k, h: h.id, msg: `${k === 'cover' ? 'Cover whom?' : sk.n + ': pick an ally'} Click a hero.` }; return draw(); }
-      setAct(F, h.id, k); U.sel = null; draw();
+      if (needsTgt(h, k)) { U.armed = { k, h: h.id, msg: `${k === 'cover' ? 'Cover whom?' : sk.n + ': pick an ally'} Click a hero.` }; return update(); }
+      setAct(F, h.id, k); U.sel = null; update();
     });
   }
   function orders() {
-    const { F } = U, el = $('#forders'), rs = readsFor(F);
-    const kn = F.team.filter(h => h.kneel);
-    el.innerHTML = `<span class="fol">Handler</span><button class="fo" data-o="scan" ${F.focus < 1 || F.scan ? 'disabled' : ''} title="Reveal weaknesses and the next two moves"><b>📡 Scan</b><i>◆1</i></button>
-      <button class="fo" data-o="brace" ${F.focus < 1 || F.brace ? 'disabled' : ''} title="The team takes 30% less this round"><b>🛡 Brace</b><i>◆1</i></button>
-      ${F.medic ? `<button class="fo" data-o="triage" ${F.triage < 1 ? 'disabled' : ''} title="Mira on comms: heal 40% or raise a fallen hero"><b>🩺 Triage</b><i>×${F.triage}</i></button>` : ''}
-      ${kn.length ? `<button class="fo kn" data-o="standup" ${F.focus < 1 ? 'disabled' : ''} title="Free a Kneeling hero"><b>⛓ Stand up</b><i>◆1</i></button>` : ''}
-      ${rs.map(([k, r, used]) => `<button class="fo read ${used ? 'used' : ''}" data-r="${k}" ${used ? 'disabled' : ''} title="${r.d}"><b>📓 ${r.n}</b><i>${used ? 'used' : 'free'}</i></button>`).join('')}`;
+    const { F } = U, el = $id('forders'), rs = readsFor(F), pf = PF(), kn = F.team.filter(h => h.kneel);
+    const ob = (o, ic, lab, cost, dis, title, cls = '') => `<button class="fo ${cls}" data-o="${o}" ${dis ? 'disabled' : ''} title="${title}">${pf.icon(ic, 1.5)}<b>${lab}</b><i>${cost}</i></button>`;
+    el.innerHTML = `<span class="fol">Handler</span>${ob('scan', 'radar', 'Scan', '◆1', F.focus < 1 || F.scan, 'Reveal weaknesses and the next two moves')}${ob('brace', 'shield', 'Brace', '◆1', F.focus < 1 || F.brace, 'The team takes 30% less this round')}
+      ${F.medic ? ob('triage', 'cross', 'Triage', '×' + F.triage, F.triage < 1, 'Mira on comms: heal 40% or raise a fallen hero') : ''}${kn.length ? ob('standup', 'chain', 'Stand up', '◆1', F.focus < 1, 'Free a Kneeling hero', 'kn') : ''}
+      ${rs.map(([k, r, used]) => `<button class="fo read ${used ? 'used' : ''}" data-r="${k}" ${used ? 'disabled' : ''} title="${r.d}">${pf.icon('book', 1.5)}<b>${r.n}</b><i>${used ? 'used' : 'free'}</i></button>`).join('')}`;
     $$('#forders .fo').forEach(b => b.onclick = () => {
       if (U.busy || F.over) return; const o = b.dataset.o, r = b.dataset.r;
-      if (r) { if (order(F, 'read', r)) { U.ctx.sfx('page'); } else U.ctx.sfx('fail'); flushEvents(); return draw(); }
-      if (o === 'triage') { U.armed = { k: 'triage', msg: 'Triage whom? Click a hero.' }; return draw(); }
-      if (o === 'standup') { U.armed = { k: 'standup', msg: 'Stand up whom? Click a kneeling hero.' }; return draw(); }
+      if (r) { if (order(F, 'read', r)) U.ctx.sfx('page'); else U.ctx.sfx('fail'); return flushEvents(true).then(update); }
+      if (o === 'triage') { U.armed = { k: 'triage', msg: 'Triage whom? Click a hero.' }; return update(); }
+      if (o === 'standup') { U.armed = { k: 'standup', msg: 'Stand up whom? Click a kneeling hero.' }; return update(); }
       if (order(F, o)) U.ctx.sfx('confirm'); else U.ctx.sfx('fail');
-      flushEvents(); draw();
+      flushEvents(true).then(update);
     });
   }
 
-  // floating numbers, shakes and sounds for what just happened
-  function float(sel, txt, cls) {
-    const host = typeof sel === 'string' ? $(sel) : sel; if (!host) return;
-    const e = document.createElement('div'); e.className = 'fnum ' + (cls || ''); e.textContent = txt; host.appendChild(e); setTimeout(() => e.remove(), 1200);
+  // ---------- playing the events back as pixel effects ----------
+  const rel = el => { const a = $id('farena'), r = el.getBoundingClientRect(), b = a.getBoundingClientRect(), k = b.width / a.offsetWidth || 1; return { cx: (r.left + r.width / 2 - b.left) / k, cy: (r.top + r.height / 2 - b.top) / k, w: r.width / k, h: r.height / k, top: (r.top - b.top) / k }; };
+  const foePos = () => rel($id('ffsp')), heroPos = id => { const e = heroEl(id), s = e && e.querySelector('.fspr'); return s ? rel(s) : { cx: 600, cy: 160, w: 100, h: 200, top: 40 }; };
+  const posOf = on => on === 'foe' ? foePos() : on === 'party' ? { cx: 820, cy: 150, w: 400, h: 220, top: 40, party: 1 } : heroPos(on);
+  function fx(kind, pal, on, o = {}) {
+    if (!U.fx) return Promise.resolve(); const p = posOf(on), host = $id('fxl'), size = o.size || (on === 'foe' ? Math.min(250, Math.max(170, p.w * 1.1)) : on === 'party' ? 300 : o.small ? 150 : 190);
+    if (p.party) { const els = $$('#fparty .fh:not(.down)'); return Promise.all(els.map(e => { const q = rel(e.querySelector('.fspr')); return PF().play(host, kind, { pal, cx: q.cx, cy: q.cy, size: 170 }); })); }
+    return PF().play(host, kind, { pal, cx: p.cx, cy: p.cy - (o.dy || 0), size, flip: o.flip });
   }
-  const heroEl = id => $(`#fparty .fh[data-h="${id}"]`);
-  async function flushEvents() {
-    const F = U.F, evs = F.events.splice(0); const sfx = U.ctx.sfx;
+  function float(on, txt, kind, big) {
+    if (!U.fx) return; const p = posOf(on), host = $id('fxl'), c = NUM[kind] || NUM.foe, d = document.createElement('div');
+    d.className = 'pnum'; d.style.left = p.cx + 'px'; d.style.top = (p.top + 20) + 'px'; d.innerHTML = PF().textImg(txt, big || 4, { top: c[0], bot: c[1] }); host.appendChild(d); setTimeout(() => d.remove(), 1100);
+  }
+  async function cutin(who, label, ic) {
+    if (!U.fx) return; const a = $id('farena'), c = U.F.WHO[who] ? U.F.WHO[who].c : '#ffd24a', pf = PF(), d = document.createElement('div'); d.className = 'pcut';
+    d.innerHTML = `<img class="pcutbg" src="${pf.cutBgURL(c)}" alt=""><div class="pcutp">${U.ctx.art.char(who, 'determined', 'point', true)}</div><div class="pcutt">${pf.icon(ic || pf.SKILL_ICON[who] || 'spark', 4)}${pf.textImg(label.replace(/[^A-Za-z0-9 .'-]/g, ''), 4, { top: '#ffffff', bot: '#ffe28a' })}</div>`;
+    a.appendChild(d); U.ctx.sfx('whoosh'); await sleep(900); d.classList.add('out'); await sleep(160); d.remove();
+  }
+  const hurtLook = async id => { const h = U.F.team.find(x => x.id === id); if (!h) return; h.hurtFlash = 1; look(id, ...LOOK.hurt); await sleep(1); setTimeout(() => { h.hurtFlash = 0; if (U && !h.down) look(id, ...lookFor(h)); }, 420); };
+  async function flushEvents(quick) {
+    const F = U.F, evs = F.events.splice(0), sfx = U.ctx.sfx;
     for (const e of evs) {
-      if (e.t === 'foe') { float('#ffoe', (e.crit ? '✦ ' : '') + e.n, e.weak ? 'weak' : e.shield ? 'soft' : 'foe'); const el = $('#ffoe .fsp'); if (el) { el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); } sfx(e.weak ? 'thunder' : 'punch'); await sleep(260); }
-      else if (e.t === 'hero') { const el = heroEl(e.who); if (el) { float(el, e.n ? '−' + e.n : 'miss', e.n ? (e.guard ? 'guard' : 'hurt') : 'heal'); el.classList.remove('hurt'); void el.offsetWidth; el.classList.add('hurt'); } sfx(e.n ? 'hit' : 'miss'); await sleep(240); }
-      else if (e.t === 'heal') { const el = heroEl(e.who); if (el) float(el, '+' + e.n, 'heal'); sfx('heal'); }
-      else if (e.t === 'parry') { sfx('shatter'); const el = heroEl(e.who); if (el) float(el, 'PARRY', 'good'); await sleep(220); }
-      else if (e.t === 'stagger') { sfx('perfect'); float('#ffoe', 'STAGGER', 'good'); await sleep(300); }
-      else if (e.t === 'down') { sfx('fail'); await sleep(260); }
-      else if (e.t === 'revive') { sfx('levelup'); }
-      else if (e.t === 'read') { sfx('page'); }
-      else if (e.t === 'phase') { sfx('roar'); U.ctx.shake && U.ctx.shake(8); await sleep(500); }
-      else if (e.t === 'kneel') { sfx('heartbeat'); }
+      if (quick) { if (e.t === 'read') sfx('page'); if (e.t === 'heal') sfx('heal'); continue; }
+      if (e.t === 'cutin') await cutin(e.who, e.label);
+      else if (e.t === 'read') { sfx('page'); await cutin(e.who, e.label, 'book'); }
+      else if (e.t === 'fx') { const pr = fx(e.kind, e.pal, e.on, { small: e.small }); sfx(e.kind === 'bind' ? 'shadow' : e.kind === 'rally' ? 'chime' : e.kind === 'heal' ? 'heal' : e.kind === 'nova' ? 'boom' : e.kind === 'charge' ? 'rumble' : e.kind === 'mirror' ? 'glass' : 'swoosh'); await sleep(e.kind === 'guard' && e.small ? 120 : 360); void pr; }
+      else if (e.t === 'foe') {
+        const via = e.via; fx(via === 'bolt' ? 'bolt' : via === 'gale' ? 'gale' : via === 'bite' ? 'bind' : 'slash', e.shield ? 'steel' : palOf(e.el), 'foe', { dy: via === 'bolt' ? -20 : 0 });
+        float('foe', (e.crit ? '*' : '') + e.n, e.weak ? 'weak' : e.shield ? 'soft' : 'foe', e.weak ? 5 : 4); setFoeHp(e.hp); const sp = $id('ffsp'); if (sp) { sp.classList.remove('hit'); void sp.offsetWidth; sp.classList.add('hit'); }
+        sfx(via === 'bolt' ? 'thunder' : e.weak ? 'zap' : 'punch'); await sleep(via === 'bolt' ? 420 : 300);
+      }
+      else if (e.t === 'hero') {
+        const el = heroEl(e.who), b = el && el.querySelector('.pbar i'); const h = F.team.find(x => x.id === e.who);
+        if (e.n) { fx(e.guard ? 'guard' : 'impact', e.guard ? 'guard' : 'foe', e.who, { small: 1 }); float(e.who, '-' + e.n, e.guard ? 'guard' : 'hurt'); if (h) { if (b) b.style.width = pct(e.hp, h.max) + '%'; const t = el.querySelector('.fhpt'); if (t) t.innerHTML = PF().textImg(`${e.hp}/${h.max}`, 1.5, { top: '#ffffff', bot: '#cfe8d6' }); } hurtLook(e.who); if (el) { el.classList.remove('hurt'); void el.offsetWidth; el.classList.add('hurt'); } sfx('hit'); await sleep(260); }
+        else { float(e.who, 'MISS', 'miss', 3); sfx('miss'); await sleep(160); }
+      }
+      else if (e.t === 'heal') { const el = heroEl(e.who), b = el && el.querySelector('.pbar i'); if (b) b.style.width = pct(e.hp, F.team.find(x => x.id === e.who).max) + '%'; fx('heal', 'heal', e.who, { small: 1 }); float(e.who, '+' + e.n, 'heal', 3); sfx('heal'); await sleep(140); }
+      else if (e.t === 'parry') { fx('parry', 'light', e.who, { small: 1 }); float(e.who, 'PARRY', 'good', 3); sfx('shatter'); await sleep(240); }
+      else if (e.t === 'stagger') { float('foe', 'STAGGER', 'stag', 4); sfx('perfect'); await sleep(320); }
+      else if (e.t === 'down') { sfx('fail'); const h = F.team.find(x => x.id === e.who); if (h) look(e.who, ...LOOK.down); const el = heroEl(e.who); if (el) el.classList.add('down'); await sleep(260); }
+      else if (e.t === 'revive') { sfx('levelup'); fx('heal', 'heal', e.who, {}); const el = heroEl(e.who); if (el) el.classList.remove('down'); }
+      else if (e.t === 'phase') { sfx('roar'); U.ctx.shake && U.ctx.shake(8); banner('PHASE 2', ['#ffffff', '#ff6a8a'], 6); await sleep(600); }
+      else if (e.t === 'kneel') sfx('heartbeat');
       else if (e.t === 'cancel') { sfx('shadow'); }
+      else if (e.t === 'foeheal') { float('foe', '+' + e.n, 'heal', 3); setFoeHp(F.foe.hp); }
+      else if (e.t === 'foeact') { }
     }
-    if (U && U.F) $('#flog') && ($('#flog').innerHTML = U.F.log.slice(-5).map(([t, c]) => `<div class="${c}">${T(t)}</div>`).join(''));
+    renderLog();
   }
   async function go() {
-    if (!U || U.busy || U.F.over) return; const F = U.F; U.busy = true; U.sel = null; U.armed = null; $('#fgo').disabled = true;
-    resolve(F); await flushEvents(); U.busy = false; draw();
+    if (!U || U.busy || U.F.over) return; const F = U.F; U.busy = true; U.sel = null; U.armed = null; $id('fgo').disabled = true;
+    resolve(F); await flushEvents(false); U.busy = false; update();
     if (F.over) return finish();
     if (Fight.auto) setTimeout(autoTurn, 20);
   }
   function autoTurn() { if (!U || U.F.over || U.busy) return; aiPlan(U.F); go(); }
 
   function finish() {
-    const { F, ctx, cfg } = U, win = F.over === 'win', G = ctx.G;
+    const { F, ctx, cfg } = U, win = F.over === 'win', G = ctx.G, pf = PF();
     const res = { id: cfg.id || cfg.foe, readKeys: Object.keys(F.usedRead), win, clean: !!F.clean, rounds: F.round, reads: F.stats.reads, parries: F.stats.parries, staggers: F.stats.staggers, downs: F.stats.downs };
-    const xp = Math.round((win ? 20 + F.def.tier * 12 + (F.clean ? 12 : 0) + (cfg.xp || 0) : 8) * (cfg.xpMul || 1)), el = $('#fover');
+    const xp = Math.round((win ? 20 + F.def.tier * 12 + (F.clean ? 12 : 0) + (cfg.xp || 0) : 8) * (cfg.xpMul || 1)), el = $id('fover');
     const rows = F.team.map(h => `<span style="--c:${F.WHO[h.id].c}">${h.n} <b>+${xp} XP</b></span>`).join('');
-    const stat = `<div class="fstats"><span>🔁 Rounds <b>${F.round}</b></span><span>🛡 Parries <b>${F.stats.parries}</b></span><span>💫 Staggers <b>${F.stats.staggers}</b></span><span>📓 Reads <b>${F.stats.reads}</b></span><span>🩹 Downed <b>${F.stats.downs}</b></span></div>`;
-    el.innerHTML = `<div class="fres ${win ? 'win' : 'lose'}"><h2>${win ? (F.clean ? 'CLEAN WIN' : 'VICTORY') : 'DEFEAT'}</h2>${stat}<div class="fxp">${rows}</div>
+    const st = (ic, lab, v) => `<span>${pf.icon(ic, 2)}${lab} <b>${v}</b></span>`;
+    const stat = `<div class="fstats">${st('hourglass', 'Rounds', F.round)}${st('shield', 'Parries', F.stats.parries)}${st('star', 'Staggers', F.stats.staggers)}${st('book', 'Reads', F.stats.reads)}${st('cross', 'Downed', F.stats.downs)}</div>`;
+    const ban = win ? pf.textImg(F.clean ? 'CLEAN WIN' : 'VICTORY', 8, { top: '#fff6a8', bot: '#ffb040' }) : pf.textImg('DEFEAT', 8, { top: '#ffd0d8', bot: '#ff3355' });
+    el.innerHTML = `<div class="fres ${win ? 'win' : 'lose'}"><div class="pt">${ban}</div>${stat}<div class="fxp">${rows}</div>
       <p>${win ? (F.clean ? 'Nobody went down. Write that in the notebook.' : 'It is down, and so is someone. Mira is already on the radio.') : cfg.loseText || 'The line breaks. Everyone gets out, barely. This will cost you.'}</p>
       <div class="frow">${win ? '<button class="btn primary" id="fdone">Continue ▸</button>' : `<button class="btn primary" id="fretry">Try again</button><button class="btn" id="fdone">${cfg.noPress ? 'Leave' : 'Press on (setback)'}</button>`}</div></div>`;
     el.classList.add('on'); ctx.sfx(win ? 'success' : 'fail'); if (!win) ctx.music('sad');
     const done = () => { if (!U || U.F !== F) return; ctx.sfx('confirm'); const my = U; U = null; ctx.host.innerHTML = ''; xp && F.team.forEach(h => ctx.xp(h.id, xp)); my.ctx.onDone(res); };
-    $('#fdone').onclick = done;
-    const rt = $('#fretry'); if (rt) rt.onclick = () => { ctx.sfx('confirm'); const t = U.tries + 1; start(cfg, ctx); U.tries = t; };
+    $id('fdone').onclick = done;
+    const rt = $id('fretry'); if (rt) rt.onclick = () => { ctx.sfx('confirm'); const t = U.tries + 1; start(cfg, ctx); U.tries = t; };
     if (Fight.auto) setTimeout(() => { if (win || U.tries >= 2) done(); else rt.click(); }, 30);
   }
   return { start, mk, resolve, order, setAct, aiPlan, sim, FOES, KIT, READS, EL, teleOf, readsFor, auto: false, get active() { return !!U; } };

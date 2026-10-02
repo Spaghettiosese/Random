@@ -124,7 +124,26 @@ const PixelMon = (() => {
     g.fill('M266,196 l26,6 l-26,5z M334,196 l-26,6 l26,5z', '#0e1a3a', 0); const gl = frame % 3 === 0; g.ell(279, 202, 3, 3, gl ? '#ff3355' : '#7ff6ff'); g.ell(321, 202, 3, 3, gl ? '#ff3355' : '#7ff6ff');
     for (let i = 0; i < 8; i++) { const an = t * TAU * .5 + i * TAU / 8; shard(g, 300 + Math.cos(an) * 230, 420 + Math.sin(an) * 70, 40, 12, an * 40, GLASS[i % 3], (frame + i) % 4 === 0); }
   }
-  const MON = { hound, leviathan, glazier };
+  // The Rift Heart: a red crystal heart inside a cage of glass ribs, shards orbiting, the whole thing beating
+  function heart(g, t, frame) {
+    const LN = '#0e1a3a', beat = Math.pow(Math.max(0, Math.sin(t * TAU * 2)), 2), sc = 1 + beat * .07, cx = 300, cy = 330;
+    // cage of ribs behind the heart
+    for (let i = 0; i < 11; i++) { const a = -Math.PI * .96 + i * (Math.PI * 1.92 / 10), r0 = 150, r1 = 250 + (i % 3) * 36; shard(g, cx + Math.cos(a) * r0, cy + Math.sin(a) * r0 * .9, r1 * .62, 18, a * 57.3 + 90, GLASS[2 + (i % 2)], (frame + i) % 5 === 0); }
+    // floating base of shards
+    for (let i = 0; i < 7; i++) shard(g, cx - 120 + i * 40, 560 + Math.sin((t + i / 7) * TAU) * 12 + (i % 2) * 24, 70 + (i % 3) * 18, 15, 180 + (i - 3) * 10, GLASS[1 + (i % 2)], (frame + i) % 4 === 0);
+    // the heart
+    g.save(); g.tr(cx, cy); g.sc(sc); g.tr(-cx, -cy); g.tr(cx, cy);
+    g.fill('M0,150 C-170,30 -190,-100 -100,-150 C-50,-178 0,-140 0,-100 C0,-140 50,-178 100,-150 C190,-100 170,30 0,150Z', '#ff2050', 4, '#5a0010');
+    g.solid('M0,150 C-170,30 -190,-100 -100,-150 C-50,-178 0,-140 0,-100 L0,150Z', '#ff5a7a');
+    g.solid('M-110,-120 C-80,-140 -50,-132 -30,-112 C-60,-104 -84,-90 -104,-60 C-120,-80 -122,-104 -110,-120Z', '#ffc0cc');
+    g.line('M-100,-130 L-30,-30 L0,60 M100,-130 L30,-30 L0,60 M-30,-30 L30,-30', '#ffd0da', 3);
+    g.ell(0, 10, beat > .3 ? 40 : 30, beat > .3 ? 40 : 30, '#ffffff', 3, '#ff9ab0'); g.ell(0, 10, 16, 16, '#ff2050');
+    g.restore();
+    // orbiting shards
+    for (let i = 0; i < 8; i++) { const a = t * TAU + i * TAU / 8, x = cx + Math.cos(a) * 250, y = cy + Math.sin(a) * 70 + 20, front = Math.sin(a) > 0; if (front) shard(g, x, y, 56, 14, a * 57.3, GLASS[i % 3], (frame + i) % 4 === 0); }
+    g.markLine('#5a0010');
+  }
+  const MON = { hound, leviathan, glazier, heart };
   const MW = 180, MH = 210, MS = .3;
   function monFrames(kind) {
     return async early => {

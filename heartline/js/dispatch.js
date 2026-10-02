@@ -5,7 +5,8 @@ const Dispatch = (() => {
   const SN = { com: 'Combat', vig: 'Vigor', mob: 'Mobility', cha: 'Charisma', int: 'Intellect' };
   const SI = { com: '👊', vig: '❤️', mob: '👟', cha: '💬', int: '🧠' };
   const HQ = [400, 235];
-  const APPR = { fast: ['⚡', 'Rush in', 'Travel −35% · success −8% · more tiring'], std: ['⚖', 'Standard', 'No modifiers'], care: ['🛡', 'Careful', 'Success +8% · slower on scene · half injury chance'] };
+  const APPR = { fast: ['bolt', 'Rush in', 'Travel −35% · success −8% · more tiring'], std: ['ring', 'Standard', 'No modifiers'], care: ['shield', 'Careful', 'Success +8% · slower on scene · half injury chance'] };
+  const apic = k => (typeof PixelFight !== 'undefined' ? PixelFight.icon(APPR[k][0], 1.25, 'inl') : '');
   const apprP = c => c.appr === 'fast' ? -.08 : c.appr === 'care' ? .08 : 0;
   const DIST = { harbor: ['Harbor', 680, 385], shibuya: ['Shibuya', 215, 300], akiba: ['Akiba', 560, 110], oldtown: ['Old Town', 135, 125], uptown: ['Uptown', 380, 80], industrial: ['Industrial', 705, 190], riverside: ['Riverside', 360, 400], park: ['Ueno Park', 560, 295] };
   const TIERC = ['#6fffb0', '#6fffb0', '#ffd24a', '#ff8a3a', '#ff3355'];
@@ -313,7 +314,7 @@ const Dispatch = (() => {
         <div class="dslots">${[...Array(c.slots)].map((_, i) => { const id = c.team[i]; return id ? `<div class="dslot on" style="--c:${ctx.WHO[id].c}">${ctx.portrait(id)}</div>` : `<div class="dslot">+</div>`; }).join('')}
           <div class="dchance ${p > .7 ? 'good' : p > .45 ? 'mid' : 'bad'}"><b>${Math.round(p * 100)}%</b><small>success</small></div></div>
         <div class="dsyn">${notes.length ? notes.map(n => `<div class="${n[0] === '+' ? 'pos' : 'neg'}">${ctx.T(n)}</div>`).join('') : c.team.length > 1 ? '<div>No special synergy.</div>' : ''}</div>
-        <div class="dappr">${Object.entries(APPR).map(([k, a]) => `<button data-a="${k}" class="${(c.appr || 'std') === k ? 'on' : ''}" title="${a[2]}">${a[0]} ${a[1]}</button>`).join('')}</div><div class="dapprd">${APPR[c.appr || 'std'][2]} · Expires in <b>${Math.max(0, Math.round(c.exp - S.t))} min</b></div>
+        <div class="dappr">${Object.entries(APPR).map(([k, a]) => `<button data-a="${k}" class="${(c.appr || 'std') === k ? 'on' : ''}" title="${a[2]}">${apic(k)} ${a[1]}</button>`).join('')}</div><div class="dapprd">${APPR[c.appr || 'std'][2]} · Expires in <b>${Math.max(0, Math.round(c.exp - S.t))} min</b></div>
         <button class="ddisp" id="ddisp" ${c.team.length ? '' : 'disabled'}>DISPATCH ▸</button></div>`;
       $('#dback').onclick = () => { S.sel = null; side(); roster(); };
       el.querySelectorAll('.dappr button').forEach(b => b.onclick = () => { c.appr = b.dataset.a === 'std' ? null : b.dataset.a; ctx.sfx('click'); side(); });
