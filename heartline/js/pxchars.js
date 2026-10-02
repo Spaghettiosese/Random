@@ -269,57 +269,123 @@ const PixelCast = (() => {
     tease: { e: ['open', 'happy'], b: 'smug', m: 'tongue', tilt: -6 }, gloomy: { e: 'sad', b: 'sad', m: 'wavy', fx: ['gloom'], droop: 7, tilt: 3 },
     dizzy: { e: 'swirl', b: 'worried', m: 'wavy', fx: ['dizzy'], sway: 2 }, sweat: { e: 'open', b: 'sad', m: 'smile', fx: ['sweat'], tilt: -3 },
     relieved: { e: 'closed', b: 'relaxed', m: 'smile', fx: ['sweat'], droop: 2 }, deadpan: { e: 'flat', b: 'normal', m: 'flat' },
-    ominous: { e: 'shadow', b: 'angry', m: 'smirk', lean: 2, tilt: 3 }, singing: { e: 'closed', b: 'raised', m: 'sing', fx: ['notes'], sway: 1, tilt: -4 }
+    ominous: { e: 'shadow', b: 'angry', m: 'smirk', lean: 2, tilt: 3 }, singing: { e: 'closed', b: 'raised', m: 'sing', fx: ['notes'], sway: 1, tilt: -4 },
+    // quieter, truer faces
+    tired: { e: 'lidded', b: 'relaxed', m: 'tiny', droop: 2, tilt: 3 }, wry: { e: 'narrow', b: 'smug', m: 'halfsmile', tilt: -3 },
+    proud: { e: 'smileeye', b: 'raised', m: 'smile', lean: -1 }, guarded: { e: 'lidded', b: 'angry', m: 'flat', look: -4, tilt: -2 },
+    wince: { e: 'closed', b: 'sad', m: 'teeth', jolt: 1, shake: 1 }, lost: { e: 'soft', b: 'sad', m: 'tiny', look: -4, droop: 2 },
+    delighted: { e: 'smileeye', b: 'raised', m: 'grin', fx: ['blushlite'], bob: 1 }, unimpressed: { e: 'lidded', b: 'normal', m: 'flat' },
+    fond: { e: 'smileeye', b: 'sad', m: 'gentle', fx: ['blushlite'], tilt: 3 }, scheming: { e: 'narrow', b: 'smug', m: 'smirkfang', tilt: -4, lean: 1 },
+    numb: { e: 'dots', b: 'normal', m: 'flat' }, sulk: { e: 'lidded', b: 'sad', m: 'pout', look: 4, tilt: 6 },
+    nervous: { e: 'soft', b: 'worried', m: 'bite', fx: ['blushlite'], look: 3, tilt: 4 }, resolve: { e: 'open', b: 'angry', m: 'tight', lean: 1 },
+    stunned: { e: 'wide', b: 'raised', m: 'hmm', jolt: 1 }, hurt: { e: 'sad', b: 'sad', m: 'tight', droop: 3, look: -3 }
   };
+  // how this particular face wears an emotion: component swaps (face.map), whole overrides (face.emo), softened or amplified body language
+  const BL = ['tilt', 'droop', 'lean', 'shake', 'jolt', 'bob', 'hop', 'sway'];
+  function emoFor(c, name) {
+    const base = EMO[name] || EMO.neutral, F = c.face; if (!F) return base;
+    let e = Object.assign({}, base);
+    if (F.map) for (const k of ['e', 'm', 'b']) { const mp = F.map[k]; if (!mp) continue; const v = e[k]; e[k] = Array.isArray(v) ? v.map(z => mp[z] || z) : (mp[v] || v); }
+    if (F.emo && F.emo[name]) e = Object.assign(e, F.emo[name]);
+    if (F.noFx) e.fx = (e.fx || []).filter(k => !F.noFx.includes(k));
+    if (F.bl && F.bl !== 1) for (const k of BL) if (e[k]) e[k] = e[k] * F.bl;
+    return e;
+  }
+  // head shapes: the jaw, cheek and chin silhouette (the hair stays put)
+  const HEADV = {
+    round: { f: 'M141,128 C141,80 168,52 200,52 C232,52 259,80 259,128 C262,164 250,194 234,208 C222,220 210,226 200,227 C190,226 178,220 166,208 C150,194 138,164 141,128Z', m: 'M139,124 C139,76 166,50 200,50 C234,50 261,76 261,124 C263,162 256,192 242,208 C230,222 214,229 200,230 C186,229 170,222 158,208 C144,192 137,162 139,124Z' },
+    pointed: { f: 'M143,128 C143,80 168,52 200,52 C232,52 257,80 257,128 C257,158 248,184 232,206 C222,222 208,233 200,238 C192,233 178,222 168,206 C152,184 143,158 143,128Z', m: 'M141,124 C141,76 166,50 200,50 C234,50 259,76 259,124 C259,156 252,186 238,208 C226,224 210,234 200,238 C190,234 174,224 162,208 C148,186 141,156 141,124Z' },
+    heart: { f: 'M141,128 C141,80 168,52 200,52 C232,52 259,80 259,128 C261,156 250,182 234,204 C222,220 209,228 200,232 C191,228 178,220 166,204 C150,182 139,156 141,128Z', m: 'M139,124 C139,76 166,50 200,50 C234,50 261,76 261,124 C263,154 254,184 240,206 C228,222 212,230 200,234 C188,230 172,222 160,206 C146,184 137,154 139,124Z' },
+    oval: { f: 'M144,128 C144,80 168,52 200,52 C232,52 256,80 256,128 C256,160 250,186 236,206 C224,220 210,228 200,230 C190,228 176,220 164,206 C150,186 144,160 144,128Z', m: 'M142,124 C142,76 166,50 200,50 C234,50 258,76 258,124 C258,158 254,188 242,208 C230,222 214,230 200,232 C186,230 170,222 158,208 C146,188 142,158 142,124Z' },
+    square: { f: 'M141,128 C141,80 168,52 200,52 C232,52 259,80 259,128 C261,160 256,190 246,208 C236,222 218,228 200,228 C182,228 164,222 154,208 C144,190 139,160 141,128Z', m: 'M137,124 C137,76 166,50 200,50 C234,50 263,76 263,124 C265,164 260,196 250,212 C238,228 218,233 200,233 C182,233 162,228 150,212 C140,196 135,164 137,124Z' },
+    long: { f: 'M144,128 C144,80 168,52 200,52 C232,52 256,80 256,128 C256,162 250,192 236,212 C224,226 210,234 200,238 C190,234 176,226 164,212 C150,192 144,162 144,128Z', m: 'M142,124 C142,76 166,50 200,50 C234,50 258,76 258,124 C258,160 254,194 242,216 C230,230 214,238 200,241 C186,238 170,230 158,216 C146,194 142,160 142,124Z' }
+  };
+  const headD = (c, A) => (c.face && c.face.head && !c.old && HEADV[c.face.head] && HEADV[c.face.head][A.head === 'f' ? 'f' : 'm']) || HEAD[c.old ? 'o' : A.head];
+  const NOSE = { std: 'M201,184 l-2,4', button: 'M199,186 q2,2.4 4,0', point: 'M201,182 l-3,7 l3,1', hook: 'M202,181 l-2,7 q-2,2 -5,0', none: '' };
   const OPEN_M = { grin: 1, laugh: 1, open: 1, sing: 1, o: 1, triangle: 1, shout: 1, sob: 1, teeth: 1 };
 
   // ---------- face ----------
+  // Every character carries a face spec (c.face, see pxface.js): eye shape / tilt / lashes / pupils / highlights, brows,
+  // mouth habits, head shape, cheeks, marks and a personal map of how each emotion is actually worn on their face.
+  const EYE0 = {};
   function eye(g, c, cx, cy, flip, type, look, t) {
-    const x = g.x, m = c.body !== 'f', LN = c.line;
-    g.save(); g.tr(cx, cy); g.sc(flip ? -1 : 1, 1); const ix = look * (flip ? -1 : 1);
-    const lash = (lw = m ? 3.4 : 4) => { g.line('M-16,0 C-13,-12 5,-16 17,-8', LN, lw); if (!m) g.line('M15,-8 L22,-12 M16,-6 L22,-6', LN, 2); };
-    const low = () => g.line('M-6,11 Q2,12.5 10,8', LN, 1.4);
-    const lid = (d, ln) => { g.solid(d, c.skin); g.line(ln, LN, m ? 3.4 : 4); };
+    const x = g.x, m = c.body !== 'f', LN = c.line, F = (c.face && c.face.eye) || EYE0, lwm = F.lw || 1, lw0 = (m ? 3.4 : 4) * lwm;
+    g.save(); g.tr(cx, cy); g.sc(flip ? -1 : 1, 1); if (F.rot) g.rot(F.rot); const ix = look * (flip ? -1 : 1);
+    const lash = (lw = lw0) => {
+      g.line('M-16,0 C-13,-12 5,-16 17,-8', LN, lw); if (m) { if (F.lash === 'sharp') g.line('M15,-8 L22,-12', LN, 2.2); return; }
+      const k = F.lash || 'doll';
+      if (k === 'doll') g.line('M15,-8 L22,-12 M16,-6 L22,-6', LN, 2);
+      else if (k === 'sharp') g.line('M15,-8 L28,-17 M17,-5 L26,-8', LN, 2.4);
+      else if (k === 'heavy') { g.line('M15,-8 L23,-12 M16,-6 L23,-5 M11,-11 L17,-17', LN, 2.6); g.line('M-15,-1 L-19,1', LN, 2); }
+      else if (k === 'flare') g.line('M15,-8 L25,-14 M17,-5 L27,-5 M11,-11 L15,-19 M5,-13 L7,-20', LN, 2.2);
+      else if (k === 'soft') g.line('M15,-8 L19,-10', LN, 1.6);
+    };
+    const low = () => { if (F.low === 'none') return; g.line('M-6,11 Q2,12.5 10,8', LN, 1.4); if (F.low === 'lash') g.line('M-9,10 l-2,3 M-3,12 l-1,3.5 M4,12 l0,3.5 M10,8.5 l2,3', LN, 1.4); };
+    const bags = () => { if (F.bag) g.line('M-12,16 Q0,19.5 13,14', c.skinD, 1.8); };
+    const lid = (d, ln) => { g.solid(d, c.skin); g.line(ln, LN, lw0); };
     const WH = 'M-15,-1 C-13,-11 6,-14 16,-7 C18,2 12,10.5 1,11.5 C-9,11.5 -15,6 -15,-1Z';
-    if (type === 'happy') { g.line('M-14,4 Q1,-10 16,2', LN, 3.6); if (!m) g.line('M15,2 L21,-2', LN, 2); g.restore(); return; }
-    if (type === 'closed') { g.line('M-14,-1 Q1,9 16,-2', LN, 3.4); if (!m) g.line('M14,0 L20,3 M8,4 L10,8', LN, 1.6); g.restore(); return; }
-    if (type === 'flat') { g.line('M-15,0 L17,-1', LN, 3.4); g.line('M-10,7 L12,7', LN, 1.4); g.restore(); return; }
-    if (type === 'sleepy') { g.solid('M-15,2 C-10,6 8,6 16,2 C12,9 -8,11 -15,2Z', '#ffffff'); g.solid('M-6,4 C-4,8 6,8 8,4Z', c.eyeD); g.line('M-15,2 C-6,5 8,5 17,1', LN, 3.4); g.restore(); return; }
+    if (type === 'happy') { g.line('M-14,4 Q1,-10 16,2', LN, 3.6 * lwm); if (!m) g.line('M15,2 L21,-2', LN, 2); g.restore(); return; }
+    if (type === 'closed') { g.line('M-14,-1 Q1,9 16,-2', LN, 3.4 * lwm); if (!m) g.line('M14,0 L20,3 M8,4 L10,8', LN, 1.6); bags(); g.restore(); return; }
+    if (type === 'flat') { g.line('M-15,0 L17,-1', LN, 3.4 * lwm); g.line('M-10,7 L12,7', LN, 1.4); bags(); g.restore(); return; }
+    if (type === 'dots') { g.ell(0, 2, 3, 3.6, LN); g.restore(); return; }
+    if (type === 'sleepy') { g.solid('M-15,2 C-10,6 8,6 16,2 C12,9 -8,11 -15,2Z', '#ffffff'); g.solid('M-6,4 C-4,8 6,8 8,4Z', c.eyeD); g.line('M-15,2 C-6,5 8,5 17,1', LN, 3.4 * lwm); bags(); g.restore(); return; }
     // open-family eyes
-    const big = { wide: [7, 8.5], glare: [7, 8], blank: [0, 0], swirl: [0, 0] }[type] || (m ? [8, 10] : [9.5, 11.5]);
+    const ir = F.ir || [1, 1], big = ({ wide: [7, 8.5], glare: [7, 8], blank: [0, 0], swirl: [0, 0] }[type] || (m ? [8, 10] : [9.5, 11.5])).map((v, i) => v * ir[i]);
     g.solid(WH, '#ffffff');
     g.save(); g.clip(WH);
     g.solid('M-17,-14 L19,-14 L19,-4 C8,-8 -8,-8 -17,-2Z', '#d4cbe8');
     if (type === 'swirl') { g.line('M1,1 m-2,0 a2,2 0 1 1 4,0 a4,4 0 1 1 -8,0 a6,6 0 1 1 12,0 a8,8 0 1 1 -16,0', c.eyeD, 1.8); }
     else if (type === 'blank') { g.ell(ix, 2, 1.8, 1.8, LN); }
     else {
-      const [rx, ry] = big;
+      const [rx, ry] = big, hl = F.hl || 'twin', pu = F.pupil || 'round';
       g.ell(ix, 1, rx, ry, c.eye); g.solid(`M${ix - rx - 1},${1 - ry - 1} L${ix + rx + 1},${1 - ry - 1} L${ix + rx + 1},${f1(1 - ry * .15)} C${ix + rx * .4},${f1(1 - ry * .45)} ${ix - rx * .4},${f1(1 - ry * .45)} ${ix - rx - 1},${f1(1 - ry * .15)}Z`, c.eyeD);
       g.solid(`M${ix - rx * .8},${f1(1 + ry * .45)} Q${ix},${f1(1 + ry * 1.1)} ${ix + rx * .8},${f1(1 + ry * .45)} Q${ix},${f1(1 + ry * .75)} ${ix - rx * .8},${f1(1 + ry * .45)}Z`, c.eyeL);
       g.ring(ix, 1, rx, ry, c.eyeD, 1.4);
-      if (type === 'star') { star(g, ix, 2, 6.5, '#fff7b0', 1.2, c.eyeD); g.ell(ix + 5, 7, 1.4, 1.4, '#ffffff'); }
+      if (type === 'star') { star(g, ix, 2, 6.5 * Math.min(ir[0], 1.15), '#fff7b0', 1.2, c.eyeD); g.ell(ix + 5, 7, 1.4, 1.4, '#ffffff'); }
       else if (type === 'heart') { g.fill(heartD(ix, 2, 5.4), '#ff4f7e', 1.2, '#ffffff'); g.ell(ix - 2, -1, 1.3, 1.3, '#ffffff'); }
       else {
-        g.ell(ix, 2, rx * .42, ry * .5, c.eyeP);
-        if (type !== 'shadow') { g.ell(ix - 3.6, -4.6, rx * .34, ry * .32, '#ffffff', 0, 0, -.35); g.ell(ix + 4, 5.5, 1.5, 1.5, '#ffffff'); if (t !== undefined && !m) g.ell(ix + 3.4, -5.6, 1, 1, '#ffffff'); }
+        if (pu === 'slit') g.ell(ix, 1.5, rx * .17, ry * .88, c.eyeP);
+        else if (pu === 'ring') { g.ell(ix, 2, rx * .4, ry * .46, c.eyeP); g.ring(ix, 2, rx * .64, ry * .68, c.eyeD, 1.3); }
+        else if (pu === 'dot') g.ell(ix, 2, rx * .27, ry * .33, c.eyeP);
+        else g.ell(ix, 2, rx * .42, ry * .5, c.eyeP);
+        if (type !== 'shadow') {
+          if (hl === 'star') { star4(g, ix - 3.4, -3.4, rx * .46, '#ffffff'); g.ell(ix + 4, 5.5, 1.3, 1.3, '#ffffff'); }
+          else if (hl === 'hex') { let d = ''; for (let k = 0; k < 6; k++) { const an = k * TAU / 6; d += (k ? 'L' : 'M') + f1(ix - 3.4 + Math.cos(an) * rx * .36) + ',' + f1(-4 + Math.sin(an) * rx * .36); } g.solid(d + 'Z', '#ffffff'); }
+          else if (hl === 'one') g.ell(ix - 3, -3.8, rx * .4, ry * .36, '#ffffff', 0, 0, -.35);
+          else if (hl === 'cat') { g.ell(ix - 3, -2, rx * .17, ry * .5, '#ffffff'); g.ell(ix + 4, 5.5, 1.2, 1.2, '#ffffff'); }
+          else if (hl === 'none') { /* flat, unlit eye */ }
+          else { g.ell(ix - 3.6, -4.6, rx * .34, ry * .32, '#ffffff', 0, 0, -.35); g.ell(ix + 4, 5.5, 1.5, 1.5, '#ffffff'); if (t !== undefined && !m) g.ell(ix + 3.4, -5.6, 1, 1, '#ffffff'); }
+        }
         else { g.alpha(1); g.solid('M-20,-20 L24,-20 L24,20 L-20,20Z', c.hairS); g.ell(ix, 2, 2.2, 2.2, c.eyeL); }
         if (type === 'teary') { g.solid('M-15,5 Q1,14 16,4 L16,12 L-15,12Z', '#bfe8ff'); g.ell(-6, -2, 1.4, 1.4, '#ffffff'); g.ell(7, 6, 1.8, 1.8, '#ffffff'); }
       }
     }
     g.restore();
+    const ld = F.lid || 0, Y = ld * 5;
     if (type === 'narrow') lid('M-18,-22 L24,-22 L24,-5 C10,-4 -8,-2 -18,0Z', 'M-16,0 C-6,-3 8,-5 18,-6');
+    else if (type === 'lidded') lid('M-18,-22 L24,-22 L24,-3 C10,-2 -8,-1 -18,1Z', 'M-16,1 C-6,-2 8,-3 19,-3');
     else if (type === 'glare') lid('M-18,-22 L24,-22 L24,-9 L-18,1Z', 'M-16,1 L19,-8');
     else if (type === 'determined') lid('M-18,-22 L24,-22 L24,-12 L-18,0Z', 'M-16,0 L19,-11');
     else if (type === 'sad') lid('M-18,-22 L24,-22 L24,-4 C10,-8 -6,-11 -18,-9Z', 'M-16,-9 C-6,-11 10,-8 19,-4');
     else if (type === 'soft') { g.solid('M-18,9 C-8,5 8,4 20,7 L20,16 L-18,16Z', c.skin); g.line('M-12,8 Q2,4 15,7', LN, 1.4); lash(); }
+    else if (type === 'smileeye') { g.solid('M-18,11 C-8,1 8,0 20,6 L20,18 L-18,18Z', c.skin); g.line('M-13,10 C-4,3 8,3 17,6', LN, 1.5); lash(); }
     else if (type === 'wide') { lash(3); g.line('M-12,12 Q2,14 12,10', LN, 1.4); }
+    else if (ld && (type === 'open' || type === 'star')) { lid(`M-18,-22 L24,-22 L24,${-8 + Y} C10,${-9 + Y} -8,${-9 + Y} -18,${-6 + Y}Z`, `M-16,${-6 + Y} C-6,${-9 + Y} 10,${-9 + Y} 19,${-8 + Y}`); if (!m) g.line('M16,' + (-8 + Y) + ' L22,' + (-12 + Y), LN, 2); }
     else lash();
-    if (!['narrow', 'glare', 'determined', 'sad', 'soft'].includes(type)) low();
+    if (!['narrow', 'glare', 'determined', 'sad', 'soft', 'lidded', 'smileeye'].includes(type)) low();
+    bags();
     g.restore();
   }
+  const BROWS = {
+    arch: { normal: 'M-13,-24 Q3,-29 18,-24', raised: 'M-13,-32 Q3,-37 18,-31', angry: 'M-13,-19 Q3,-24 18,-30', sad: 'M-13,-31 Q3,-29 18,-21', relaxed: 'M-13,-23 Q3,-26 18,-22' },
+    flat: { normal: 'M-13,-25 Q3,-26 18,-24', raised: 'M-13,-33 Q3,-35 18,-32', angry: 'M-13,-20 Q3,-24 18,-31', sad: 'M-13,-30 Q3,-28 18,-22', relaxed: 'M-13,-24 Q3,-25 18,-23' },
+    soft: { normal: 'M-12,-23 Q3,-28 17,-24', raised: 'M-12,-30 Q3,-36 17,-30', angry: 'M-12,-21 Q3,-25 17,-28', sad: 'M-12,-30 Q3,-30 17,-20', relaxed: 'M-12,-22 Q3,-26 17,-22' },
+    angular: { normal: 'M-14,-22 L3,-29 L18,-24', raised: 'M-14,-30 L3,-38 L18,-31', angry: 'M-14,-18 L3,-24 L18,-31', sad: 'M-14,-32 L3,-29 L18,-19', relaxed: 'M-14,-22 L3,-27 L18,-22' }
+  };
   function brow(g, c, cx, cy, flip, type) {
-    const D = { normal: 'M-13,-24 Q3,-29 18,-24', raised: 'M-13,-32 Q3,-37 18,-31', angry: 'M-13,-19 Q3,-24 18,-30', sad: 'M-13,-31 Q3,-29 18,-21', relaxed: 'M-13,-23 Q3,-26 18,-22' };
-    g.save(); g.tr(cx, cy - 4); g.sc(flip ? -1.2 : 1.2, 1.2); g.line(D[type] || D.normal, c.hairL, c.body === 'f' ? 2.6 : 4); g.restore();
+    const F = (c.face && c.face.brow) || EYE0, D = BROWS[F.shape || 'arch'] || BROWS.arch, k = F.len || 1;
+    g.save(); g.tr(cx + (F.dx || 0) * (flip ? -1 : 1), cy - 4 + (F.y || 0) + (flip ? (F.dyL || 0) : (F.dyR || 0))); if (F.rot) g.rot(F.rot * (flip ? -1 : 1)); g.sc((flip ? -1.2 : 1.2) * k, 1.2);
+    g.line(D[type] || D.normal, c.hairL, (c.body === 'f' ? 2.6 : 4) * (F.th || 1)); g.restore();
   }
   const MOUTH = {
     small: (g, c) => g.line('M194,180 Q200,183 206,180', c.line, 2.2),
@@ -340,9 +406,19 @@ const PixelCast = (() => {
     teeth: (g, c) => { g.fill('M188,172 L212,172 L212,184 L188,184Z', '#ffffff', 2); g.line('M188,178 L212,178 M194,172 L194,184 M200,172 L200,184 M206,172 L206,184', c.line, 1.2); },
     sob: (g, c) => { g.fill('M186,176 Q200,169 214,176 Q213,194 200,192 Q187,194 186,176Z', '#9c3448', 2); g.solid('M192,187 Q200,182 208,187 Q200,191 192,187Z', '#ff8e9c'); },
     tongue: (g, c) => { g.line('M190,177 Q200,185 210,177', c.line, 2.4); g.fill('M197,181 Q197,190 202,190 Q207,190 206,180', '#ff8e9c', 1.6); },
-    pout: (g, c) => { g.line('M195,180 Q200,176 205,180', c.line, 2.2); g.line('M197,184 Q200,185 203,184', '#d98a92', 1.8); }
+    pout: (g, c) => { g.line('M195,180 Q200,176 205,180', c.line, 2.2); g.line('M197,184 Q200,185 203,184', '#d98a92', 1.8); },
+    // habits that make each face their own
+    halfsmile: (g, c) => g.line('M193,181 Q200,182 205,179 Q209,177 211,173', c.line, 2.3),
+    gentle: (g, c) => { g.line('M191,177 Q200,185 209,177', c.line, 2.3); g.line('M189,175 l-2,-2 M211,175 l2,-2', c.skinD, 1.5); },
+    fang: (g, c) => { g.fill('M189,175 Q200,179 211,175 Q209,188 200,189 Q191,188 189,175Z', '#9c3448', 2); g.solid('M191,176 L209,176 L208,179 L192,179Z', '#ffffff'); g.fill('M192,177 l5,0 l-2.5,7Z', '#ffffff', 1.4); g.solid('M194,186 Q200,181 206,186 Q200,190 194,186Z', '#ff8e9c'); },
+    grinwide: (g, c) => { g.fill('M183,172 Q200,177 217,172 Q215,197 200,198 Q185,197 183,172Z', '#9c3448', 2); g.solid('M185,173 L215,173 L214,180 L186,180Z', '#ffffff'); g.line('M200,173 L200,180', c.line, 1.1); g.solid('M191,190 Q200,182 209,190 Q200,196 191,190Z', '#ff8e9c'); },
+    smallopen: (g, c) => g.fill('M195,177 Q200,179 205,177 Q204,184 200,185 Q196,184 195,177Z', '#9c3448', 1.8),
+    bite: (g, c) => { g.line('M193,180 Q200,182 207,180', c.line, 2.2); g.fill('M196,180 l3,5 l3,-5Z', '#ffffff', 1.4); },
+    tight: (g, c) => { g.line('M193,180 L207,180', c.line, 2.4); g.line('M193,180 l-1.5,-2 M207,180 l1.5,-2', c.line, 1.8); },
+    hmm: (g, c) => g.line('M196,181 Q200,178 204,181 Q200,184 196,181', c.line, 2),
+    smirkfang: (g, c) => { g.line('M192,181 Q202,183 210,174', c.line, 2.4); g.fill('M203,181 l4,-3 l0.5,6Z', '#ffffff', 1.3); }
   };
-  const TALK = { small: 'open', tiny: 'open', smile: 'grin', frown: 'open', flat: 'open', cat: 'grin', smirk: 'open', wavy: 'o', pout: 'o', tongue: 'grin', grin: 'open', laugh: 'grin', open: 'small', sing: 'o', o: 'small', triangle: 'small', shout: 'open', teeth: 'shout', sob: 'open' };
+  const TALK = { small: 'open', tiny: 'open', smile: 'grin', frown: 'open', flat: 'open', cat: 'grin', smirk: 'open', wavy: 'o', pout: 'o', tongue: 'grin', grin: 'open', laugh: 'grin', open: 'small', sing: 'o', o: 'small', triangle: 'small', shout: 'open', teeth: 'shout', sob: 'open', halfsmile: 'small', gentle: 'open', fang: 'grin', grinwide: 'laugh', smallopen: 'open', bite: 'open', tight: 'open', hmm: 'smallopen', smirkfang: 'fang' };
   function star(g, cx, cy, r, col, lw = 1.4, lc) { let d = ''; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .45 : r; d += (i ? 'L' : 'M') + f1(cx + Math.cos(a) * rr) + ',' + f1(cy + Math.sin(a) * rr); } g.fill(d + 'Z', col, lw, lc); }
   const heartD = (x, y, r) => `M${x},${y + r * .9} C${x - r * 1.6},${y - r * .2} ${x - r * .9},${y - r * 1.5} ${x},${y - r * .5} C${x + r * .9},${y - r * 1.5} ${x + r * 1.6},${y - r * .2} ${x},${y + r * .9}Z`;
 
@@ -352,9 +428,9 @@ const PixelCast = (() => {
     if (k.startsWith('blush')) {
       if (!lo) return;
       const b = c.blush || '#ff9aa6';
-      if (k === 'blushfull') { g.solid('M150,152 Q200,170 250,152 L252,170 Q200,186 148,170Z', b); for (let i = 0; i < 7; i++) g.line(`M${156 + i * 14},170 l5,-9`, '#e0527a', 1.6); return; }
+      if (k === 'blushfull') { g.ell(163, 165, 19, 8.5, b); g.ell(237, 165, 19, 8.5, b); g.ell(200, 160, 11, 4.5, b); for (const X of [150, 159, 168, 232, 241, 250]) g.line(`M${X},170 l5,-9`, '#e0527a', 1.6); return; }
       g.ell(166, 164, k === 'blush' ? 15 : 12, 5, b); g.ell(234, 164, k === 'blush' ? 15 : 12, 5, b);
-      if (k === 'blush') for (const X of [156, 164, 172, 226, 234, 242]) g.line(`M${X},168 l4,-7`, '#e0527a', 1.5);
+      if (k === 'blush' && !(c.face && c.face.cheek === 'soft')) for (const X of [156, 164, 172, 226, 234, 242]) g.line(`M${X},168 l4,-7`, '#e0527a', 1.5);
       return;
     }
     if (lo) return;
@@ -469,7 +545,7 @@ const PixelCast = (() => {
   function drawChar(x, id, st) {
     const c = CAST[id]; if (!c) return null;
     const g = G(x, c.line); g.markLine(c.hairL);
-    const A = ANAT[c.body], e = EMO[st.emo] || EMO.neutral, P = POSES[st.pose] || POSES.default;
+    const A = ANAT[c.body], e = emoFor(c, st.emo), P = POSES[st.pose] || POSES.default, FC = c.face || {};
     const t = st.t, sw = Math.sin(t * TAU), cw = Math.cos(t * TAU), an = c.anim || {};
     const wind = st.wind || 1, a = { t, sway: sw * (an.hair || 1) * wind, sway2: Math.sin(t * TAU - 1) * (an.hair || 1) * wind, bob2: Math.sin(t * TAU * 2), frame: st.frame, spark: an.spark, hero: !(st.of && st.of !== 'hero' && OUTFITS[id] && OUTFITS[id][st.of]) };
     // body language: tilt, droop, lean, jolt, bounce, hop, shake, float
@@ -510,7 +586,7 @@ const PixelCast = (() => {
       x.save(); x.translate(0, breath * .5); arm(g, c, A, 'L', P.L, st2); arm(g, c, A, 'R', P.R, st2); x.restore();
       x.save(); headRot();
       g.ell(141, 160, 7, 13, c.skin, 2.2); g.ell(259, 160, 7, 13, c.skin, 2.2);
-      cel(g, HEAD[c.old ? 'o' : A.head], c.hair, c.hairS, 2.4, c.hairL, [-8, -5]);
+      cel(g, headD(c, A), c.hair, c.hairS, 2.4, c.hairL, [-8, -5]);
       c.back && c.back(g, c, a, of);
       const nape = c.shortHair ? 214 : 262, mass = `M132,150 C118,70 160,28 200,28 C240,28 282,70 268,150 C272,196 262,236 ${248 + a.sway * 3},${nape} L${152 + a.sway * 3},${nape} C138,236 128,196 132,150Z`;
       cel(g, mass, c.hair, c.hairS, 2.2, c.hairL, [-10, -6]); g.markLine(c.hairL);
@@ -524,21 +600,22 @@ const PixelCast = (() => {
     }
     // head
     x.save(); headRot();
-    const hk = c.old ? 'o' : A.head, ex = A.eye;
+    const FE = FC.eye || {}, ex = [[A.eye[0][0] - (FE.gap || 0), A.eye[0][1] + (FE.y || 0)], [A.eye[1][0] + (FE.gap || 0), A.eye[1][1] + (FE.y || 0)], A.eye[2] * (FE.w || 1), A.eye[3] * (FE.h || 1)];
     g.ell(141, 160, 7, 13, c.skin, 2.2); g.ell(259, 160, 7, 13, c.skin, 2.2); g.line('M140,154 q3,6 0,12 M260,154 q-3,6 0,12', c.skinS, 1.6);
-    cel(g, HEAD[hk], c.skin, c.skinS, 2.6, c.line, [-8, -5]);
+    cel(g, headD(c, A), c.skin, c.skinS, 2.6, c.line, [-8, -5]);
     g.solid(c.bangShadow || 'M146,100 L146,140 Q160,148 172,138 Q186,150 200,140 Q214,150 228,138 Q240,148 254,140 L254,100Z', c.skinS);
     if (c.faceExtra) c.faceExtra(g, c, a);
-    const look = e.look || 0, ET = Array.isArray(e.e) ? e.e : [e.e, e.e], shut = ['happy', 'closed', 'flat', 'sleepy'];
+    const look = e.look || 0, ET = Array.isArray(e.e) ? e.e : [e.e, e.e], shut = ['happy', 'closed', 'flat', 'sleepy', 'dots'];
     const eyL = st.blink && !shut.includes(ET[0]) ? 'closed' : ET[0], eyR = st.blink && !shut.includes(ET[1]) ? 'closed' : ET[1];
     g.save(); g.tr(0, 20); (e.fx || []).forEach(k => manpu(g, c, k, t, 'under')); g.restore();
     const c2 = c.eye2 ? Object.assign({}, c, { eye: c.eye2, eyeD: c.eyeD2, eyeL: c.eyeL2, eyeP: shade(c.eyeD2, -1, 12) }) : c;
     const tn = st.turn || 0;
     [[ex[0], true, eyL, c, -1], [ex[1], false, eyR, c2, 1]].forEach(([[px, py], flip, ty, cc, sd]) => { g.save(); g.tr(px + tn * 13, py + (c.eyeDY || 0)); g.sc(ex[2] * (1 - Math.max(0, tn * sd) * .28), ex[3]); eye(g, cc, 0, 0, flip, ty, look + tn * 3, t); g.restore(); });
     g.save(); g.tr(tn * 16, 0);
-    g.line('M201,184 l-2,4', c.skinD, 2);
+    if (NOSE[FC.nose || 'std']) g.line(NOSE[FC.nose || 'std'], c.skinD, 2);
     let m = e.m; if (st.talk) m = TALK[m] || 'open';
-    const [mx, my, ms] = A.mouth; g.save(); g.tr(mx, my); g.sc(ms); g.tr(-200, -180); (MOUTH[m] || MOUTH.small)(g, c); g.restore();
+    const [mx0, my0, ms0] = A.mouth, FM = FC.mouth || {}, mx = mx0 + (FM.dx || 0), my = my0 + (FM.y || 0), ms = ms0 * (FM.s || 1); g.save(); g.tr(mx, my); g.sc(ms); g.tr(-200, -180); (MOUTH[m] || MOUTH.small)(g, c); g.restore();
+    if (FC.marks) FC.marks(g, c, a, e);
     if (c.facial) c.facial(g, c, a);
     g.restore();
     g.save(); g.tr(tn * 6, 0); c.front(g, c, a, of); g.restore();
