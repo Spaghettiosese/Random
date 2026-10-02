@@ -282,7 +282,7 @@ const Fight = (() => {
     ev(F, { t: 'foeact', ic: m.ic, n: m.n });
     if (n.k === 'sweep') {
       say(F, `${m.ic} ${f.n}: ${m.n}!`, 'bad');
-      alive(F).forEach(h => { if (h.safe && h.cmdImmune !== 1) return; const d = hurt(F, h, atk * m.d, { cover: 0 }); if (h.guard && d >= 0) { /* guard soaks sweeps but does not parry */ } if (h.taunt && h.counter) counter(F, h); });
+      alive(F).forEach(h => { hurt(F, h, atk * m.d * (h.safe ? .5 : 1), { cover: 0 }); if (h.taunt && h.counter && !h.down) counter(F, h); });
       return;
     }
     // single / bind: find the real target (cover redirects)
