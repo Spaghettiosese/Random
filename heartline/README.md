@@ -106,7 +106,7 @@ The drawings use anime proportions, about 6 heads tall. Each character has a lar
   - a 5 × 7 bitmap font for names, damage numbers (gold for weak hits, a star for crits), the round counter and the STANDOFF, VICTORY and DEFEAT banners
   - pixel HP and Poise bars, floor tiles, shadows, and a speed-line cut-in strip with the hero's portrait whenever a Skill or Read fires
 - **Backgrounds:** re-rasterised onto a 400 × 225 grid with a 40-colour palette per scene and ordered dithering. Animated scenes keep 8 frames.
-- **Settings:** *Pixel-Art Graphics* switches back to the original vector art. *Smooth Pixels* applies Pixel Studio's Scale2x.
+- **Settings:** the game now starts with the original vector art; turn *Pixel-Art Graphics* on to use the pixel cast, monsters, backgrounds and CGs (Standoff icons, effects and numbers stay pixel either way). *Smooth Pixels* applies Pixel Studio's Scale2x.
 - **Pixel Studio round trip:** the Character Viewer can export any sprite (character, expression, pose and outfit) as a `.pxs.json` project. Open it in Moonkai Pixel Studio (`pixel/index.html`) with **Open**. Ready-made projects for the whole cast are in [`../pixel-studio/cast/`](../pixel-studio/cast/).
 
 ## How it plays

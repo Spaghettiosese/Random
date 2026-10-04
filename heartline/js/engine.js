@@ -29,7 +29,7 @@ const Game = (() => {
     route_sora: ['Gravity Heart', 'See Sora\'s rooftop scene'], fin_squad: ['Found Family', 'See the Squad ending'], veteran: ['Veteran', 'Raise a hero to Lv 5'],
     fight_win: ['Standoff', 'Win your first Standoff'], fight_clean: ['Nobody Down', 'Win a Standoff without losing a hero'], fight_parry: ['Read the Room', 'Land 3 parries in one Standoff'], fight_reads: ['Studied', 'Use 4 different Notebook Reads in Standoffs'], fight_kneel: ['Not On My Knees', 'Stand up a Kneeling hero'], log: ['Rewind', 'Open the backlog'], deploy5: ['Dispatcher', 'Resolve 25 calls'], coach: ['Coach', 'Run 5 training sessions']
   };
-  let settings = { textSpeed: 45, autoDelay: 1.4, music: .55, sfx: .7, voice: true, hints: false, motion: true, parallax: true, textSize: 23, boxAlpha: .88, skipUnread: false, wheelBack: true, pixel: true, pixelSmooth: false };
+  let settings = { textSpeed: 45, autoDelay: 1.4, music: .55, sfx: .7, voice: true, hints: false, motion: true, parallax: true, textSize: 23, boxAlpha: .88, skipUnread: false, wheelBack: true, pixel: false, pixelSmooth: false };
   let meta = { ach: {}, gallery: {}, cleared: false, scenes: {}, codex: {}, endings: {}, chaps: {}, maxChap: 0, met: { hikari: 1 }, stats: { lines: 0, choices: 0, calls: 0, shifts: 0, sranks: 0, dates: 0, gifts: 0, playSec: 0, clears: 0 } };
   let hist = [], readSet = {}, readDirty = 0, lastUnread = false;
   let G = null, R = {}, run = 0;
@@ -38,7 +38,7 @@ const Game = (() => {
 
   // ---------- persistence ----------
   const LS = { get: (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } } };
-  function loadPrefs() { settings = Object.assign(settings, LS.get('hl_settings', {})); const m = LS.get('hl_meta', {}); meta = Object.assign(meta, m); meta.stats = Object.assign({ lines: 0, choices: 0, calls: 0, shifts: 0, sranks: 0, dates: 0, gifts: 0, playSec: 0, clears: 0 }, m.stats || {}); readSet = LS.get('hl2_read', {}); applySettings(); }
+  function loadPrefs() { settings = Object.assign(settings, LS.get('hl_settings', {})); if (!LS.get('hl_vec_default', 0)) { settings.pixel = false; LS.set('hl_vec_default', 1); } const m = LS.get('hl_meta', {}); meta = Object.assign(meta, m); meta.stats = Object.assign({ lines: 0, choices: 0, calls: 0, shifts: 0, sranks: 0, dates: 0, gifts: 0, playSec: 0, clears: 0 }, m.stats || {}); readSet = LS.get('hl2_read', {}); applySettings(); }
   const saveMeta = () => LS.set('hl_meta', meta), saveSettings = () => LS.set('hl_settings', settings);
   function applySettings() { window.PIXEL_ON = settings.pixel; if (window.PIXEL_SMOOTH !== undefined && window.PIXEL_SMOOTH !== settings.pixelSmooth && typeof PX !== 'undefined') PX.cache.clear(); window.PIXEL_SMOOTH = settings.pixelSmooth; Sound.setVol('music', settings.music); Sound.setVol('sfx', settings.sfx); Sound.vol.voice = settings.voice; document.body.classList.toggle('nomotion', !settings.motion); const g = document.getElementById('game'); if (g) { g.style.setProperty('--tsize', settings.textSize + 'px'); g.style.setProperty('--boxa', settings.boxAlpha); } }
 
