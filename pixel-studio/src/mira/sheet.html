@@ -1,0 +1,6 @@
+<!doctype html><meta charset="utf-8"><body style="margin:0;background:#2a1f3a"><canvas id=c></canvas><script>
+const q=new URLSearchParams(location.search),file=q.get('f'),id=q.get('id'),S=+(q.get('s')||2),sets=(q.get('sets')||'open,openTalk,happy,shy,sad,angry,surprised').split(','),fr=(q.get('fr')||'0,6').split(',').map(Number);
+const s=document.createElement('script');s.src=file;s.onload=async()=>{const B=PIXEL[id];const c=document.getElementById('c');const w=160,h=192;c.width=sets.length*fr.length*w*S/ (q.get('wrap')?1:1);c.width=Math.min(sets.length*fr.length,+(q.get('cols')||8))*w*S;const cols=Math.min(sets.length*fr.length,+(q.get('cols')||8));c.height=Math.ceil(sets.length*fr.length/cols)*h*S;const x=c.getContext('2d');x.imageSmoothingEnabled=false;let n=0;
+ for(const st of sets)for(const f of fr){const im=new Image();im.src=B[st][f];await im.decode();x.fillStyle='#3a2a52';x.fillRect((n%cols)*w*S,((n/cols)|0)*h*S,w*S,h*S);x.drawImage(im,(n%cols)*w*S,((n/cols)|0)*h*S,w*S,h*S);n++}
+ document.title='done'};document.body.appendChild(s);
+</script>

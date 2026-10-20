@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8"><body style="background:#2a2438;margin:0">
+<script src="bust_lib.js"></script><script src="chars_bust.js"></script>
+<script>
+const ID=new URLSearchParams(location.search).get('id')||'hikari';
+const DEF={hikari:[PAL_HIKARI,drawHikari],raika:[PAL_RAIKA,drawRaika],sou:[PAL_SOU,drawSou]};
+const [pal,fn]=DEF[ID];
+const R=buildBust(ID,pal,fn);
+const MODE=new URLSearchParams(location.search).get('m')||'head';
+let cv=document.createElement('canvas');let cx;
+if(MODE==='head'){const S=3,cw=88,ch=116;cv.width=cw*S*6;cv.height=ch*S*2;cx=cv.getContext('2d');cx.imageSmoothingEnabled=false;cx.fillStyle='#5a4a78';cx.fillRect(0,0,cv.width,cv.height);
+SETNAMES.forEach((e,i)=>{[e+'0',e+'Talk0'].forEach((k,j)=>{cx.drawImage(R.preview[k],36,16,cw,ch,i*cw*S,j*ch*S,cw*S,ch*S)})})}
+else{const S=1.2;cv.width=W*S*6;cv.height=H*S*2;cx=cv.getContext('2d');cx.imageSmoothingEnabled=false;cx.fillStyle='#5a4a78';cx.fillRect(0,0,cv.width,cv.height);
+SETNAMES.forEach((e,i)=>{[e+'6',e+'Talk0'].forEach((k,j)=>{cx.drawImage(R.preview[k],i*W*S,j*H*S,W*S,H*S)})})}
+document.body.appendChild(cv);
+window.RESULT={id:R.id,sets:R.sets,pal:R.pal};
+</script>

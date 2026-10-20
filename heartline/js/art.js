@@ -7,10 +7,20 @@ const Art = (() => {
 
   // ---------- characters (see chars.js) ----------
   // Pixel-art sprites (from Moonkai Pixel Studio) replace the vector art when enabled.
-  const CLOSED = ['happy', 'laugh', 'sleepy', 'crysmile', 'relieved', 'singing'];
+  const PXSET = {
+    happy: ['happy', 'laugh', 'excited', 'relieved', 'singing', 'wink', 'tease', 'crysmile', 'sleepy'],
+    shy: ['shy', 'blush', 'flustered', 'embarrassed', 'love', 'tender', 'smug', 'smirk'],
+    sad: ['sad', 'cry', 'sob', 'gloomy', 'scared', 'pout', 'sweat', 'dizzy'],
+    angry: ['angry', 'furious', 'cold', 'glare', 'determined', 'serious', 'ominous', 'deadpan'],
+    surprised: ['surprised', 'shocked', 'awe', 'confused', 'think']
+  };
+  const PXMAP = {}; Object.entries(PXSET).forEach(([k, l]) => l.forEach(e => PXMAP[e] = k));
+  const pxSet = (id, emo) => { const m = PXMAP[emo] || 'open'; return PIXEL[id][m] ? m : 'open'; };
+  // Characters that exist only as pixel art (the DLC family, Haru) ignore the pixel toggle.
+  const PXONLY = id => typeof CharArt === 'undefined' || !CharArt.CH[id];
   const pixelChar = (id, emo, portrait) => {
-    const set = CLOSED.includes(emo) ? 'happy' : 'open', src = PIXEL[id][set][0];
-    return portrait ? `<svg class="csvg" viewBox="40 26 80 90" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><image href="${src}" width="160" height="192" style="image-rendering:pixelated"/></svg>`
+    const set = pxSet(id, emo), src = PIXEL[id][set][0];
+    return portrait ? `<svg class="csvg" viewBox="26 10 108 112" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><image href="${src}" width="160" height="192" style="image-rendering:pixelated"/></svg>`
       : `<svg class="csvg pixelart" viewBox="0 0 400 720" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="pxf" x1="0" y1="0" x2="0" y2="1"><stop offset=".8" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><mask id="pxm"><rect x="0" y="-12" width="400" height="432" fill="url(#pxf)"/></mask></defs><image class="pxa" data-id="${id}" data-set="${set}" href="${src}" x="20" y="-12" width="360" height="432" mask="url(#pxm)" style="image-rendering:pixelated"/></svg>`;
   };
   // Pixel sprite animator: idle loop (breathing, hair sway, blink); talking loop while the character speaks.
@@ -18,12 +28,12 @@ const Art = (() => {
   setInterval(() => {
     pxTick++;
     document.querySelectorAll('#chars image.pxa, #cg image.pxa').forEach(im => {
-      const talk = im.closest('.talking') ? 'Talk' : '', frames = PIXEL[im.dataset.id][im.dataset.set + talk], f = frames[pxTick % frames.length];
+      const talk = im.closest('.talking') ? 'Talk' : '', frames = PIXEL[im.dataset.id][im.dataset.set + talk] || PIXEL[im.dataset.id][im.dataset.set], f = frames[pxTick % frames.length];
       if (im.getAttribute('href') !== f) im.setAttribute('href', f);
     });
   }, 140);
   const char = (id, emo = 'neutral', pose = 'default', portrait = false, of = 'hero') => id === 'bit' ? bit(emo, portrait)
-    : typeof PIXEL !== 'undefined' && PIXEL[id] && window.PIXEL_ON !== false ? pixelChar(id, emo, portrait) : CharArt.char(id, emo, pose, portrait, of);
+    : typeof PIXEL !== 'undefined' && PIXEL[id] && (window.PIXEL_ON !== false || PXONLY(id)) ? pixelChar(id, emo, portrait) : CharArt.char(id, emo, pose, portrait, of);
   const CH = CharArt.CH;
 
   function bit(emo, portrait) {
@@ -259,7 +269,10 @@ const Art = (() => {
         ${bld}${shards(r, 30, 0, 1600, 0, 900, '#e8ccff')}<ellipse cx="800" cy="400" rx="140" ry="220" fill="none" stroke="#fff" stroke-width="6" class="glowpulse"/>`);
     }
   });
-  function bg(name) { return (BG[name] || BG.black)(); }
+  // Pixel-art backgrounds / CGs (js/px/*.js) take priority over the vector ones when pixel art is on.
+  const pxImg = (cls, key, d) => `<img class="${cls}" data-k="${key}" src="${d.frames[0]}" alt="" draggable="false" style="image-rendering:pixelated">`;
+  const DLC_BG = { dlc_chapel: 'shrine', dlc_garden: 'park', dlc_home_day: 'apartment', dlc_home_night: 'apartment', dlc_nursery: 'apartment', dlc_schoolgate: 'park', dlc_park_family: 'park', dlc_porch: 'rooftop' };
+  function bg(name) { if (!BG[name] && DLC_BG[name] && !(typeof PXBG !== 'undefined' && PXBG[name])) name = DLC_BG[name]; const d = typeof PXBG !== 'undefined' && PXBG[name]; return d && window.PIXEL_ON !== false ? `<div class="bgpx">${pxImg('pxbg', name, d)}</div>` : (BG[name] || BG.black)(); }
 
   // ---------- CGs / special scenes ----------
   const big = (id, emo, pose, style, of) => `<div class="cgchar" style="${style}">${char(id, emo, pose, false, of)}</div>`;
@@ -288,7 +301,15 @@ const Art = (() => {
     cg_end_squad: () => bg('park') + ['tetsu', 'kaede', 'hikari', 'rei', 'sora', 'mira'].map((id, i) => big(id, i === 3 ? 'smile' : 'happy', ['cross', 'hip', 'wave', 'cross', 'wave', 'shy'][i], `left:${-6 + i * 16}%;bottom:-62%;height:135%;z-index:${i === 2 ? 3 : 1}`)).join('')
   });
   const CG_NAMES = { cg_strike: 'Thunder Goddess Stomp', cg_recruit: 'The Director', cg_shadow: 'From the Shadows', cg_leviathan: 'Glass Leviathan', cg_combo: 'Shadow & Lightning', cg_roof_hikari: 'Sunset Promise (Hikari)', cg_roof_rei: 'Twilight Confession (Rei)', cg_roof_mira: 'A Healer\'s Wish (Mira)', cg_glazier: 'The Glazier', cg_mall: 'Hall of Mirrors', cg_kaede_save: 'Catch!', cg_bit: 'System Breach', cg_reveal: 'Kyouya', cg_final: 'Operation Heartline', cg_roof_sora: 'Gravity of Love (Sora)', cg_end_hikari: 'Forever Partners (Hikari)', cg_end_rei: 'Out of the Shadows (Rei)', cg_end_mira: 'Healing Hearts (Mira)', cg_end_sora: 'Encore (Sora)', cg_end_kaede: 'Slow Down (Kaede)', cg_end_squad: 'Squad Zero, Forever' };
-  function cg(name) { return `<div class="cgscene">${(CG[name] || CG.cg_strike)()}</div>`; }
+  function cg(name) {
+    const d = typeof PXCG !== 'undefined' && PXCG[name];
+    if (d && window.PIXEL_ON !== false) return `<div class="cgscene cgpx">${pxImg('pxcgi', name, d)}</div>`;
+    return `<div class="cgscene">${(CG[name] || CG.cg_strike)()}</div>`;
+  }
+  // Pixel illustration animator: backgrounds and CGs loop their frames at their own fps.
+  const pxAnim = (sel, T) => { const t0 = performance.now(); setInterval(() => { const now = performance.now(); document.querySelectorAll(sel).forEach(im => { const d = T[im.dataset.k]; if (!d) return; const f = d.frames[Math.floor((now - t0) / 1000 * d.fps) % d.frames.length]; if (im.getAttribute('src') !== f) im.setAttribute('src', f); }); }, 60); };
+  if (typeof PXBG !== 'undefined') pxAnim('img.pxbg', PXBG);
+  if (typeof PXCG !== 'undefined') pxAnim('img.pxcgi', PXCG);
 
   return { char, bg, cg, CG_NAMES, CH, monster, bit, _h: { svgWrap, grad, skyline, stars, rng, tree, shards, BG, CG, big, bolts, tendrils } };
 })();

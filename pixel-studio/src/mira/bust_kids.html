@@ -1,0 +1,102 @@
+<!doctype html><meta charset="utf-8"><body style="background:#222"><script>
+const BASE={line:'#3a2236',lineSoft:'#c98aa0',skin:'#fff0e9',skinS:'#f4cbbd',blush:'#f7a0a8',white:'#ffffff',eyeSh:'#e6d3e6',tear:'#bfe9ff',mouth:'#b8455a',tongue:'#ff8a9a',pupil:'#0a2b33',
+ coat:'#fbfdff',coatS:'#dfe6f2',coatD:'#b8c5dc',teal:'#63c8bb',tealS:'#3c9a8f',tealD:'#26c6a6'};
+const KID={
+ hana:Object.assign({},BASE,{hair:'#ffd6e4',hairS:'#eb9fbf',hairD:'#b0527a',hairH:'#fff8fb',iris:'#3ed0b4',irisD:'#0e6e6a',irisL:'#c2fcee',pink:'#ff9ec0',pinkS:'#d96a95',gray:'#8a93a8'}),
+ ren:Object.assign({},BASE,{hair:'#ffcadb',hairS:'#e88fb2',hairD:'#9c456a',hairH:'#fff6fa',iris:'#b86f3a',irisD:'#8a4a22',irisL:'#f3c28a',shirt:'#fff1c9',shirtS:'#e9c97c',denim:'#4a86c9',denimS:'#2f5f9a'})};
+var P=KID.hana;
+</script><script src="lib.js"></script><script>
+const EXP={
+ open:{eye:'open',brow:[0,0],mouth:'smile',blush:.5},
+ happy:{eye:'happy',brow:[-1.5,0],mouth:'grin',blush:.8},
+ shy:{eye:'shy',brow:[-1,-1.4],mouth:'wavy',blush:1},
+ sad:{eye:'sad',brow:[0,-2.4],mouth:'frown',blush:.2,tear:1},
+ angry:{eye:'angry',brow:[2,2.6],mouth:'grit',blush:.2},
+ surprised:{eye:'wide',brow:[-4,-.6],mouth:'o',blush:.25}};
+function draw(x,o){
+ const id=o.id,E=EXP[o.set],sw=o.sway||0,bob=o.bob||0,Hh=mkctx(x),{path,line,dot,ell}=Hh,i=o.i;
+ const gz=o.set==='shy'?[[-2.4,1.8],[-2.6,1.8],[-2,2],[-2.4,2.2],[-3,1.8],[-2.6,2],[-2.2,1.8],[-2.4,2]][i]:[0,0];
+ const hana=id==='hana';
+ // back hair
+ x.save();x.translate(0,bob);
+ if(hana){
+  path(`M48,84 C42,44 62,30 80,30 C98,30 118,44 112,84 C115,108 118,126 ${116+sw},146 C${110+sw},150 ${96+sw*.6},148 ${92},146 L68,146 C${64-sw*.3},148 ${52-sw*.6},150 ${44-sw},146 C42,126 45,108 48,84Z`,P.hair);
+  line(`M48,100 C46,120 ${46-sw*.5},134 ${46-sw},144`,P.hairS,1.2);line(`M112,100 C114,120 ${114+sw*.5},134 ${114+sw},144`,P.hairS,1.2);
+ } else {
+  path('M50,84 C46,50 62,36 80,36 C98,36 114,50 110,84 L108,110 L52,110Z',P.hair,0);
+ }
+ x.restore();
+ // body
+ if(hana){
+  path('M36,192 C36,166 46,150 66,146 L94,146 C114,150 124,166 124,192Z',P.teal);
+  path('M96,148 C114,152 122,168 124,192 L108,192 C108,172 104,158 96,148Z',P.tealS,0);
+  path('M62,142 L80,162 L98,142 L104,150 L80,172 L56,150Z',P.coat);path('M80,162 L98,142 L104,150 L80,172Z',P.coatS,0);
+  // toy stethoscope
+  line('M68,146 C60,166 66,182 78,184',P.gray,1.8);line('M92,146 C100,166 94,182 82,184',P.gray,1.8);
+  path('M72,182 a8,8 0 1,0 16,0 a8,8 0 1,0 -16,0',P.pink,1.1);ell(80,182,3.4,3.4,P.pinkS);ell(78.8,180.8,1.2,1.2,P.white);
+  path('M58,186 C58,182 62,182 62,186Z',null,0);
+ } else {
+  path('M38,192 C38,168 48,152 68,148 L92,148 C112,152 122,168 122,192Z',P.shirt);
+  path('M96,150 C112,154 120,170 122,192 L106,192 C106,172 102,160 96,150Z',P.shirtS,0);
+  path('M60,160 L100,160 L104,192 L56,192Z',P.denim);path('M82,160 L100,160 L104,192 L86,192Z',P.denimS,0);
+  path('M60,150 L68,150 L68,164 L58,164Z',P.denim);path('M92,150 L100,150 L102,164 L92,164Z',P.denim);
+  dot(64,164,2,P.tealD);dot(96,164,2,P.tealD);
+  path('M72,170 h16 v12 h-16Z',P.denimS,.8);line('M80,174 v6 M77,177 h6',P.coat,1.6);
+ }
+ // neck
+ path('M72,124 L88,124 L88,148 L72,148Z',P.skin);path('M72,124 L88,124 L88,134 C84,138 76,138 72,134Z',P.skinS,0);
+ if(hana){path('M64,142 C72,150 88,150 96,142 L98,148 C88,156 72,156 62,148Z',P.coat)} else {path('M66,146 C72,152 88,152 94,146 L96,150 C88,158 72,158 64,150Z',P.shirt)}
+ // head
+ x.save();x.translate(0,bob);
+ path('M50,90 C50,114 62,130 80,132 C98,130 110,114 110,90 C110,62 98,46 80,46 C62,46 50,62 50,90Z',P.skin);
+ path('M101,96 C100,114 94,126 84,131 C98,128 108,114 110,92Z',P.skinS,0);
+ ell(80,76,26,8,P.skinS,hana?.5:.3);
+ const ex=(cx,n)=>{
+  if(E.eye==='happy')return eyeClosed(x,Hh,cx,100,n,'happy',9);
+  if(o.blink)return eyeClosed(x,Hh,cx,99,n,'blink',9);
+  const b={cx,cy:98,n,w:9.6,hu:11.5,hd:10.5,ir:7,iry:8.8,pr:3,hl:2.3};
+  if(E.eye==='shy'){b.gx=gz[0];b.gy=gz[1];b.hu=10.5;b.slant=-.4}
+  if(E.eye==='sad'){b.slant=-1.8;b.tear=1;b.hu=10.8;b.gy=1;b.hl=2.6}
+  if(E.eye==='angry'){b.slant=2.4;b.hu=8.6;b.hd=9;b.lash=2.6;b.pr=2.6;b.iry=7.4;b.gy=.4}
+  if(E.eye==='wide'){b.hu=13.5;b.hd=12;b.pr=2.2;b.ir=7.4;b.iry=9.4;b.shadeH=2}
+  eye(x,Hh,b)};
+ ex(64,1);ex(96,-1);
+ const bl=E.blush;ell(57,112,6,3,P.blush,.5*bl+.15);ell(103,112,6,3,P.blush,.5*bl+.15);
+ if(bl>=1)for(const sx of [51,55,59,101,105,109])line(`M${sx},${110} l-1.4,3`,P.blush,.7);
+ line('M80,108 l0.5,1',P.skinS,1.1);
+ mouth(x,Hh,80,117,E.mouth,o.talk&&i%2===0?1:0);
+ if(E.tear)path('M55,106 C53,109 53,112 55,112 C57,112 57,109 55,106Z',P.tear,.6);
+ // hair front
+ const [by,bt]=E.brow;
+ if(hana){
+  path('M49,84 C44,50 60,34 80,34 C100,34 116,50 111,84 C106,68 96,60 80,60 C64,60 54,68 49,84Z',P.hair,0);
+  path('M50,80 C50,56 62,46 80,46 C98,46 110,56 110,80 L108,78 L104,74 L100,80 L94,72 L88,79 L82,72 L76,80 L70,72 L64,80 L58,74 L54,80Z',P.hair);
+  line('M62,46 C70,40 82,39 92,42',P.hairH,2);line('M80,46 L78,70 M94,50 L92,70 M66,50 L68,70',P.hairS,.9);
+  path('M48,70 C42,92 42,116 46,134 C52,126 56,108 58,86 Z',P.hair);path('M112,70 C118,92 118,116 114,134 C108,126 104,108 102,86 Z',P.hair);
+  line('M49,90 C47,104 47,116 48,126',P.hairH,.8);
+  x.fillStyle=P.tealD;x.strokeStyle=P.line;x.lineWidth=.8;const pl=new Path2D('M98,56 h3 v-3 h4 v3 h3 v4 h-3 v3 h-4 v-3 h-3Z');x.fill(pl);x.stroke(pl);
+ } else {
+  path('M49,84 C44,50 60,36 80,36 C100,36 116,50 111,84 C106,68 96,62 80,62 C64,62 54,68 49,84Z',P.hair,0);
+  // messy tufts
+  path('M52,70 C46,58 50,46 58,40 C58,48 62,52 66,54 C62,60 60,66 60,74Z',P.hair);
+  path('M64,54 C62,40 70,32 80,30 C78,38 82,44 86,48 C80,52 74,56 72,66Z',P.hair);
+  path('M84,48 C86,36 96,32 104,36 C100,42 100,48 102,54 C96,56 90,60 88,68Z',P.hair);
+  path('M100,52 C108,46 116,52 114,62 C112,70 110,76 108,80 C104,70 102,60 100,52Z',P.hair);
+  path('M52,72 C58,58 102,58 108,72 L104,80 L99,71 L93,82 L87,71 L80,80 L73,71 L67,82 L61,71 L56,80Z',P.hair);
+  path('M76,56 C78,50 86,48 92,50 L90,66 L86,60 L82,72 L80,62 L74,72Z',P.tealD);path('M82,53 C85,51 88,51 90,52',null,0);line('M80,54 C84,52 88,52 90,53',P.tealS,.9);
+  path('M52,72 C47,86 47,104 50,118 C52,106 56,94 58,82Z',P.hair);path('M108,72 C113,86 113,104 110,118 C108,106 104,94 102,82Z',P.hair);
+  line('M58,46 C66,40 74,38 80,38',P.hairH,2);line('M92,40 l6,2',P.hairH,1.3);line('M68,56 L66,70',P.hairS,.8);line('M96,56 L98,68',P.hairS,.8);
+ }
+ // brows over hair
+ const brow=(cx,n)=>{const ix=cx+n*9,ox=cx-n*9;line(`M${ox},${82+by+bt*.5} Q${cx},${78+by-.8} ${ix},${81+by+(-bt)*.9}`,P.hairD,1.3)};
+ brow(64,1);brow(96,-1);
+ x.restore();
+}
+const SW=[0,.7,1.3,1.3,.7,0,-.5,-.3],BOB=[0,.5,1,1,1,.5,0,0];
+window.generate=async function(only){
+ const out={};
+ for(const id of ['hana','ren']){P=KID[id];const build=makePipeline(P,'line',['white','hairH','irisL','eyeSh','lineSoft','teal','tealS','tealD'],draw);
+  for(const set of Object.keys(EXP))for(const talk of [0,1]){const key=id+'/'+set+(talk?'Talk':'');
+   out[key]={w:W,h:H,frames:[...Array(8)].map((_,i)=>b64(build({id,set,talk,i,sway:SW[i],bob:BOB[i],blink:i===6&&set!=='happy'})))}}}
+ return out};
+</script>

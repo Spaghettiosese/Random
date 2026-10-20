@@ -1,0 +1,9 @@
+<!doctype html><meta charset="utf-8"><body><script src="lib.js"></script><script src="sora_bust.js"></script><script src="kid_bust.js"></script><script>
+const W=160,H=192,K=4;const SW=[0,0,1,1,2,1,1,0],BR=[0,0,1,1,1,1,0,0],TALK=[0,2,0,1,2,0,1,0];
+const EXS={open:{ex:'open'},happy:{ex:'happy'},shy:{ex:'shy',blushStr:2},sad:{ex:'sad',tear:1},angry:{ex:'angry'},surprised:{ex:'surprised'}};
+const KIDS={hoshi:{P:KP_H,girl:1},kai:{P:KP_K,girl:0}};
+function oFor(k,talk,i,kid){const o=Object.assign({girl:kid.girl},EXS[k],{sway:SW[i],b:BR[i],talk:talk?TALK[i]:0});if(i===6&&k!=='happy')o.closed=1;if(k==='shy')o.look=[0,0,0,-1,-1,-1,0,0][i];if(k==='sad')o.tearDrop=i>=3&&i<=6?i-3:-1;return o}
+window.gen=function(id){const kid=KIDS[id],out={};for(const k of Object.keys(EXS))for(const talk of [0,1])out[k+(talk?'Talk':'')]=[...Array(8)].map((_,i)=>packIdx(bustPix(W,H,K,kid.P,kidDraw,oFor(k,talk,i,kid))));return out};
+window.grid=function(id){const kid=KIDS[id];const names=Object.keys(EXS).flatMap(k=>[k,k+'Talk']);const cols=6;const c=mkCanvas(W*cols*2,H*4);const x=c.getContext('2d');x.fillStyle='#43386a';x.fillRect(0,0,c.width,c.height);x.imageSmoothingEnabled=false;
+ names.forEach((n,j)=>{const base=n.replace('Talk','');const i=n.endsWith('Talk')?1:(base==='sad'?4:2);const r=bustPix(W,H,K,kid.P,kidDraw,oFor(base,n.endsWith('Talk'),i,kid));x.drawImage(idxCanvas(r),(j%cols)*W*2,((j/cols)|0)*H*2,W*2,H*2)});return c.toDataURL()};
+</script>

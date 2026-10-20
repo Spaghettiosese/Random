@@ -12,6 +12,8 @@ const Game = (() => {
     kyouya: { n: 'Kyouya', c: '#7ff6ff', p: 300 }, glazier: { n: 'The Glazier', c: '#7ff6ff', p: 300, art: 'kyouya' },
     rin: { n: 'Rin', c: '#9ff0ff', p: 1040 }, echo: { n: 'Echo', c: '#9ff0ff', p: 1040, art: 'rin' }, shiori: { n: 'Shiori', c: '#f2c14e', p: 560 },
     kuroda: { n: 'Chairman Kuroda', c: '#b8bcc8', p: 170 }, saeki: { n: 'Deputy Saeki', c: '#b58aff', p: 290 }, natsuki: { n: 'Natsuki', c: '#ffb45a', p: 780 },
+    raika: { n: 'Raika', c: '#ffd04a', p: 1150 }, sou: { n: 'Sou', c: '#c98b5a', p: 900 }, tsukiko: { n: 'Tsukiko', c: '#a879ff', p: 1000 }, akira: { n: 'Akira', c: '#8a7ac8', p: 1100 },
+    hana: { n: 'Hana', c: '#ff9fc4', p: 1100 }, ren: { n: 'Ren', c: '#5fd6c2', p: 980 }, hoshi: { n: 'Hoshi', c: '#cdbdff', p: 1120 }, kai: { n: 'Kai', c: '#8aa0d8', p: 900 }, hayate: { n: 'Hayate', c: '#5ef0a0', p: 960 }, momo: { n: 'Momo', c: '#a6d98a', p: 1180 },
     aya: { n: 'Director Takamine', c: '#ff5a5a', p: 360 }, bit: { n: 'B.I.T.', c: '#52e0ff', p: 1300 }, me: { n: '', c: '#8fd3ff', p: 250 }
   };
   const POS = { ll: 12, l: 25, c: 50, r: 75, rr: 88 };
@@ -147,6 +149,7 @@ const Game = (() => {
       case 'autosave': autosave(); return NEXT;
       case 'codex': codexUnlock(a); return NEXT;
       case 'ending': meta.endings[a] = 1; saveMeta(); return NEXT;
+      case 'aftend': meta.after = meta.after || {}; meta.after[a] = 1; saveMeta(); toast('💍 After Story complete', STORY.dlc.titles[a]); return NEXT;
       case 'scene': meta.scenes[a] = 1; saveMeta(); return NEXT;
       case 'recap': recap(); return WAIT;
       case 'photo': photoCard(); return WAIT;
@@ -919,6 +922,19 @@ const Game = (() => {
     modal(`<h2>Scene Replay</h2><p class="sub">${got} / ${keys.length} scenes seen · replays don't affect your saves</p><div class="scenes">${keys.map(k => `<button class="scn ${meta.scenes[k] ? '' : 'locked'}" data-k="${k}">${meta.scenes[k] ? sceneTitle(k) : '🔒 ???'}</button>`).join('')}</div>`, { wide: 1 });
     $$('#modal .scn').forEach(b => b.onclick = () => { if (b.classList.contains('locked')) return Sound.sfx('fail'); startReplay(b.dataset.k); });
   }
+  // ---------- After Story DLC ----------
+  const afterOpen = k => !!(meta.endings[k] || meta.afterAll);
+  function afterModal() {
+    const ks = Object.keys(STORY.dlc.kids), locked = ks.filter(k => !afterOpen(k)).length;
+    modal(`<h2>♥ After Story</h2><p class="sub">Married life and kids, one four-episode arc per heroine. Finish a route to unlock hers.</p><div class="afters">${ks.map(k => { const ok = afterOpen(k), done = meta.after && meta.after[k]; return `<button class="aft ${ok ? '' : 'locked'}" data-k="${k}" style="--c:${WHO[k].c}"><div class="afp">${ok ? Art.char(k, 'love', 'default', true) : '<span>🔒</span>'}</div><b>${STORY.dlc.names[k]}</b><small>${ok ? STORY.dlc.titles[k] : 'Finish her ending to unlock'}</small>${done ? '<em>★ Complete</em>' : ''}</button>`; }).join('')}</div>${locked ? '<div class="afpre"><button class="btn" id="afall">Preview: unlock all After Stories</button></div>' : ''}`, { wide: 1 });
+    $$('#modal .aft').forEach(b => b.onclick = () => { if (b.classList.contains('locked')) return Sound.sfx('fail'); startAfter(b.dataset.k); });
+    const all = $('#afall'); if (all) all.onclick = () => { meta.afterAll = 1; saveMeta(); Sound.sfx('confirm'); afterModal(); };
+  }
+  function startAfter(who) {
+    run++; closeModal(); hideTitle(); hist = []; log = []; Sound.sfx('confirm');
+    G = newState(); G.name = meta.lastName || 'Haru'; G.replay = true; Object.keys(WHO).forEach(k => G.known[k] = 1); G.roster = ['hikari', 'rei', 'kaede', 'tetsu', 'sora']; G.vis.of = null;
+    G.stack = [{ id: 'dlc_' + who, i: 0 }]; restoreVis(); step();
+  }
   function startReplay(label) {
     run++; closeModal(); hideTitle(); hist = []; log = []; Sound.sfx('confirm');
     G = newState(); G.name = meta.lastName || 'Haru'; G.replay = true; Object.keys(WHO).forEach(k => G.known[k] = 1); G.roster = ['hikari', 'rei', 'kaede', 'tetsu', 'sora']; G.vis.of = /^(hang|date)_/.test(label) ? 'casual' : null;
@@ -1051,7 +1067,7 @@ const Game = (() => {
       if ((e.key === 'Backspace' || e.key === 'PageUp') && !Dispatch.active) { e.preventDefault(); rollback(); }
     });
     document.addEventListener('keyup', e => { if (e.key === 'Control') { ctrlSkip = false; updateQuick(); } });
-    $('#tnew').onclick = () => newGame(false); $('#tng').onclick = () => newGame(true); $('#tchap').onclick = chaptersModal; $('#textra').onclick = extrasModal;
+    $('#tnew').onclick = () => newGame(false); $('#tng').onclick = () => newGame(true); $('#tchap').onclick = chaptersModal; $('#textra').onclick = extrasModal; $('#tafter').onclick = afterModal;
     $('#tcont').onclick = () => { const l = latestSave(); if (l) loadFrom(l[0]); };
     $('#tload').onclick = () => slotsModal('load'); $('#tset').onclick = settingsModal;
     setInterval(() => { if (G && !G.replay && document.visibilityState === 'visible') { meta.stats.playSec++; if (meta.stats.playSec % 30 === 0) saveMeta(); } }, 1000);

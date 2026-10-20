@@ -1,0 +1,424 @@
+<!doctype html><meta charset="utf-8"><body style="background:#222"><script>
+const W=160,H=192,K=4;
+const LINE='#3a2030';
+// ---------- per-character palettes + designs ----------
+const BASEP={line:LINE,white:'#ffffff',mouth:'#b8455a',mouthD:'#7a2438',tongue:'#ff8a9a'};
+const C={};
+// ===== AYA: Director Takamine — long crimson hair, rimless-ish glasses, black blazer, red tie
+C.aya={
+ P:{skin:'#fbe5da',skinS:'#e6b5a3',blush:'#f4a0a4',hair:'#c42e3a',hairS:'#8a1a2c',hairD:'#5a0f1e',hairH:'#ff9a9a',iris:'#e6a03a',irisD:'#8a4a14',pupil:'#2a0e06',irisL:'#ffe7a8',
+  suit:'#2c2b36',suitS:'#17161e',suitH:'#4a4958',shirt:'#f6f6fa',shirtS:'#d4d4e2',tie:'#c62030',tieS:'#8e1420',gold:'#ffd54a',goldS:'#c8902a',frame:'#7a1a2a'},
+ f:{w:25.5,top:49,chin:122,cw:8.5,mid:78,jc:22},eyeY:92,eyeW:7.8,eyeX:13,irisR:4.1,eh:.95,browY:80,browW:1.7,browC:'hairD',lash:1,sw:46,neck:[71,89],mouthY:0,blushA:.5,mouthC:'mouth',
+ glasses:'round'
+};
+// ===== SAEKI: Deputy — black swept hair, violet eyes, angular glasses, white blazer + black shirt
+C.saeki={
+ P:{skin:'#fbe6dc',skinS:'#e2baa8',blush:'#f0a8b0',hair:'#262634',hairS:'#14141c',hairD:'#08080c',hairH:'#7a7a9c',iris:'#a878e8',irisD:'#4a2096',pupil:'#1a0a3a',irisL:'#e8d8ff',
+  suit:'#f2f2f6',suitS:'#c6c6d6',suitH:'#ffffff',shirt:'#1c1c26',shirtS:'#0c0c12',tie:'#8a4ad8',tieS:'#5a2a9e',gold:'#d8d8e6',goldS:'#9a9ab0',frame:'#8a82b8'},
+ f:{w:23.5,top:48,chin:124,cw:9.5,mid:80,jc:20,ang:1},eyeY:93,eyeW:7.6,eyeX:13,irisR:3.9,eh:.9,browY:82,browW:1.7,browC:'hairD',lash:0,sw:48,neck:[70,90],mouthY:1,blushA:.28,mouthC:'mouth',
+ glasses:'sharp',ears:1
+};
+// ===== KURODA: Chairman — silver hair, full white beard, black suit, crimson tie (elderly)
+C.kuroda={
+ P:{skin:'#f0d8c8',skinS:'#d2ad98',blush:'#e8a8a0',hair:'#b4bac2',hairS:'#7a8088',hairD:'#3a3e46',hairH:'#f0f2f6',iris:'#8a8a9c',irisD:'#2a2a38',pupil:'#14141c',irisL:'#d8d8e8',
+  suit:'#23232c',suitS:'#0e0e14',suitH:'#3c3c4a',shirt:'#f4f4f8',shirtS:'#cfcfdc',tie:'#7a1020',tieS:'#4a0a14',gold:'#ffd54a',goldS:'#c8902a',lapel:'#2e2e3a'},
+ f:{w:26.5,top:47,chin:122,cw:11,mid:80,jc:24},eyeY:89,eyeW:6.8,eyeX:13.5,irisR:3.4,eh:.8,browY:78,browW:2.4,browC:'hairH',lash:0,sw:58,neck:[67,93],mouthY:0,blushA:.25,mouthC:'mouth',
+ old:1,ears:1
+};
+// ===== OBA: night manager — friendly, round face, green cap, striped konbini polo, pencil behind ear
+C.oba={
+ P:{skin:'#f4d2b8',skinS:'#dba684',blush:'#f09a90',hair:'#4c4854',hairS:'#2e2a34',hairD:'#1c1822',hairH:'#8c8896',iris:'#8a5a30',irisD:'#3e2410',pupil:'#1a0e06',irisL:'#f0c890',
+  cap:'#2f9e5a',capS:'#1e6e3e',capH:'#6ed08a',orange:'#f08a2a',polo:'#fdfdfb',poloS:'#d6d8d4',stripeG:'#2f9e5a',stripeO:'#f08a2a',tag:'#ffffff',red:'#d83a3a',pencil:'#ffd23a',pencilS:'#c8901a',pink:'#f08aa0',apron:'#2b6e86',apronS:'#1a4a5c'},
+ f:{w:27,top:50,chin:125,cw:13,mid:84,jc:22},mouthY:2,eyeY:93,eyeW:6.6,eyeX:13,irisR:3.9,eh:.86,browY:82,browW:2.2,browC:'hairS',lash:0,sw:56,neck:[68,92],blushA:.4,mouthC:'mouth',
+ ears:1
+};
+// ===== HARU: protagonist — messy dark-brown hair, warm brown eyes, navy handler jacket with HALO pin
+C.haru={
+ P:{skin:'#fbe0cc',skinS:'#e4ae92',blush:'#f0a090',hair:'#5a3a26',hairS:'#3a2416',hairD:'#241408',hairH:'#a8764a',iris:'#8a5430',irisD:'#40200c',pupil:'#1a0c04',irisL:'#f0c08a',
+  suit:'#27366a',suitS:'#18234a',suitH:'#42559a',trim:'#ffffff',trimS:'#c4c8e0',shirt:'#f8f8fc',shirtS:'#d0d2e4',gold:'#ffd54a',goldS:'#c8902a'},
+ f:{w:25,top:49,chin:122,cw:9.5,mid:79,jc:21,ang:.6},eyeY:92,eyeW:7.2,eyeX:13,irisR:4.0,eh:.92,browY:80,browW:1.9,browC:'hairD',lash:0,sw:50,neck:[70,90],mouthY:0,blushA:.32,mouthC:'mouth',
+ ears:1
+};
+
+// ---------- drawing ----------
+function facePath(f){if(f.ang>=.9){const L=80-f.w,R=80+f.w,cw=f.cw;return `M${L},${f.mid} L${L+.4},${f.mid+8} C${L+1},${f.chin-12} ${80-cw-6},${f.chin-5} ${80-cw},${f.chin-.8} Q80,${f.chin+2.4} ${80+cw},${f.chin-.8} C${80+cw+6},${f.chin-5} ${R-1},${f.chin-12} ${R-.4},${f.mid+8} L${R},${f.mid} C${R},${f.top+9} ${80+f.w*.6},${f.top} 80,${f.top} C${80-f.w*.6},${f.top} ${L},${f.top+9} ${L},${f.mid} Z`}
+ const L=80-f.w,R=80+f.w,cw=f.cw,ang=f.ang||0,top=f.top,chin=f.chin,mid=f.mid,jc=f.jc;
+ const jx=ang*3; // angular jaw: pull lower control points in
+ return `M${L},${mid} C${L},${mid+jc} ${80-cw-4+jx},${chin-4} ${80-cw+2},${chin-1.5} C${80-cw+8},${chin+1} ${80+cw-8},${chin+1} ${80+cw-2},${chin-1.5} C${80+cw+4-jx},${chin-4} ${R},${mid+jc} ${R},${mid} C${R},${top+9} ${80+f.w*.6},${top} 80,${top} C${80-f.w*.6},${top} ${L},${top+9} ${L},${mid} Z`}
+const EXP={
+ open:{top:8,bot:6,iy:.4,oy:0,is:1,pu:1},
+ happy:{},
+ shy:{top:7.6,bot:6,iy:.2,oy:.6,is:1.05,pu:.95},
+ sad:{top:8,bot:6.8,iy:-1.4,oy:1.8,is:1.08,pu:.95},
+ angry:{top:6.3,bot:5.6,iy:2.4,oy:-.8,is:.95,pu:.9},
+ surprised:{top:11,bot:9,iy:0,oy:0,is:.8,pu:.72}
+};
+const BROW={ // [innerDY, outerDY, archDY] relative to browY ; extra raise
+ open:[0,0,-1.5,0],happy:[-1.5,-1,-2.5,-1],shy:[-1.5,1,-2,0],sad:[-3.5,1.8,-2,0],angry:[3.2,-1.2,0,1],surprised:[-4.5,-4.5,-6.5,-3]
+};
+function draw(ctx,id,o){
+ const c=C[id],P=Object.assign({},BASEP,c.P),x=ctx,sw=o.sway||0,br=o.br||0,e=o.expr;
+ x.save();x.scale(K,K);x.lineJoin='round';x.lineCap='round';
+ const path=(d,fill,w=1.1,col)=>{const p=new Path2D(d);if(fill){x.fillStyle=P[fill]||fill;x.fill(p)}if(w){x.strokeStyle=col?(P[col]||col):P.line;x.lineWidth=w;x.stroke(p)}return p};
+ const line=(d,col,w)=>{x.strokeStyle=P[col]||col;x.lineWidth=w;x.stroke(new Path2D(d))};
+ const ell=(cx,cy,rx,ry,fill,w=0,rot=0)=>{x.beginPath();x.ellipse(cx,cy,rx,ry,rot,0,7);if(fill){x.fillStyle=P[fill]||fill;x.fill()}if(w){x.strokeStyle=P.line;x.lineWidth=w;x.stroke()}};
+ const E={path,line,ell,x,P,c,o,sw,br,e,id};
+ const T=(dy,fn)=>{x.save();x.translate(0,dy);fn();x.restore()};
+ // 1 back hair (moves with head)
+ T(br,()=>ART[id].back(E));
+ // 2 body (static) + neck
+ ART[id].body(E);
+ // 3 head
+ T(br,()=>{
+  const f=c.f,fp=facePath(f),L=80-f.w,R=80+f.w,ey=c.eyeY;
+  if(c.ears){ell(L+.5,ey+5,3.2,5,'skin',1);ell(R-.5,ey+5,3.2,5,'skin',1);ell(L+1,ey+5.5,1.3,2.6,'skinS',0);ell(R-1,ey+5.5,1.3,2.6,'skinS',0)}
+  path(fp,'skin',0);
+  // face shading (crescent right/bottom) + under-hair shadow
+  x.save();x.clip(new Path2D(fp));x.fillStyle=P.skinS;x.fill(new Path2D(fp));x.save();x.translate(-2.6,-1.8);x.fillStyle=P.skin;x.fill(new Path2D(fp));x.restore();
+  x.fillStyle=P.skin;x.fillRect(L-2,f.top-4,2*f.w+4,0);x.restore();
+  path(fp,null,1.1);
+  // blush
+  const ba=({shy:.95,happy:.7,sad:.35,angry:.2,surprised:.25,open:1})[e]*c.blushA;
+  x.globalAlpha=Math.min(.9,ba);x.fillStyle=P.blush;ell(80-c.eyeX-2,ey+10.5,5,2.4,'blush');ell(80+c.eyeX+2,ey+10.5,5,2.4,'blush');x.globalAlpha=1;
+  if(e==='shy'&&!c.old){for(const s of [-1,1])for(let k=0;k<3;k++)line(`M${80+s*(c.eyeX+4)-k*1.8+1},${ey+9} l-1.1,2.4`,'blush',.8)}
+  // nose
+  line(`M80,${ey+8} l.5,2.6 l1.6,.4`,'skinS',1.2);
+  ART[id].faceBack&&ART[id].faceBack(E);
+  // eyes
+  eyes(E);
+  ART[id].faceFront&&ART[id].faceFront(E);
+  // mouth
+  mouth(E);
+  ART[id].mouthOver&&ART[id].mouthOver(E);
+  // brows + glasses + hair
+  ART[id].front(E);
+ });
+ x.restore();
+}
+function eyes(E){const {x,P,c,o,e,path,line,ell}=E,ey=c.eyeY;
+ for(const f of [-1,1]){ // f=-1 left eye (outer = -x)
+  const cx=80+f*c.eyeX,w=c.eyeW*(e==='surprised'?1.06:1);
+  const I=[cx-f*w,0],O=[cx+f*w,0];
+  if(e==='happy'||o.blink){
+   const y=ey+(e==='happy'?2.5:-.5);
+   if(e==='happy'){line(`M${cx-f*w},${y+1.5} Q${cx},${y-8} ${cx+f*w},${y+1.5}`,'line',1.9);if(c.lash)line(`M${cx+f*w},${y+1.5} l${f*2.4},-1.4`,'line',1.2)}
+   else{ const dy=e==='sad'?1:e==='angry'?-.5:0;line(`M${cx-f*w},${ey-.5+dy} Q${cx},${ey+4.2+dy} ${cx+f*w},${ey-.5+dy}`,'line',1.7);if(c.lash)line(`M${cx+f*w},${ey-.5+dy} l${f*2.6},-1.4`,'line',1.1)}
+   continue}
+  const p=EXP[e],iy=ey+p.iy,oy=ey+p.oy;
+  const eh=c.eh||1,h=p.top*eh/.75,b=p.bot*eh/.75;
+  const up=`M${cx-f*w},${iy} C${cx-f*w*.55},${ey-h+p.iy*.6} ${cx+f*w*.45},${ey-h+p.oy*.5} ${cx+f*w},${oy}`;
+  const lo=`C${cx+f*w*.6},${ey+b} ${cx-f*w*.6},${ey+b} ${cx-f*w},${iy} Z`;
+  const alm=new Path2D(up+' '+lo);
+  x.fillStyle=P.white;x.fill(alm);
+  x.save();x.clip(alm);
+  let lx=0,ly=0.6;if(e==='shy'){lx=[2.6,2.2,2.8,3,2.4,2.2,2.6,3][o.mi%8]*(o.look||1);ly=1.6}
+  if(e==='sad'){ly=1.4}
+  const ir=c.irisR*p.is*(e==='surprised'?1:1),icx=cx+lx,icy=ey+ly+.6;
+  ell(icx,icy,ir,ir*1.3,'iris',0);
+  x.save();x.beginPath();x.ellipse(icx,icy,ir,ir*1.3,0,0,7);x.clip();ell(icx,icy-ir*.9,ir*1.2,ir*1.0,'irisD',0);ell(icx,icy+ir*1.15,ir*.9,ir*.35,'irisL',0);x.restore();
+  ell(icx,icy+.4,ir*.52*p.pu,ir*.7*p.pu,'pupil',0);
+  x.fillStyle=P.white;x.beginPath();x.arc(icx-f*1.7,icy-1.9,e==='surprised'?1.2:1.55,0,7);x.fill();x.beginPath();x.arc(icx+f*1.6,icy+2.2,.8,0,7);x.fill();
+  if(e==='sad'){x.fillStyle=P.irisL;x.globalAlpha=.6;ell(cx,ey+b*.62,w*.8,1.2,'irisL',0);x.globalAlpha=1}
+  x.restore();
+  // upper lid line (thick), lashes
+  line(up,'line',c.lash?2.1:1.8);
+  if(c.lash)line(`M${cx+f*w},${oy} l${f*3},-1.8`,'line',1.2);
+  line(`M${cx-f*w*.5},${ey+b*.74} Q${cx},${ey+b*.82} ${cx+f*w*.5},${ey+b*.74}`,'skinS',.7);
+  if(e==='sad'&&o.tear){ell(cx+f*(w-1.5),ey+b+1.5+o.tear,1.1,1.6+o.tear*.3,'irisL',.6)}
+  if(e==='shy'||c.old){}
+ }
+}
+function mouth(E){const {x,P,c,o,e,path,line,ell}=E,my=108+c.mouthY,talk=o.talk&&o.mi%2===0,mc=c.mouthC;
+ if(ART[E.id].noMouth){ART[E.id].mouth(E,talk);return}
+ if(e==='happy'){ if(talk)path(`M74,${my-1} Q80,${my+10} 86,${my-1} Q80,${my+1.2} 74,${my-1} Z`,'mouthD',1);else line(`M74.5,${my-.5} Q80,${my+5.5} 85.5,${my-.5}`,mc,1.4);
+  if(talk){x.save();x.clip(new Path2D(`M74,${my-1} Q80,${my+10} 86,${my-1} Z`));ell(80,my+6.5,3.2,2,'tongue',0);x.restore()} return}
+ if(e==='surprised'){const r=talk?[2.6,4]:[2,3];ell(80,my+2.5,r[0],r[1],'mouthD',1);ell(80,my+4.6,r[0]*.6,r[1]*.4,'tongue',0);return}
+ if(e==='shy'){ if(talk){ell(80,my+1.5,2.2,2.2,'mouthD',1);ell(80,my+2.6,1.3,.9,'tongue',0)}else line(`M77,${my+.6} q1.5,1.5 3,0 q1.5,-1.5 3,0`,mc,1.2); return}
+ if(e==='sad'){ if(talk){ell(80,my+2,2.6,2.4,'mouthD',1)}else line(`M76,${my+2.5} Q80,${my-.8} 84,${my+2.5}`,mc,1.3); return}
+ if(e==='angry'){ if(talk){path(`M74.5,${my+.5} L85.5,${my+.5} Q84,${my+7} 80,${my+7} Q76,${my+7} 74.5,${my+.5} Z`,'mouthD',1);x.save();x.clip(new Path2D(`M74.5,${my+.5} L85.5,${my+.5} Q84,${my+7} 80,${my+7} Q76,${my+7} 74.5,${my+.5} Z`));x.fillStyle=P.white;x.fillRect(74,my+.5,12,1.8);x.restore()}else line(`M75,${my+2.4} Q80,${my-.2} 85,${my+2.4}`,mc,1.4); return}
+ // open / neutral
+ if(talk){path(`M75,${my} Q80,${my+9} 85,${my} Q80,${my+1.4} 75,${my} Z`,'mouthD',1);x.save();x.clip(new Path2D(`M75,${my} Q80,${my+9} 85,${my} Z`));ell(80,my+6,3,2,'tongue',0);x.restore()}
+ else line(`M75.5,${my} Q80,${my+4.2} 84.5,${my}`,mc,1.35);
+}
+function brows(E,col,w,dx=0,dyAll=0){const {c,e}=E,B=BROW[e],by=c.browY+dyAll;
+ for(const f of [-1,1]){const cx=80+f*c.eyeX;
+  const ix=cx-f*(c.eyeW-1.5),ox=cx+f*(c.eyeW+2.5);
+  const iy=by+B[0],oy=by+B[1],ay=by+B[2]-(c.old?0:0)+(B[3]||0)*0;
+  E.line(`M${ix},${iy} Q${cx},${ay-.2} ${ox},${oy}`,col,w)}
+}
+function glasses(E,kind){const {x,P,c,e}=E,ey=c.eyeY,fr=P.frame;
+ for(const f of [-1,1]){const cx=80+f*c.eyeX;
+  let d;
+  if(kind==='round'){d=`M${cx-10.5},${ey-6} Q${cx-10.5},${ey-10} ${cx-6},${ey-10} L${cx+6},${ey-10} Q${cx+10.5},${ey-10} ${cx+10.5},${ey-6} L${cx+10.5},${ey+3} Q${cx+10.5},${ey+8.5} ${cx+5},${ey+8.5} L${cx-5},${ey+8.5} Q${cx-10.5},${ey+8.5} ${cx-10.5},${ey+3} Z`}
+  else{d=`M${cx-10.5},${ey-8} L${cx+10.5},${ey-9.5} L${cx+9.5},${ey+6} Q${cx+8},${ey+8.5} ${cx+5},${ey+8.5} L${cx-6},${ey+8.5} Q${cx-10},${ey+8} ${cx-10.5},${ey+4} Z`}
+  x.globalAlpha=.16;x.fillStyle='#ffffff';x.fill(new Path2D(d));x.globalAlpha=1;
+  x.strokeStyle=fr;x.lineWidth=kind==='round'?1.25:1.1;x.stroke(new Path2D(d));
+  x.strokeStyle='#ffffff';x.globalAlpha=.8;x.lineWidth=1;x.beginPath();x.moveTo(cx+f*-2+3,ey-7.5);x.lineTo(cx+f*-2-1,ey-3);x.stroke();x.globalAlpha=1;
+  E.line(`M${cx+f*10.5},${ey-6} L${cx+f*13.5},${ey-7}`,fr,1.1)}
+ E.line(`M${80-c.eyeX+10.5},${ey-4} Q80,${ey-6.5} ${80+c.eyeX-10.5},${ey-4}`,fr,1.2);
+}
+
+// ---------- characters' art ----------
+const ART={};
+const SHOULDER=(sw,top=152)=>`M${80-sw},${top} C${80-sw+5},${top-10} ${80-30},${top-17} ${80-16},${top-20} L${80+16},${top-20} C${80+30},${top-17} ${80+sw-5},${top-10} ${80+sw},${top} L${80+sw+8},192 L${80-sw-8},192 Z`;
+const neckP=(c)=>`M${c.neck[0]},108 L${c.neck[1]},108 L${c.neck[1]+1},140 L${c.neck[0]-1},140 Z`;
+function neck(E){const {c,path,x,P}=E;path(neckP(c),'skin',1.1);x.save();x.clip(new Path2D(neckP(c)));x.fillStyle=P.skinS;x.beginPath();x.moveTo(60,112);x.lineTo(100,112);x.lineTo(100,128);x.quadraticCurveTo(80,134,60,128);x.fill();x.restore()}
+function armLines(E,sw,col,dy=0){const {line}=E;line(`M${80-sw+12},${156+dy} C${80-sw+10},${170} ${80-sw+9},${182} ${80-sw+9},192`,col,1);line(`M${80+sw-12},${156+dy} C${80+sw-10},${170} ${80+sw-9},${182} ${80+sw-9},192`,col,1)}
+
+// ----- AYA
+ART.aya={
+ back(E){const {path,line,sw}=E;
+  path(`M42,70 C38,48 56,34 80,34 C104,34 122,48 118,70 C130,104 ${132+sw*.5},150 ${134+sw},192 L${24-sw},192 C${28-sw*.5},150 30,104 42,70 Z`,'hairS',1.1);
+  path(`M60,60 L100,60 L${116+sw*.6},192 L${44-sw*.6},192 Z`,'hairD',0);
+  line(`M36,110 C32,140 ${30-sw*.5},170 ${26-sw},190`,'hairH',1);line(`M124,110 C128,140 ${130+sw*.5},170 ${136+sw},190`,'hairH',.9);
+ },
+ body(E){const {path,line,x,P,c}=E,s=c.sw;
+  neck(E);
+  path(SHOULDER(s,152),'suit');
+  path(`M${80+s-14},150 C${80+s-6},158 ${80+s-2},172 ${80+s+2},192 L${80+s+8},192 L${80+s},152 Z`,'suitS',0);
+  path(`M${80-s+14},150 C${80-s+6},158 ${80-s+2},172 ${80-s-2},192 L${80-s-8},192 L${80-s},152 Z`,'suitS',0);
+  // shirt V
+  path('M66,134 L94,134 L98,192 L62,192 Z','shirt');
+  path('M82,134 L94,134 L98,192 L86,192 Z','shirtS',0);
+  // lapels
+  path('M62,132 L70,132 L82,160 L66,182 L52,146 Z','suitH',1.1);path('M98,132 L90,132 L78,160 L94,182 L108,146 Z','suit',1.1);
+  path('M58,138 L66,132 L72,146 L60,150 Z','suitH',.9);
+  // collar
+  path('M68,128 L80,140 L72,146 L64,134 Z','shirt',1);path('M92,128 L80,140 L88,146 L96,134 Z','shirt',1);
+  // tie
+  path('M76,141 L84,141 L83,148 L77,148 Z','tie',1);path('M77,148 L83,148 L86,184 L80,190 L74,184 Z','tie',1);path('M81,148 L83,148 L86,184 L80,190 Z','tieS',0);
+  line('M80,150 L80,182','#ff5a64',.7);
+  // pin
+  path('M104,158 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0','gold',.9);
+  line(`M${80-s+12},158 C${80-s+10},172 ${80-s+8},184 ${80-s+8},192`,'line',1);line(`M${80+s-12},158 C${80+s-10},172 ${80+s-8},184 ${80+s-8},192`,'line',1);
+  line('M52,150 C50,164 49,178 49,192','suitH',.9);
+  // front locks over shoulders handled in front()
+ },
+ front(E){const {path,line,sw,x,P}=E;
+  // front shoulder locks
+  path(`M48,76 C40,100 38,140 ${36+sw*.6},182 L${50+sw*.6},186 C50,152 54,124 58,100 Z`,'hair');
+  path(`M112,76 C120,100 122,140 ${124+sw*.6},176 L${110+sw*.6},180 C108,150 106,124 102,100 Z`,'hair');
+  line(`M44,100 C42,132 ${40+sw*.4},160 ${40+sw*.6},180`,'hairH',1);line(`M118,100 C120,130 ${120+sw*.4},156 ${120+sw*.6},172`,'hairS',1);
+  // top hair
+  path('M50,86 C44,52 60,36 80,36 C102,36 116,52 110,86 C106,72 98,64 80,64 C64,64 56,72 50,86 Z','hair',0);
+  line('M50,86 C44,52 60,36 80,36 C102,36 116,52 110,86','line',1.1);
+  // swept bangs (part at right, sweep to left)
+  path('M96,42 C76,40 58,52 52,82 C52,88 54,92 56,96 C58,84 64,72 76,66 L86,72 Z','hair');
+  path('M94,42 C98,50 100,60 98,70 C92,74 84,76 80,80 L84,62 C88,54 92,48 94,42 Z','hair');
+  path('M98,48 C106,52 112,62 110,84 C108,92 106,96 104,100 C104,88 102,78 98,70 Z','hair');
+  path('M76,66 C68,70 62,78 62,92 L68,82 L66,96 L74,76 Z','hair',.9);
+  line('M60,54 C68,44 80,40 94,42','hairH',2);line('M64,66 C68,60 74,56 80,54','hairH',1.2);line('M102,58 C106,64 107,72 106,82','hairH',1);
+  line('M90,56 C88,64 84,70 80,74','hairS',.9);
+  // clip
+  path('M104,50 L114,50 L114,55 L104,55 Z','#e8c04a',.9);
+  brows(E,'hairD',1.7);glasses(E,'round');
+  // glasses over bangs side
+ }
+};
+// ----- SAEKI
+ART.saeki={
+ back(E){const {path,line,sw}=E;
+  path(`M46,66 C42,48 58,36 80,36 C102,36 118,48 114,66 C116,84 116,100 112,108 L48,108 C44,100 44,84 46,66 Z`,'hairS',1.1);
+  path(`M52,106 C${50+sw*.4},112 ${50+sw*.4},120 54,126 L60,116 Z`,'hair',1);path(`M108,106 C${110+sw*.4},112 ${110+sw*.4},120 106,126 L100,116 Z`,'hair',1);
+ },
+ body(E){const {path,line,x,P,c}=E,s=c.sw;
+  // black shirt under, neck
+  neck(E);
+  path(SHOULDER(s,152),'suit');
+  path(`M${80+s-14},150 C${80+s-6},158 ${80+s-2},172 ${80+s+2},192 L${80+s+8},192 L${80+s},152 Z`,'suitS',0);
+  path(`M${80-s+14},150 C${80-s+6},158 ${80-s+2},172 ${80-s-2},192 L${80-s-8},192 L${80-s},152 Z`,'suitS',0);
+  path('M65,134 L95,134 L96,192 L64,192 Z','shirt');
+  path('M82,134 L95,134 L96,192 L86,192 Z','shirtS',0);
+  // collar of black shirt, high
+  path('M66,128 L80,138 L74,146 L62,134 Z','shirt',1);path('M94,128 L80,138 L86,146 L98,134 Z','shirt',1);
+  // slim tie
+  path('M77.5,139 L82.5,139 L82,146 L78,146 Z','tie',1);path('M78,146 L82,146 L84,184 L80,190 L76,184 Z','tie',1);path('M80.5,146 L82,146 L84,184 L80,190 Z','tieS',0);
+  // lapels
+  path('M60,132 L66,132 L78,158 L68,186 L54,148 Z','suitS',1.1);path('M100,132 L94,132 L82,158 L92,186 L106,148 Z','suit',1.1);
+  path('M62,134 L66,132 L74,148 L64,150 Z','suitH',.8);
+  line('M63,134 L56,148','#ffffff',.8);
+  path('M102,160 L107,160 L107,164 L102,164 Z','gold',.8);
+  line(`M${80-s+12},158 C${80-s+10},172 ${80-s+8},184 ${80-s+8},192`,'line',1);line(`M${80+s-12},158 C${80+s-10},172 ${80+s-8},184 ${80+s-8},192`,'line',1);
+ },
+ front(E){const {path,line,sw}=E;
+  // top hair mass (swept to viewer-left)
+  path('M52,80 C46,52 60,36 82,36 C104,36 114,52 108,80 C104,68 96,60 82,60 C68,60 58,68 52,80 Z','hair',0);
+  line('M52,80 C46,52 60,36 82,36 C104,36 114,52 108,80','line',1.1);
+  // long side-swept bang (from right part to left), tips above brow
+  path('M100,38 C78,38 58,50 50,76 C50,84 52,92 54,98 C56,84 62,74 70,68 L76,76 L84,64 L90,70 L98,58 Z','hair');
+  path('M90,42 C96,52 96,62 92,72 L84,60 L80,72 L76,64 C84,54 88,48 90,42 Z','hair');
+  path('M98,44 C108,50 112,62 110,80 C108,86 106,90 106,94 C106,82 102,72 98,64 Z','hair');
+  path('M50,76 C46,92 46,104 50,112 C52,100 54,90 58,84 Z','hair');path('M110,80 C114,92 114,102 110,110 C108,100 106,92 104,86 Z','hair');
+  line('M62,54 C70,44 84,40 98,42','hairH',1.8);line('M60,70 C64,62 70,58 76,56','hairH',1);line('M104,58 C108,64 108,72 108,78','hairH',.9);
+  line('M84,52 L80,68','hairD',.9);
+  brows(E,'hairD',1.6);glasses(E,'sharp');
+ }
+};
+// ----- KURODA
+ART.kuroda={
+ back(E){const {path,line,sw}=E;
+  path('M44,86 C40,56 58,44 80,44 C102,44 120,56 116,86 L116,114 L44,114 Z','hairS',1.1);
+ },
+ body(E){const {path,line,x,P,c}=E,s=c.sw;
+  neck(E);
+  path(SHOULDER(s,154),'suit');
+  path(`M${80+s-14},152 C${80+s-6},160 ${80+s-2},174 ${80+s+2},192 L${80+s+8},192 L${80+s},154 Z`,'suitS',0);
+  path(`M${80-s+14},152 C${80-s+6},160 ${80-s+2},174 ${80-s-2},192 L${80-s-8},192 L${80-s},154 Z`,'suitS',0);
+  path('M62,132 L98,132 L100,192 L60,192 Z','shirt');
+  path('M82,132 L98,132 L100,192 L86,192 Z','shirtS',0);
+  path('M62,126 L80,142 L70,150 L56,134 Z','shirt',1);path('M98,126 L80,142 L90,150 L104,134 Z','shirt',1);
+  path('M76,142 L84,142 L83,150 L77,150 Z','tie',1);path('M77,150 L83,150 L87,186 L80,192 L73,186 Z','tie',1);path('M81,150 L83,150 L87,186 L80,192 Z','tieS',0);
+  path('M52,134 L62,132 L80,164 L66,190 L44,152 Z','lapel',1.1);path('M108,134 L98,132 L80,164 L94,190 L116,152 Z','suit',1.1);
+  path('M44,150 L52,140 L56,150 Z','suitH',.8);
+  path('M112,162 a3.2,3.2 0 1,0 6.4,0 a3.2,3.2 0 1,0 -6.4,0','gold',.9);
+  line(`M${80-s+13},160 C${80-s+11},174 ${80-s+9},184 ${80-s+9},192`,'line',1);line(`M${80+s-13},160 C${80+s-11},174 ${80+s-9},184 ${80+s-9},192`,'line',1);
+ },
+ faceFront(E){const {line,path,x,P}=E;
+  // wrinkles
+  line('M64,66 q16,-3 32,0','skinS',.9);line('M67,71 q13,-2 26,0','skinS',.8);
+  line('M56,94 q-3,2 -2,5','skinS',.9);line('M104,94 q3,2 2,5','skinS',.9);
+  line('M64,104 q-1,5 3,9','skinS',.9);line('M96,104 q1,5 -3,9','skinS',.9);
+ },
+ mouthOver(E){}, noMouth:1,
+ mouth(E,talk){const {path,line,ell,x,P}=E,e=E.e;
+  // beard first (covers lower face)
+  path('M54,98 C54,112 58,122 66,128 C72,133 88,133 94,128 C102,122 106,112 106,98 C102,108 94,112 80,112 C66,112 58,108 54,98 Z','hair',1.1);
+  line('M58,108 C60,118 66,126 74,129','hairS',1);line('M102,108 C100,118 94,126 86,129','hairH',1);line('M72,120 C76,124 84,124 88,120','hairS',.9);
+  // mouth gap in beard
+  const my=114;
+  if(e==='happy'){ if(talk)path(`M72,${my-1} Q80,${my+9} 88,${my-1} Q80,${my+1} 72,${my-1} Z`,'mouthD',.9); else path(`M73,${my-1} Q80,${my+5} 87,${my-1} Q80,${my+1} 73,${my-1}Z`,'mouthD',.9) }
+  else if(e==='surprised'){ell(80,my+2,talk?3:2.4,talk?4:3.2,'mouthD',1)}
+  else if(e==='sad'){ if(talk)ell(80,my+2,3,2.4,'mouthD',1); else line(`M74,${my+3} Q80,${my-1} 86,${my+3}`,'mouthD',1.4)}
+  else if(e==='angry'){ if(talk)path(`M73,${my} L87,${my} Q85,${my+7} 80,${my+7} Q75,${my+7} 73,${my} Z`,'mouthD',1); else line(`M74,${my+2} Q80,${my-.5} 86,${my+2}`,'mouthD',1.5)}
+  else if(e==='shy'){ if(talk)ell(80,my+1.5,2.4,2.2,'mouthD',1); else line(`M76,${my+1} q2,2 4,0 q2,-2 4,0`,'mouthD',1.2)}
+  else { if(talk)path(`M74,${my} Q80,${my+8} 86,${my} Q80,${my+1.4} 74,${my} Z`,'mouthD',1); else line(`M75,${my} Q80,${my+3} 85,${my}`,'mouthD',1.4)}
+  // moustache
+  path('M80,102 C72,98 62,100 56,108 C62,112 70,110 80,108 C90,110 98,112 104,108 C98,100 88,98 80,102 Z','hair',1.1);
+  line('M62,106 C68,104 74,104 78,106','hairH',1);line('M98,106 C92,104 86,104 82,106','hairS',.9);
+ },
+ front(E){const {path,line,sw,x,P}=E;
+  // swept-back hair with receding hairline
+  path('M46,86 C40,52 58,34 80,34 C102,34 120,52 114,86 C112,70 106,60 98,56 C90,50 70,50 62,56 C54,60 48,72 46,86 Z','hair',0);
+  line('M46,86 C40,52 58,34 80,34 C102,34 120,52 114,86','line',1.1);
+  for(let i=0;i<7;i++){const a=54+i*9;line(`M${a},${50-Math.abs(i-3)*1.2} C${a-2},${40} ${a+8},${37} ${a+14},${37}`,'hairS',.8)}
+  line('M60,54 C68,44 82,38 98,42','hairH',1.8);line('M52,70 C54,60 62,52 74,46','hairH',1.1);line('M104,56 C108,62 110,70 110,76','hairH',1);
+  // sideburn
+  path('M46,84 C44,98 46,108 50,114 L54,108 C52,100 52,92 52,84 Z','hair');path('M114,84 C116,98 114,108 110,114 L106,108 C108,100 108,92 108,84 Z','hair');
+  // bushy brows
+  brows(E,'hairH',2.6);brows(E,'hairS',1,0,.9);
+ }
+};
+// ----- OBA
+ART.oba={
+ back(E){const {path,line,sw}=E;
+  path('M45,84 C42,60 56,50 80,50 C104,50 118,60 115,84 L115,102 L45,102 Z','hairS',1.1);
+ },
+ body(E){const {path,line,x,P,c}=E,s=c.sw;
+  neck(E);
+  path(SHOULDER(s,153),'polo');
+  path(`M${80+s-14},150 C${80+s-6},158 ${80+s-2},172 ${80+s+2},192 L${80+s+8},192 L${80+s},153 Z`,'poloS',0);
+  path(`M${80-s+14},150 C${80-s+6},158 ${80-s+2},172 ${80-s-2},192 L${80-s-8},192 L${80-s},153 Z`,'poloS',0);
+  // chest stripes green/orange
+  x.save();x.clip(new Path2D(SHOULDER(s,153)));x.fillStyle=P.stripeG;x.fillRect(0,160,160,6);x.fillStyle=P.stripeO;x.fillRect(0,167,160,3);x.fillStyle=P.stripeG;x.fillRect(0,171,160,1.4);x.restore();
+  path(SHOULDER(s,153),null,1.1);
+  // collar
+  path('M64,130 L80,148 L72,152 L58,138 Z','white',1.1);path('M96,130 L80,148 L88,152 L102,138 Z','white',1.1);
+  path('M64,130 L80,148 L80,146 L68,132Z','poloS',0);
+  path('M80,148 L80,188','poloS',.8);
+  // apron bib
+  path('M64,176 L96,176 L100,192 L60,192 Z','apron',1);path('M80,176 L96,176 L100,192 L86,192 Z','apronS',0);
+  line('M64,176 L58,146','apron',1.3);line('M96,176 L102,146','apron',1.3);
+  // name tag
+  path('M96,160 L108,160 L108,168 L96,168 Z','tag',.9);line('M98,163 h8','red',1);line('M98,166 h5','poloS',.8);
+  line(`M${80-s+12},158 C${80-s+10},172 ${80-s+8},184 ${80-s+8},192`,'line',1);line(`M${80+s-12},158 C${80+s-10},172 ${80+s-8},184 ${80+s-8},192`,'line',1);
+ },
+ faceFront(E){const {line,path,x,P}=E;
+  // stubble hint, laugh lines
+  line('M58,102 q1,6 5,10','skinS',.9);line('M102,102 q-1,6 -5,10','skinS',.9);
+ },
+ mouthOver(E){const {path,line}=E;
+  path('M80,104 C74,101 66,102 62,106 C68,110 74,108 80,106 C86,108 92,110 98,106 C94,102 86,101 80,104 Z','hairS',1);line('M66,105 C70,103 75,103 78,105','hairH',.8);
+ },
+ front(E){const {path,line,sw,x,P,e}=E;
+  // hair at sides under cap
+  path('M48,76 C46,90 47,100 50,106 L55,96 C54,90 54,82 54,74 Z','hair');path('M112,76 C114,90 113,100 110,106 L105,96 C106,90 106,82 106,74 Z','hair');
+  line('M50,86 q1,6 3,10','hairH',.8);
+  // pencil behind right ear
+  path('M114,76 L130,66 L131.5,69 L116,80 Z','pencil',1);path('M130,66 L133.6,64 L131.5,69 Z','pink',.9);line('M115,78 L129.5,68','pencilS',.8);
+  brows(E,'hairS',2.1);
+  // cap
+  path('M46,70 C44,42 62,32 80,32 C98,32 116,42 114,70 C108,62 96,58 80,58 C64,58 52,62 46,70 Z','cap',0);
+  path('M46,70 C50,62 62,58 80,58 C98,58 110,62 114,70 L116,74 C106,64 94,60 80,60 C66,60 54,64 44,74 Z','capS',1);
+  x.save();x.clip(new Path2D('M46,70 C44,42 62,32 80,32 C98,32 116,42 114,70 C108,62 96,58 80,58 C64,58 52,62 46,70 Z'));x.fillStyle=P.orange;x.fillRect(40,46,90,3.4);x.fillStyle=P.capH;x.fillRect(40,49.4,90,1.1);x.restore();
+  line('M46,70 C44,42 62,32 80,32 C98,32 116,42 114,70','line',1.1);
+  line('M56,42 C62,36 72,34 80,34','capH',1.6);
+  // brim
+  path('M50,66 C56,60 72,57 80,57 C90,57 104,60 112,66 C110,72 98,72 80,72 C64,72 52,72 50,66 Z','cap',1.1);
+  path('M54,68 C60,64 72,62 80,62 C94,62 104,64 110,68 C104,71 94,72 80,72 C66,72 58,71 54,68 Z','capS',0);
+  // badge
+  path('M71,40 L89,40 L89,52 L71,52 Z','white',1);path('M74,48 l3,-5 l3,5 l3,-5 l3,5','stripeG',1.2);line('M73,50.5 h14','orange',1);
+ }
+};
+// ----- HARU
+ART.haru={
+ back(E){const {path,line,sw}=E;
+  path('M48,70 C44,46 60,36 80,36 C100,36 116,46 112,70 C114,84 112,96 108,102 L52,102 C48,96 46,84 48,70 Z','hairS',1.1);
+ },
+ body(E){const {path,line,x,P,c}=E,s=c.sw;
+  neck(E);
+  path(SHOULDER(s,152),'suit');
+  path(`M${80+s-14},150 C${80+s-6},158 ${80+s-2},172 ${80+s+2},192 L${80+s+8},192 L${80+s},152 Z`,'suitS',0);
+  path(`M${80-s+14},150 C${80-s+6},158 ${80-s+2},172 ${80-s-2},192 L${80-s-8},192 L${80-s},152 Z`,'suitS',0);
+  path('M64,132 L96,132 L100,192 L60,192 Z','shirt');
+  path('M82,132 L96,132 L100,192 L86,192 Z','shirtS',0);
+  // collar, open neck
+  path('M66,126 L80,142 L72,148 L60,134 Z','shirt',1);path('M94,126 L80,142 L88,148 L100,134 Z','shirt',1);
+  // lapels w/ white trim
+  path('M58,136 L64,132 L80,160 L68,188 L48,150 Z','suit',1.1);path('M102,136 L96,132 L80,160 L92,188 L112,150 Z','suit',1.1);
+  line('M63,134 L79,160 L67,187','trim',1.5);line('M97,134 L81,160 L93,187','trim',1.5);
+  line('M64,133 L76,150','trimS',.7);
+  // button + HALO pin (ring) on right chest
+  x_ring(E,106,160);
+  line(`M${80-s+12},158 C${80-s+10},172 ${80-s+8},184 ${80-s+8},192`,'line',1);line(`M${80+s-12},158 C${80+s-10},172 ${80+s-8},184 ${80+s-8},192`,'line',1);
+  line('M46,156 C44,168 43,180 43,192','suitH',.9);
+  path('M52,150 L54,150','line',0);
+ },
+ front(E){const {path,line,sw,x,P,e}=E;
+  // messy spiky top
+  path('M50,80 C44,52 58,36 80,36 C102,36 116,52 110,80 C106,68 98,62 80,62 C62,62 54,68 50,80 Z','hair',0);
+  line('M50,80 C44,52 58,36 80,36 C102,36 116,52 110,80','line',1.1);
+  // spikes on the crown
+  path('M64,42 L58,30 L72,38 Z','hair',1);path('M78,38 L78,24 L88,36 Z','hair',1);path('M90,38 L100,26 L100,42 Z','hair',1);path('M104,46 L116,40 L108,54 Z','hair',1);path('M56,52 L46,48 L54,62 Z','hair',1);
+  // bangs
+  path('M54,66 C58,54 66,46 80,46 L68,84 L64,72 L58,88 Z','hair');
+  path('M70,52 C76,46 84,46 90,50 L84,86 L80,74 L74,84 Z','hair');
+  path('M88,50 C96,48 104,54 108,62 L102,88 L100,76 L94,84 Z','hair');
+  path('M104,58 C108,64 110,72 108,80 L104,74 Z','hair');
+  line('M60,50 C66,44 76,41 88,42','hairH',1.8);line('M96,48 l5,3','hairH',1.2);line('M72,60 L70,76','hairS',.9);line('M92,60 L90,76','hairS',.9);
+  // loose hanging bang lock
+  path('M80,52 C84,60 82,72 78,82 C76,72 76,60 80,52 Z','hair',.9);
+  path('M48,70 C46,84 46,96 50,104 C52,94 54,86 56,80 Z','hair');path('M112,70 C114,84 114,96 110,104 C108,94 106,86 104,80 Z','hair');
+  brows(E,'hairD',1.9);
+ }
+};
+function x_ring(E,cx,cy){const {path,line,x,P}=E;
+ x.strokeStyle=P.line;x.lineWidth=3.3;x.beginPath();x.ellipse(cx,cy,3.6,1.7,0,0,7);x.stroke();
+ x.strokeStyle=P.gold;x.lineWidth=1.8;x.beginPath();x.ellipse(cx,cy,3.6,1.7,0,0,7);x.stroke();
+ path(`M${cx-2.5},${cy+3.5} L${cx},${cy+9} L${cx+2.5},${cy+3.5}`,null,0);
+}
+
+// ---------- pipeline (as hikari_source) ----------
+function toPix(id,o){const c=document.createElement('canvas');c.width=W*K;c.height=H*K;draw(c.getContext('2d'),id,o);const s=document.createElement('canvas');s.width=W;s.height=H;const sx=s.getContext('2d');sx.imageSmoothingQuality='high';const m=document.createElement('canvas');m.width=W*2;m.height=H*2;m.getContext('2d').drawImage(c,0,0,W*2,H*2);sx.drawImage(m,0,0,W,H);return sx.getImageData(0,0,W,H).data}
+function palFor(id){const all=Object.assign({},BASEP,C[id].P);return Object.values(all).map(h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)])}
+function build(id,o){const PAL=palFor(id),LI=PAL[0],d=toPix(id,o),f=new Uint8ClampedArray(W*H*4),l=new Uint8ClampedArray(W*H*4),op=i=>d[i*4+3]>110;
+ for(let i=0;i<W*H;i++){if(!op(i))continue;const a=d[i*4+3]/255;let r=d[i*4]/a,g=d[i*4+1]/a,b=d[i*4+2]/a,bi=0,bd=1e9;PAL.forEach((c,j)=>{if(j===0&&(r*.3+g*.59+b*.11)>95)return;const q=(c[0]-r)**2*.3+(c[1]-g)**2*.59+(c[2]-b)**2*.11;if(q<bd){bd=q;bi=j}});const c=PAL[bi];(bi===0?l:f).set([c[0],c[1],c[2],255],i*4)}
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x;if(op(i))continue;if([[1,0],[-1,0],[0,1],[0,-1]].some(([a,b])=>{const X=x+a,Y=y+b;return X>=0&&Y>=0&&X<W&&Y<H&&op(Y*W+X)}))l.set([...LI,255],i*4)}
+ return [f,l]}
+const comp=([f,l])=>{const c=document.createElement('canvas');c.width=W;c.height=H;const cx=c.getContext('2d');for(const a of [f,l]){const t=document.createElement('canvas');t.width=W;t.height=H;t.getContext('2d').putImageData(new ImageData(a,W,H),0,0);cx.drawImage(t,0,0)}return c.toDataURL()};
+const SW=[0,.5,1,1.4,1,.5,0,-.4],BR=[0,0,1,1,1,1,0,0];
+function buildAll(id,only){const out={};
+ for(const e of ['open','happy','shy','sad','angry','surprised'])for(const talk of [0,1]){const name=e+(talk?'Talk':'');if(only&&only!==name)continue;
+  out[name]=[...Array(8)].map((_,i)=>comp(build(id,{expr:e,talk,mi:i,sway:SW[i],br:BR[i],blink:e!=='happy'&&i===6,look:(i<4?1:-1)*0+1,tear:e==='sad'?[0,0,.5,1,1,1.4,0,0][i]:0})))}
+ return out}
+window.buildAll=buildAll;window.CHARS=Object.keys(C);
+</script>

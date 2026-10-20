@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8"><body style="background:#222"><script src="lib.js"></script><script src="sora_bust.js"></script><script>
+const W=160,H=192,K=4;
+const SW=[0,0,1,1,2,1,1,0],BR=[0,0,1,1,1,1,0,0];
+const TALK=[0,2,0,1,2,0,1,0];
+const EXS={open:{ex:'open',sparkle:1},happy:{ex:'happy'},shy:{ex:'shy',blushStr:2,look:0},sad:{ex:'sad',blushStr:0,tear:1},angry:{ex:'angry'},surprised:{ex:'surprised',sparkle:0}};
+window.gen=function(only){const out={};
+ for(const k of Object.keys(EXS))for(const talk of [0,1]){if(only&&only!==k)continue;
+  out[k+(talk?'Talk':'')]=[...Array(8)].map((_,i)=>{const o=Object.assign({},EXS[k],{sway:SW[i],b:BR[i],talk:talk?TALK[i]:0});
+   if(i===6&&k!=='happy')o.closed=1;
+   if(k==='shy')o.look=[0,0,0,-1,-1,-1,0,0][i]*1;
+   if(k==='sad')o.tearDrop=i>=3&&i<=6?i-3:-1;
+   return packIdx(bustPix(W,H,K,SP,soraDraw,o))})}
+ return out};
+window.preview=function(names){const c=mkCanvas(W*names.length*2+10,H*2);const x=c.getContext('2d');x.fillStyle='#43386a';x.fillRect(0,0,c.width,c.height);x.imageSmoothingEnabled=false;
+ names.forEach(([n,i],j)=>{const o=Object.assign({},EXS[n.replace('Talk','')],{sway:SW[i],b:BR[i],talk:n.endsWith('Talk')?TALK[i]:0});if(i===6&&n!=='happy')o.closed=1;if(n==='sad')o.tearDrop=2;
+  const r=bustPix(W,H,K,SP,soraDraw,o);x.drawImage(idxCanvas(r),j*W*2,0,W*2,H*2)});return c.toDataURL()};
+</script>
+<script>window.big=function(){const r=bustPix(W,H,K,SP,soraDraw,Object.assign({},EXS.open,{sway:0,b:0,talk:0}));const c=idxCanvas(r,[67,56,106]);const d=mkCanvas(W*5,H*5);const x=d.getContext('2d');x.imageSmoothingEnabled=false;x.drawImage(c,0,0,W*5,H*5);return d.toDataURL()}</script>
+<script>window.grid=function(){const names=Object.keys(EXS).flatMap(k=>[k,k+'Talk']);const cols=6;const c=mkCanvas(W*cols*2,H*2*2);const x=c.getContext('2d');x.fillStyle='#43386a';x.fillRect(0,0,c.width,c.height);x.imageSmoothingEnabled=false;
+ names.forEach((n,j)=>{const i=n.endsWith('Talk')?1:(n==='sad'?4:2);const base=n.replace('Talk','');const o=Object.assign({},EXS[base],{sway:SW[i],b:BR[i],talk:n.endsWith('Talk')?TALK[1]:0});if(base==='sad')o.tearDrop=2;if(base==='shy')o.look=-1;
+ const r=bustPix(W,H,K,SP,soraDraw,o);x.drawImage(idxCanvas(r),(j%cols)*W*2,((j/cols)|0)*H*2,W*2,H*2)});return c.toDataURL()}</script>

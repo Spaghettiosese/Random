@@ -1,0 +1,146 @@
+<!doctype html><meta charset="utf-8"><body><script src="bustlib.js"></script><script>
+const WHO=location.hash.slice(1)||'tsukiko';
+const PT={line:'#150d22',skin:'#ffeee6',skinS:'#efc7c0',blush:'#f6a2b0',
+ hair:'#2c2444',hairS:'#1c1630',hairD:'#100b1e',hairH:'#7a69b8',tip:'#9a6cf0',tipS:'#6a40b8',
+ iris:'#a874f4',irisD:'#5a2ca8',irisL:'#e6d4ff',pupil:'#1a0c3a',white:'#f8f4ff',
+ dress:'#2e2a56',dressS:'#1e1a3a',dressH:'#4a4480',shirt:'#f4f0fa',shirtS:'#c8c0de',rib:'#8a58d8',ribS:'#5c34a0',
+ mouth:'#b85068',tongue:'#e87c92',tear:'#c4e6ff',sweat:'#a9d8f5',
+ cat:'#1a1626',catS:'#0e0b16',catH:'#463c64',catEye:'#c6a0ff',catNose:'#e88aa8'};
+const PA={line:'#1a0f1c',skin:'#ffeadf',skinS:'#f0c4b6',blush:'#f6a09a',
+ hair:'#5a3f4a',hairS:'#3e2a38',hairD:'#241822',hairH:'#9a7480',tip:'#8a5ab8',tipS:'#5c3a88',
+ iris:'#9a6850',irisD:'#4e2c2c',irisL:'#e8b8a0',pupil:'#24120f',white:'#fffaf6',
+ dress:'#34509a',dressS:'#233a74',dressH:'#5272c2',shirt:'#fff6ea',shirtS:'#e8d4bc',rib:'#ffd24a',ribS:'#d8962a',
+ mouth:'#b8505a',tongue:'#e87c88',tear:'#c4e6ff',sweat:'#a9d8f5'};
+const P=WHO==='akira'?PA:PT;
+const EMOS={open:{},happy:{noBlink:1},shy:{},sad:{},angry:{},surprised:{}};
+function draw(x,o){
+ const sw=o.sw||0,br=o.br||0,emo=o.emo,blink=o.blink,mo=o.mouthOpen||0,A=WHO==='akira',i=o.i||0;
+ const path=(d,fill,w=1.1)=>{const p=new Path2D(d);if(fill){x.fillStyle=fill;x.fill(p)}if(w){x.strokeStyle=P.line;x.lineWidth=w;x.stroke(p)}return p};
+ const line=(d,c,w)=>{x.strokeStyle=c;x.lineWidth=w;x.stroke(new Path2D(d))};
+ const dot=(cx,cy,r,c)=>{x.fillStyle=c;x.beginPath();x.arc(cx,cy,r,0,7);x.fill()};
+ const CY=A?100:98; // face centre y
+ // ---- hair back ----
+ x.save();x.translate(0,br);
+ if(!A){ // Tsukiko: bob with longer back + violet tips
+  path(`M42,92 C38,116 38,132 ${36+sw*.5},146 L${124+sw*.5},146 C122,132 122,116 118,92 C118,52 100,40 80,40 C60,40 42,52 42,92Z`,P.hairS);
+  path(`M${37+sw*.5},138 L${123+sw*.5},138 L${124+sw*.5},146 L${36+sw*.5},146Z`,P.tip,0);
+ }else{ path('M44,86 C40,56 58,42 80,42 C102,42 120,56 116,86 C118,98 114,106 108,108 L52,108 C46,106 42,98 44,86Z',P.hairS)}
+ x.restore();
+ x.save();x.translate(0,-9);
+ // ---- body ----
+ if(!A){
+  path('M38,206 C40,166 50,152 66,148 L94,148 C110,152 120,166 122,206Z',P.dress);
+  path('M38,206 C40,168 46,156 56,152 C52,164 50,178 50,206Z',P.dressS,0);path('M122,206 C120,168 114,156 104,152 C108,164 110,178 110,206Z',P.dressS,0);
+  line('M50,158 C58,152 64,150 68,150',P.dressH,1.2);
+  // pinafore straps + shirt
+  path('M66,148 L94,148 L98,206 L62,206Z',P.shirt);path('M80,148 L94,148 L98,206 L82,206Z',P.shirtS,0);
+  path('M62,148 L72,148 L76,206 L60,206Z',P.dress);path('M98,148 L88,148 L84,206 L100,206Z',P.dress);
+  line('M70,150 L74,206',P.dressH,0.8);
+ }else{
+  path('M36,206 C38,166 48,154 66,150 L94,150 C112,154 122,166 124,206Z',P.dress);
+  path('M36,206 C38,168 44,158 54,154 C50,166 48,180 48,206Z',P.dressS,0);path('M124,206 C122,168 116,158 106,154 C110,166 112,180 112,206Z',P.dressS,0);
+  line('M48,160 C56,155 62,152 68,151',P.dressH,1.2);
+  path('M64,148 C72,156 88,156 96,148 L98,152 C88,162 72,162 62,152Z',P.shirt);
+  // moon badge
+  path('M91,172 a5,5 0 1,0 0,10 a4,4 0 1,1 0,-10z',P.rib,.9);
+ }
+ x.restore();
+ x.save();x.translate(0,br);
+ // neck
+ x.save();x.translate(0,-9);path(`M72,${CY+24} L88,${CY+24} L89,152 L71,152Z`,P.skin);
+ // collar
+ if(!A){path('M64,148 C72,152 88,152 96,148 L97,156 C88,160 72,160 63,156Z',P.shirt);
+  path('M80,153 C74,148 66,149 65,154 C67,159 74,158 80,155Z',P.rib);path('M80,153 C86,148 94,149 95,154 C93,159 86,158 80,155Z',P.rib);
+  path('M78,152 h4 v4 h-4z',P.ribS,.7);}
+ x.restore();
+ // ---- face ----
+ const FW=A?38:36, top=CY-(A?44:42),bot=CY+(A?28:27);
+ path(`M${80-FW},${CY-4} C${80-FW},${CY+16} ${80-FW+8},${bot-4} ${80-8},${bot} C${80-3},${bot+1.5} ${80+3},${bot+1.5} ${80+8},${bot} C${80+FW-8},${bot-4} ${80+FW},${CY+16} ${80+FW},${CY-4} C${80+FW},${top+4} ${80+FW-14},${top} 80,${top} C${80-FW+14},${top} ${80-FW},${top+4} ${80-FW},${CY-4}Z`,P.skin);
+ // ear hint (akira)
+ if(A){path(`M${42},${CY+2} a4,5 0 1,0 0.1,0z`,P.skin,.9);path(`M${118},${CY+2} a4,5 0 1,1 -0.1,0z`,P.skin,.9)}
+ // ---- eyes ----
+ const E={open:{h:7.6,iris:[0,.5],ir:6,brow:[CY-12,0]},happy:{},shy:{h:6.4,iris:[-2,2],ir:5.4,brow:[CY-13,1.8]},
+  sad:{h:7.4,iris:[0,1.4],ir:6.2,brow:[CY-13,3]},angry:{h:5.6,iris:[0,1],ir:5.6,brow:[CY-11,-3.2],sharp:1},surprised:{h:9.4,iris:[0,0],ir:4.6,brow:[CY-16,-.4],wide:1}}[emo];
+ const ex=A?20:19,ecy=CY+(A?2:1);
+ const eye=(cx,f)=>{const cy=ecy,w=A?8.4:7.8;
+  if(emo==='happy'){line(`M${cx-w+.6},${cy+1.6} Q${cx},${cy-6} ${cx+w-.6},${cy+1.6}`,P.line,2.1);return}
+  if(blink){line(`M${cx-w},${cy} Q${cx},${cy+4.4} ${cx+w},${cy}`,P.line,1.9);return}
+  const h=E.h;
+  const ap=new Path2D(`M${cx-w},${cy} C${cx-w},${cy-h*1.25} ${cx+w},${cy-h*1.25} ${cx+w},${cy} C${cx+w},${cy+h*1.15} ${cx-w},${cy+h*1.15} ${cx-w},${cy}Z`);
+  x.fillStyle=P.white;x.fill(ap);x.save();x.clip(ap);
+  const exx=cx+E.iris[0],eyy=cy+E.iris[1]+.3,r=E.ir;
+  x.fillStyle=P.iris;x.beginPath();x.ellipse(exx,eyy,r,r*1.3,0,0,7);x.fill();
+  x.fillStyle=P.irisD;x.beginPath();x.ellipse(exx,eyy-r*.6,r,r*.9,0,0,7);x.fill();
+  x.fillStyle=P.irisL;x.beginPath();x.ellipse(exx,eyy+r*1.0,r*.6,r*.4,0,0,7);x.fill();
+  x.fillStyle=P.pupil;x.beginPath();x.ellipse(exx,eyy+.3,r*(E.wide?.34:.52),r*(E.wide?.5:.8),0,0,7);x.fill();
+  x.fillStyle=P.white;x.beginPath();x.arc(exx-2,eyy-2.8,2.1,0,7);x.fill();x.beginPath();x.arc(exx+2,eyy+2.6,1,0,7);x.fill();
+  x.fillStyle='rgba(20,12,34,.28)';x.fillRect(cx-w-1,cy-h*1.3,w*2+2,h*.5);
+  x.restore();
+  line(`M${cx-w-.3},${cy+.4} C${cx-w},${cy-h*1.3} ${cx+w},${cy-h*1.3} ${cx+w+.3},${cy+.4}`,P.line,2);
+  line(`M${cx+f*(w+.2)},${cy} l${f*2.2},-1.4`,P.line,1.1)};
+ eye(80-ex,-1);eye(80+ex,1);
+ // brows
+ const bw=(cx,f)=>{let by,tl;if(emo==='happy'){by=ecy-11;tl=.6}else{[by,tl]=E.brow}
+  line(`M${cx+f*7.5},${by+(tl>0?1.4:0)} Q${cx},${by-1.2} ${cx-f*6},${by-tl*.9+(tl<0?.8:0)}`,A?P.hairS:P.hairD,A?1.7:1.4)};
+ bw(80-ex,-1);bw(80+ex,1);
+ // blush
+ const bl=emo==='shy'?.9:emo==='happy'?.6:emo==='sad'?.3:emo==='angry'?0:A?.5:.22;
+ x.globalAlpha=bl;x.fillStyle=P.blush;x.beginPath();x.ellipse(80-ex-3,ecy+13,6.5,3.2,0,0,7);x.fill();x.beginPath();x.ellipse(80+ex+3,ecy+13,6.5,3.2,0,0,7);x.fill();x.globalAlpha=1;
+ if(emo==='sad'){path(`M${80-ex-9},${ecy+7} C${80-ex-11},${ecy+11} ${80-ex-11},${ecy+14} ${80-ex-9},${ecy+15} C${80-ex-7},${ecy+14} ${80-ex-7},${ecy+11} ${80-ex-9},${ecy+7}Z`,P.tear,.6)}
+ if(emo==='shy'){path('M112,76 C110,80 110,82 112,83 C114,82 114,80 112,76Z',P.sweat,.5)}
+ line(`M80,${ecy+11} l.5,1`,P.skinS,1.1);
+ // mouth
+ const my=ecy+19;
+ function mouthO(cy,rx,ry){path(`M${80-rx},${cy} C${80-rx},${cy-ry*.9} ${80+rx},${cy-ry*.9} ${80+rx},${cy} C${80+rx},${cy+ry*1.3} ${80-rx},${cy+ry*1.3} ${80-rx},${cy}Z`,P.mouth,.8);x.save();x.beginPath();x.ellipse(80,cy+ry*.8,rx*.7,ry*.5,0,0,7);x.fillStyle=P.tongue;x.fill();x.restore()}
+ ({open:()=>mo?mouthO(my,3,2.4+mo*2):line(A?`M76,${my} Q80,${my+3.4} 84,${my}`:`M76.5,${my} Q80,${my+1.4} 83.5,${my}`,P.mouth,1.3),
+  happy:()=>mo?path(`M74,${my-1} Q80,${my+1} 86,${my-1} Q80,${my+4+mo*5} 74,${my-1}Z`,P.mouth,.8):path(`M74.5,${my-1} Q80,${my+5} 85.5,${my-1} Q80,${my+1.4} 74.5,${my-1}Z`,P.mouth,.8),
+  shy:()=>mo?mouthO(my,2.4,2+mo*1.4):line(`M77,${my+.4} q1.5,-1.6 3,0 q1.5,1.6 3,0`,P.mouth,1.1),
+  sad:()=>mo?mouthO(my+.8,2.8,2+mo*1.6):line(`M76,${my+1.8} Q80,${my-1.6} 84,${my+1.8}`,P.mouth,1.3),
+  angry:()=>mo?path(`M75,${my+2} Q80,${my-.5} 85,${my+2} Q80,${my+3+mo*3} 75,${my+2}Z`,P.mouth,.8):line(`M76,${my+1.6} Q80,${my-.8} 84,${my+1.6}`,P.mouth,1.3),
+  surprised:()=>mouthO(my+1,3,3+(mo?mo*1.4:0))})[emo]();
+ // ---- hair front ----
+ if(!A){
+  // flat fringe
+  path(`M${80-FW-1},${CY+6} C${80-FW-6},${top-2} ${80-22},${top-8} 80,${top-8} C${80+22},${top-8} ${80+FW+6},${top-2} ${80+FW+1},${CY+6} L${80+FW-3},${CY-10} L${80+FW-6},${CY-12} L${80+22},${CY-11} L${80+18},${CY-13.5} L${80+4},${CY-12} L${80},${CY-14} L${80-6},${CY-12} L${80-18},${CY-13.5} L${80-22},${CY-11} L${80-FW+6},${CY-12} L${80-FW+3},${CY-10}Z`,P.hair);
+  line(`M80,${top-4} L80,${CY-14}`,P.hairS,.9);line(`M62,${top-2} L63,${CY-13}`,P.hairS,.9);line(`M98,${top-2} L97,${CY-13}`,P.hairS,.9);
+  line(`M52,${top+6} C60,${top-2} 70,${top-5} 80,${top-5}`,P.hairH,1.8);line(`M88,${top-5} C96,${top-4} 102,${top} 106,${top+6}`,P.hairH,1.1);
+  // side locks w/ violet tips
+  for(const s of [-1,1]){const X=a=>s<0?a:160-a;
+   path(`M${X(44)},${CY-6} C${X(40)},${CY+10} ${X(38)},${CY+28} ${X(37)+sw*.4*-s},${CY+44} L${X(52)+sw*.4*-s},${CY+46} C${X(54)},${CY+30} ${X(54)},${CY+14} ${X(54)},${CY-6}Z`,P.hair);
+   path(`M${X(37.5)+sw*.4*-s},${CY+36} L${X(52)+sw*.4*-s},${CY+38} L${X(52)+sw*.4*-s},${CY+46} L${X(37)+sw*.4*-s},${CY+44}Z`,P.tip,.9);
+   line(`M${X(45)},${CY+4} C${X(43)},${CY+16} ${X(42)},${CY+26} ${X(42)+sw*.3*-s},${CY+34}`,P.hairH,1)}
+  // ribbon clip
+  path('M104,68 L112,63 L112,73Z',P.rib,.8);path('M104,68 L96,63 L96,73Z',P.rib,.8);dot(104,68,1.8,P.ribS);
+ }else{
+  // messy short hair + cowlick, violet tint tips
+  path(`M42,${CY-6} C36,${top-4} 54,${top-14} 80,${top-12} C106,${top-14} 124,${top-4} 118,${CY-6} L114,${CY-14} L108,${CY-8} L102,${CY-16} L96,${CY-9} L88,${CY-17} L82,${CY-8} L74,${CY-16} L68,${CY-8} L60,${CY-15} L54,${CY-8} L47,${CY-14}Z`,P.hair);
+  path(`M46,${CY-4} C42,${CY+4} 42,${CY+8} 44,${CY+10} C46,${CY+4} 48,${CY-2} 50,${CY-8}Z`,P.hair,.9);path(`M114,${CY-4} C118,${CY+4} 118,${CY+8} 116,${CY+10} C114,${CY+4} 112,${CY-2} 110,${CY-8}Z`,P.hair,.9);
+  // tufts
+  path(`M76,${top-10} C72,${top-22} 84,${top-24} 90,${top-20} C84,${top-20} 82,${top-16} 84,${top-9}Z`,P.hair);
+  path(`M96,${top-8} C100,${top-18} 108,${top-18} 110,${top-14} C106,${top-14} 104,${top-10} 104,${top-6}Z`,P.hair);
+  path(`M58,${top-6} C52,${top-14} 56,${top-18} 62,${top-18} C60,${top-14} 62,${top-10} 66,${top-8}Z`,P.hair);
+  line(`M52,${top+4} C60,${top-6} 72,${top-9} 84,${top-8}`,P.hairH,1.6);
+  for(const [a,b] of [[63,top-18],[90,top-20],[110,top-14]])dot(a,b,1.2,P.tip);
+ }
+ x.restore();
+ // ---- cat companion on shoulder (Tsukiko) ----
+ if(!A){const by=br?1:0,t=Math.sin(i*Math.PI/4)*3,tail=Math.sin(i*Math.PI/4+1)*3;
+  x.save();x.translate(0,by-9);
+  // tail
+  path(`M138,166 C150,166 152,150 ${146+tail},138 C${148+tail},146 144,156 136,158Z`,P.cat);
+  // body loaf
+  path('M104,160 C102,142 112,134 124,134 C136,134 144,144 142,160 L142,168 L104,168Z',P.cat);
+  path('M132,138 C140,142 143,150 142,162 L136,162 C138,152 136,144 132,138Z',P.catS,0);
+  line('M110,142 C114,137 120,135 126,135',P.catH,1);
+  // head
+  path('M110,138 C108,124 116,118 124,118 C132,118 140,124 138,138 C136,144 112,144 110,138Z',P.cat);
+  path('M111,126 L109,112 L119,120Z',P.cat);path('M137,126 L139,112 L129,120Z',P.cat);
+  path('M112,123 L111,116 L116,121Z',P.catNose,0);path('M136,123 L137,116 L132,121Z',P.catNose,0);
+  const cb=blink||emo==='happy';
+  for(const cx of [118,130]){if(cb)line(`M${cx-2.2},131 q2.2,1.6 4.4,0`,P.catEye,1.1);else{x.fillStyle=P.catEye;x.beginPath();x.ellipse(cx,130.5,2.2,2.8,0,0,7);x.fill();x.fillStyle=P.pupil;x.beginPath();x.ellipse(cx,130.5,.8,2.2,0,0,7);x.fill();dot(cx-.8,129.4,.6,'#fff')}}
+  dot(124,134.4,.9,P.catNose);
+  line('M124,135 v1.4',P.catNose,.5);
+  x.restore();}
+}
+window.build=()=>buildAll(draw,P,EMOS);
+</script>
