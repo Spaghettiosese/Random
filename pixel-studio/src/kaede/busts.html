@@ -208,8 +208,11 @@ function drawHayate(set,o){
  x.save();x.translate(0,bob);
  path('M71,126 L89,126 L90,148 L70,148Z',P.skin);path('M71,126 L89,126 L89,136 C84,140 76,140 71,136Z',P.skinS,0);
  // back spikes
- const back=[[48,70,22,50,-4],[56,58,34,30,-8],[70,50,60,18,0],[86,46,92,12,6],[100,52,118,24,10],[110,66,134,46,6]];
- back.forEach(([sx,sy,tx,ty,j],i)=>{path(`M${sx-9},${sy+12} L${tx+(sw*(i%2?1:-1))},${ty} L${sx+9},${sy+12}Z`,i%3===1?P.hairB:P.hairS)});
+ const spike=(b1,b2,t,bend,f,sw0=0)=>{const dx=t[0]-(b1[0]+b2[0])/2,dy=t[1]-(b1[1]+b2[1])/2,L=Math.hypot(dx,dy)||1,px=-dy/L*bend,py=dx/L*bend;
+  const c1=[(b1[0]+t[0])/2+px,(b1[1]+t[1])/2+py],c2=[(b2[0]+t[0])/2+px,(b2[1]+t[1])/2+py];const tx=t[0]+sw0;
+  path(`M${b1[0]},${b1[1]} Q${c1[0]},${c1[1]} ${tx},${t[1]} Q${c2[0]},${c2[1]} ${b2[0]},${b2[1]}Z`,f)};
+ spike([44,92],[50,66],[8,66],-5,P.hairS,sw*1.2);spike([48,74],[62,50],[10,34],-6,P.hairB,sw);spike([58,54],[80,44],[34,8],-6,P.hairS,sw);
+ spike([72,46],[96,46],[70,6],-3,P.hairBS,sw*.6);spike([90,44],[110,54],[104,8],3,P.hairS,sw*.5);spike([108,54],[118,78],[136,34],5,P.hairB);
  // ears
  ell(48,104,4.5,6,P.skin,0,1);ell(112,104,4.5,6,P.skin,0,1);
  const fp='M48,92 C48,64 62,52 80,52 C98,52 112,64 112,92 C112,114 98,130 80,131 C62,130 48,114 48,92Z';
@@ -219,15 +222,13 @@ function drawHayate(set,o){
  x.save();x.translate(61,113);x.rotate(-.5);path('M-5,-2 L5,-2 L5,2 L-5,2Z',P.pad,.8);line('M-1,-2 L-1,2 M1.5,-2 L1.5,2',P.padS,.7);x.restore();
  face(set,o);
  // hair cap
- path('M46,88 C42,56 58,40 80,40 C102,40 118,56 114,88 C108,74 98,66 80,66 C62,66 52,74 46,88Z',P.hair);
- // front spiky fringe
- path('M48,76 C50,62 60,54 74,52 L64,92 L61,78 L55,90Z',P.hair);
- path('M66,56 C74,52 86,52 94,56 L84,96 L80,80 L76,94Z',P.hair);
- path('M86,52 C100,52 108,62 112,76 L106,90 L102,80 L98,92Z',P.hair);
- path('M64,56 L56,40 L76,50Z',P.hair);path('M84,50 L96,32 L102,52Z',P.hairB);
- path('M54,62 L40,52 L56,74Z',P.hair);path('M106,60 L122,50 L110,76Z',P.hair);
- line('M60,60 C68,54 78,52 88,52',P.hairH,2);
- line('M70,60 L68,80 M92,60 L90,80',P.hairS,.9);
+ path('M46,90 C42,56 58,40 80,40 C102,40 118,56 114,90 C108,76 98,66 80,66 C62,66 52,76 46,90Z',P.hair);
+ path('M46,90 C44,66 52,50 64,44 C56,56 54,70 56,80 C52,78 48,82 46,90Z',P.hairM,0);
+ spike([46,76],[62,60],[22,52],-3,P.hair,sw*.6);
+ // front fringe
+ [`M48,78 C50,64 60,56 76,54 L68,96 L64,82 L57,94Z`,`M64,56 C74,52 88,52 96,56 L88,100 L82,86 L76,98Z`,`M88,54 C102,54 110,64 113,80 L108,96 L104,84 L99,94Z`].forEach(d=>{path(d,P.hair,0);x.save();x.beginPath();x.rect(0,70,160,60);x.clip();x.strokeStyle=P.line;x.lineWidth=1.1;x.stroke(new Path2D(d));x.restore()});
+ spike([62,58],[78,52],[56,30],5,P.hair,sw*.4);spike([84,52],[100,56],[108,34],-5,P.hair);
+ line('M62,58 C70,52 80,50 92,52',P.hairH,2);line('M60,70 L62,82 M92,64 L92,80',P.hairS,.8);
  // headband
  path('M47,78 Q80,62 113,78 L113,86 Q80,70 47,86Z',P.band);path('M47,78 Q80,62 113,78 L113,80 Q80,64 47,80Z',P.bandH,0);
  path(`M112,80 L${124+sw*2},${88+sw} L${120+sw},${96} L110,86Z`,P.band);
@@ -242,9 +243,9 @@ function drawHayate(set,o){
 function drawMomo(set,o){
  const e=EX[set],sw=o.sw,bob=o.bob;
  // pigtails behind
- const pt=(s,sg)=>{path(`M44,62 C26,64 14,84 16,108 C${17+sg},124 ${22+sg*1.6},134 ${30+sg*1.4},138 C${30+sg},124 ${32},110 40,98 C48,86 52,72 50,62Z`,P.hairS);
-  path(`M40,70 C30,76 24,92 25,106 C26,118 ${28+sg},126 ${30+sg},130 C${33},114 36,98 44,86Z`,P.hairM,0);
-  ell(30+sg*1.2,138,5,3.2,P.hairD,0.2,.9)};
+ const pt=(s,sg)=>{path(`M44,62 C30,64 22,80 22,100 C22,116 ${24+sg},128 ${27+sg*1.4},138 C${34+sg},134 ${38},120 40,104 C44,90 50,76 50,62Z`,P.hairS);
+  path(`M42,70 C34,76 29,90 29,104 C29,114 ${30+sg},122 ${31+sg},128 C${35},116 38,100 44,88Z`,P.hairM,0);
+  path(`M${24+sg},126 C${22+sg},136 ${26+sg*1.4},144 ${30+sg*1.4},146 C${36+sg},142 ${36},134 ${33+sg},126Z`,P.hairS);line(`M28,104 C28,114 ${28+sg},124 ${29+sg},134`,P.hairH,.8)};
  mir(s=>pt(s,s>0?sw:-sw));
  // dress
  path('M44,192 C44,172 52,156 66,150 L94,150 C108,156 116,172 116,192Z',P.cream);

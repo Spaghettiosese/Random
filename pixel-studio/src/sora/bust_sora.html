@@ -3,7 +3,7 @@ const W=160,H=192,K=4;
 const SW=[0,0,1,1,2,1,1,0],BR=[0,0,1,1,1,1,0,0];
 const TALK=[0,2,0,1,2,0,1,0];
 const EXS={open:{ex:'open',sparkle:1},happy:{ex:'happy'},shy:{ex:'shy',blushStr:2,look:0},sad:{ex:'sad',blushStr:0,tear:1},angry:{ex:'angry'},surprised:{ex:'surprised',sparkle:0}};
-window.gen=function(only){const out={};
+window.gen=function(){const only=null;const out={};
  for(const k of Object.keys(EXS))for(const talk of [0,1]){if(only&&only!==k)continue;
   out[k+(talk?'Talk':'')]=[...Array(8)].map((_,i)=>{const o=Object.assign({},EXS[k],{sway:SW[i],b:BR[i],talk:talk?TALK[i]:0});
    if(i===6&&k!=='happy')o.closed=1;
