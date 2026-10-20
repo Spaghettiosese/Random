@@ -144,7 +144,7 @@ SCENES.ops = f => {
 };
 SCENES.training = f => {
   const r = rng(471);
-  vgrad(0, 120, ['#0a1226', '#10203a', '#16284a']);
+  vgrad(0, 190, ['#0a1226', '#10203a', '#16284a']);
   // ceiling lights
   for (let i = 0; i < 8; i++) rect(14 + i * 60, 10, 38, 5, f % 2 === i % 2 ? '#d8f0ff' : '#c0e0ff'); rect(0, 18, 480, 1, '#2a3a5a');
   // sign
@@ -166,7 +166,7 @@ SCENES.festival = f => {
   vgrad(0, 200, ['#07061c', '#1a1240', '#3a1a52', '#6a2a5a']);
   S.stars(r, f, 50, 0, 80);
   // fireworks (animated: grow/fade per frame)
-  const fw = (x, y, rr, col, ph) => { const p = (f + ph) % 4; const rad = [3, rr * .5, rr * .85, rr][p], a = [1, 1, .8, .4][p]; for (let i = 0; i < 18; i++) { const an = i / 18 * 6.283, d = rad; px(x + Math.cos(an) * d, y + Math.sin(an) * d, col, a); if (p > 0) px(x + Math.cos(an) * d * .8, y + Math.sin(an) * d * .8 + p, col, a * .6); } if (p < 2) glow(x, y, rr * 1.2, col, .35, 4); };
+  const fw = (x, y, rr, col, ph) => { const p = (f + ph) % 4; const rad = [3, rr * .5, rr * .85, rr][p], a = [1, 1, .8, .4][p]; for (let i = 0; i < 28; i++) { const an = i / 28 * 6.283, d = rad; px(x + Math.cos(an) * d, y + Math.sin(an) * d, col, a); px(x + Math.cos(an) * d + 1, y + Math.sin(an) * d, col, a * .7); if (p > 0) px(x + Math.cos(an) * d * .8, y + Math.sin(an) * d * .8 + p, col, a * .6); } if (p < 3) glow(x, y, rr * .9, col, .25, 3); };
   fw(110, 62, 42, '#ff5d85', 0); fw(350, 50, 50, '#ffd24a', 1); fw(240, 34, 32, '#52e0ff', 2); fw(430, 90, 28, '#c88aff', 3);
   S.skyline(rng(482), f, 150, 0, 20, 52, '#120a22', '#ffcf6a', .1);
   // lantern string

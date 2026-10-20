@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8"><body><script src="lib.js"></script><script src="cglib.js"></script><script src="figs.js"></script><script src="body.js"></script><script>
+window.test=function(){const c=mkCanvas(960,540);const x=c.getContext('2d');x.scale(2,2);x.lineJoin='round';x.lineCap='round';x.fillStyle='#8a7fb8';x.fillRect(0,0,480,270);
+ // haru back standing
+ let J=stand(60,250,200,{sex:'m'});
+ const HS={skin:HARU.skin,skinS:HARU.skinS,col:HARU.jac,colS:HARU.jacS,legCol:HARU.pants,legShade:HARU.pantsS,legs:'pants',shoe:HARU.shoe,hemY:J.hip[1]+.06*200,sleeve:'long',cuff:HARU.trim};
+ personDraw(x,J,HS);headBack(x,J.head[0],J.head[1],J.hs,{C:HARU,who:'haru'});
+ // sora back yukata
+ J=stand(160,250,185,{sex:'f'});
+ const SS={skin:SORA.skin,skinS:SORA.skinS,col:'#2b2f6b',colS:'#1b1d4a',legs:'skin',shoe:'#c93f85',hemY:J.fy-.03*185,hemW:1.15,sleeve:'wide',lx:-1,legCol:'#fff'};
+ personDraw(x,J,SS);headBack(x,J.head[0],J.head[1],J.hs,{C:SORA,who:'sora',len:1.6});
+ // haru profile
+ J=stand(260,250,200,{sex:'m'});J.shL[0]+=14;J.shR[0]-=14;J.haL=[J.haL[0]+16,J.haL[1]-20];
+ personDraw(x,J,HS);headProfile(x,J.head[0]+3,J.head[1],J.hs,1,{C:HARU,who:'haru',expr:'smile'});
+ // sora profile
+ J=stand(350,250,185,{sex:'f'});J.shL[0]+=10;J.shR[0]-=10;
+ personDraw(x,J,SS);headProfile(x,J.head[0]+3,J.head[1],J.hs,-1,{C:SORA,who:'sora',expr:'smile',blush:1});
+ // sora face 3q
+ J=stand(430,250,185,{sex:'f'});
+ personDraw(x,J,SS);headFace(x,J.head[0],J.head[1],J.hs,{C:SORA,who:'sora',yaw:.5,expr:'smile',gaze:-1,blush:1,len:1.4});
+ return c.toDataURL()}
+</script>

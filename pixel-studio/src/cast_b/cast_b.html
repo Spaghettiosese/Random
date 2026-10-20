@@ -22,7 +22,7 @@ C.saeki={
 C.kuroda={
  P:{skin:'#f0d8c8',skinS:'#d2ad98',blush:'#e8a8a0',hair:'#b4bac2',hairS:'#7a8088',hairD:'#3a3e46',hairH:'#f0f2f6',iris:'#8a8a9c',irisD:'#2a2a38',pupil:'#14141c',irisL:'#d8d8e8',
   suit:'#23232c',suitS:'#0e0e14',suitH:'#3c3c4a',shirt:'#f4f4f8',shirtS:'#cfcfdc',tie:'#7a1020',tieS:'#4a0a14',gold:'#ffd54a',goldS:'#c8902a',lapel:'#2e2e3a'},
- f:{w:26.5,top:47,chin:122,cw:11,mid:80,jc:24},eyeY:89,eyeW:6.8,eyeX:13.5,irisR:3.3,eh:.74,lid:1.6,browY:78,browW:2.4,browC:'hairH',lash:0,sw:58,neck:[67,93],mouthY:0,blushA:.25,mouthC:'mouth',
+ f:{w:26.5,top:47,chin:122,cw:11,mid:80,jc:24},eyeY:89,eyeW:6.4,eyeX:13.5,irisR:3.1,eh:.6,lid:1.5,browY:78,browW:2.4,browC:'hairH',lash:0,sw:58,neck:[67,93],mouthY:0,blushA:.25,mouthC:'mouth',
  old:1,ears:1
 };
 // ===== OBA: night manager — friendly, round face, green cap, striped konbini polo, pencil behind ear
@@ -205,7 +205,7 @@ ART.aya={
 // ----- SAEKI
 ART.saeki={
  back(E){const {path,line,sw}=E;
-  path('M49,82 C45,52 60,38 82,38 C104,38 118,52 111,82 C112,88 111,92 109,94 L51,94 C49,92 48,88 49,82 Z','hairS',1.1);
+  path('M54,82 C51,54 64,38 82,38 C100,38 111,54 108,82 L107,94 L55,94 Z','hairS',1.1);
  },
  body(E){const {path,line,x,P,c}=E,s=c.sw;
   neck(E);
@@ -222,13 +222,13 @@ ART.saeki={
   line(`M${80-s+12},160 C${80-s+10},172 ${80-s+8},184 ${80-s+8},192`,'line',1);line(`M${80+s-12},160 C${80+s-10},172 ${80+s-8},184 ${80+s-8},192`,'line',1);
  },
  front(E){const {path,line,sw,x}=E;
-  path('M52,82 C46,52 60,36 82,36 C104,36 114,52 108,82 C104,68 96,60 82,60 C68,60 58,68 52,82 Z','hair',0);
-  line('M52,82 C46,52 60,36 82,36 C104,36 114,52 108,82','line',1.1);
+  path('M54,82 C49,52 62,36 82,36 C102,36 112,52 108,82 C104,68 96,60 82,60 C68,60 58,68 54,82 Z','hair',0);
+  line('M54,82 C49,52 62,36 82,36 C102,36 112,52 108,82','line',1.1);
   // swept fringe, tips above brow line
-  path('M100,38 C78,38 58,50 50,76 C52,82 54,86 55,90 C57,80 60,72 66,67 L72,76 L80,65 L86,72 L96,58 Z','hair');
+  path('M100,38 C78,38 60,50 53,76 C54,82 55,86 56,90 C58,80 61,72 66,67 L72,76 L80,65 L86,72 L96,58 Z','hair');
   path('M90,42 C96,52 96,62 92,72 L84,62 L80,72 L76,64 C84,54 88,48 90,42 Z','hair');
-  path('M98,44 C108,50 112,62 110,80 C109,84 108,88 108,92 C106,80 102,72 98,64 Z','hair');
-  path('M51,76 C48,86 48,92 50,96 C52,90 54,86 57,82 Z','hair');path('M109,80 C112,88 112,92 110,96 C108,90 106,88 104,84 Z','hair');
+  path('M98,44 C106,50 110,62 108,80 C107,84 107,88 107,92 C105,80 102,72 98,64 Z','hair');
+  path('M54,76 C52,86 52,92 54,96 C55,90 56,86 58,82 Z','hair');path('M107,80 C108,88 108,92 106,96 C106,90 105,88 104,84 Z','hair');
   line('M62,52 C70,44 84,40 98,42','hairH',1.8);line('M60,68 C64,60 70,56 76,54','hairH',1);line('M104,58 C108,64 108,72 108,78','hairH',.9);
   line('M84,52 L80,66','hairD',.9);
   brows(E,'hairD',1.6);glasses(E,'sharp');
@@ -237,7 +237,7 @@ ART.saeki={
 // ----- KURODA
 ART.kuroda={
  back(E){const {path}=E;
-  path('M48,70 C46,80 46,88 49,94 L58,90 L58,70 Z','hairS',1);path('M112,70 C114,80 114,88 111,94 L102,90 L102,70 Z','hairS',1);
+  
  },
  body(E){const {path,line,x,P,c}=E,s=c.sw;
   neck(E);
@@ -255,12 +255,12 @@ ART.kuroda={
  },
  faceFront(E){const {line}=E;
   line('M64,64 q16,-3 32,0','skinS',.9);line('M67,69 q13,-2 26,0','skinS',.8);
-  line('M55,92 q-2,3 -1,6','skinS',.9);line('M105,92 q2,3 1,6','skinS',.9);
+  line('M59,96 q8,2.5 14,0','skinS',.8);line('M87,96 q8,2.5 14,0','skinS',.8);  line('M55,92 q-2,3 -1,6','skinS',.9);line('M105,92 q2,3 1,6','skinS',.9);
   line('M62,99 q-1,4 2,7','skinS',.9);line('M98,99 q1,4 -2,7','skinS',.9);
  },
  noMouth:1,
  mouth(E,talk){const {path,line,ell,x,P}=E,e=E.e;
-  const BEARD='M55,96 C55,108 58,118 66,126 C72,131 88,131 94,126 C102,118 105,108 105,96 C104,100 100,106 94,108 C90,110 84,111 80,111 C76,111 70,110 66,108 C60,106 56,102 55,96 Z';
+  const BEARD='M55,96 C55,108 58,118 66,125 L69,131 L75,128 L80,133 L85,128 L91,131 L94,125 C102,118 105,108 105,96 C104,100 100,106 94,108 C90,110 84,111 80,111 C76,111 70,110 66,108 C60,106 56,102 55,96 Z';
   path(BEARD,'hair',.9);
   line('M60,108 C62,118 68,125 75,128','hairS',1);line('M100,108 C98,118 92,125 85,128','hairH',1);line('M72,119 C76,123 84,123 88,119','hairS',.9);
   const my=112.5;
@@ -275,15 +275,12 @@ ART.kuroda={
   line('M65,105 C70,103.5 75,103.5 78,105','hairH',1);line('M95,105 C90,103.5 85,103.5 82,105','hairS',.9);
  },
  front(E){const {path,line,sw,x,P}=E;
-  const HP='M47,86 C42,52 58,34 80,34 C102,34 118,52 113,86 C111,74 106,66 100,62 C94,60 88,62 80,68 C72,62 66,60 60,62 C54,66 49,74 47,86 Z';
-  path(HP,'hair',0);
+  const HP='M49,86 C44,54 60,34 80,34 C100,34 116,54 111,86 L109,76 L105,79 L103,68 L97,71 L94,64 L89,67 L85,64 L80,71 L75,64 L71,67 L66,64 L63,71 L57,68 L55,79 L51,76 Z';
+  path(HP,'hair',1);
   x.save();x.clip(new Path2D(HP));for(let i=0;i<5;i++){const a=58+i*11;line(`M${a},${66-Math.abs(i-2)*1.5} C${a+(a-80)*.15},54 ${a+(a-80)*.35},44 ${a+(a-80)*.5+4},34`,'hairS',.8)}x.restore();
-  line('M47,86 C42,52 58,34 80,34 C102,34 118,52 113,86','line',1.1);
-  line('M47,86 C49,74 54,66 60,62 C66,60 72,62 80,68 C88,62 94,60 100,62 C106,66 111,74 113,86','line',.9);
   line('M58,52 C66,42 82,38 100,42','hairH',1.8);line('M52,70 C54,60 60,52 70,46','hairH',1.1);line('M104,54 C108,60 110,68 110,76','hairH',1);
   // sideburns
-  path('M47,84 C45,92 46,98 49,102 L54,96 C53,92 53,88 53,84 Z','hair');path('M113,84 C115,92 114,98 111,102 L106,96 C107,92 107,88 107,84 Z','hair');
-  // bushy brows (grey)
+    // bushy brows (grey)
   brows(E,'hairS',4,0,0);brows(E,'hair',2.8,0,0);brows(E,'hairH',1,0,-.3);
  }
 };
@@ -353,11 +350,14 @@ ART.haru={
  front(E){const {path,line,sw,x,P,e}=E;
   const TOP='M50,78 C44,62 46,52 52,46 L47,39 L60,42 L61,29 L71,38 L78,25 L86,36 L96,27 L98,40 L109,35 L107,48 C115,56 114,70 110,78 C106,68 98,62 80,62 C62,62 54,68 50,78 Z';
   path(TOP,'hair',0);line(TOP.split(' L48')[0]==''?TOP:'M50,78 C44,62 46,52 52,46 L47,39 L60,42 L61,29 L71,38 L78,25 L86,36 L96,27 L98,40 L109,35 L107,48 C115,56 114,70 110,78','line',1.1);
+  line('M50,78 C44,62 46,52 52,46 L47,39 L60,42 L61,29 L71,38 L78,25 L86,36 L96,27 L98,40 L109,35 L107,48 C115,56 114,70 110,78','line',1.1);
   line('M56,46 C62,38 74,34 88,36','hairH',1.8);line('M66,42 l3,-8','hairH',1.2);line('M90,38 l5,-6','hairH',1.2);line('M100,44 l6,-4','hairH',1);
   path('M54,66 C58,54 66,46 80,46 L68,84 L64,72 L58,88 Z','hair');
   path('M70,52 C76,46 84,46 90,50 L84,86 L80,74 L74,84 Z','hair');
   path('M88,50 C96,48 104,54 108,62 L102,88 L100,76 L94,84 Z','hair');
-  line('M72,60 L70,76','hairS',.9);line('M92,60 L90,76','hairS',.9);line('M60,56 C64,52 68,50 72,50','hairH',1.1);
+  x.save();x.beginPath();x.rect(30,0,100,64);x.clip();x.fillStyle=P.hair;x.fill(new Path2D(TOP));x.restore();
+  line('M50,78 C44,62 46,52 52,46 L47,39 L60,42 L61,29 L71,38 L78,25 L86,36 L96,27 L98,40 L109,35 L107,48 C115,56 114,70 110,78','line',1.1);line('M56,46 C62,38 74,34 88,36','hairH',1.8);line('M66,42 l3,-8','hairH',1.2);line('M90,38 l5,-6','hairH',1.2);line('M100,44 l6,-4','hairH',1);
+  line('M72,62 L70,76','hairS',.9);line('M92,62 L90,76','hairS',.9);line('M60,58 C64,54 68,52 72,52','hairH',1.1);
   path('M48,70 C46,84 46,96 50,104 C52,94 54,86 56,80 Z','hair');path('M112,70 C114,84 114,96 110,104 C108,94 106,86 104,80 Z','hair');
   brows(E,'hairD',1.9);
  }

@@ -52,7 +52,7 @@ function drawEye(k, G, i, ex, o) {
     k.line(`M${cx + f * (a * sc - .5)},${yc + 1.2} l${f * 2.4},-1.4`, P.line, 1.1);
     return;
   }
-  const e = EYE[nm];
+  const e0 = EYE[nm === 'closed' ? 'open' : nm]; const e = o.gaze ? Object.assign({}, e0, { gx: e0.gx + o.gaze[0], gy: e0.gy + o.gaze[1] }) : e0;
   if (o.blink) {
     const s = eyeShape(cx, yc, f, e, sc);
     const dy = nm === 'angry' ? 0 : 1.8;
@@ -70,10 +70,10 @@ function drawEye(k, G, i, ex, o) {
     k.ell(cx, yc - e.hT * sc - 1, 11 * sc, e.hT * .62 * sc + 1.6, P.whiteS);
     k.ell(icx, icy, ir, iry, P.irisD);
     k.ell(icx, icy + 1.7, ir, iry - 1.7, P.iris);
-    k.ell(icx, icy + iry * .55, ir * .72, iry * .38, P.irisL);
+    if (!o.lod) k.ell(icx, icy + iry * .55, ir * .72, iry * .38, P.irisL);
     k.ell(icx, icy + .4, e.pup * sc, e.pup * 1.25 * sc, P.pupil);
     k.circ(icx - 2 * f * sc, icy - iry * .42, 1.8 * sc, P.white);
-    k.circ(icx + 2.4 * f * sc, icy + iry * .55, 1 * sc, P.white);
+    if (!o.lod) k.circ(icx + 2.4 * f * sc, icy + iry * .55, 1 * sc, P.white);
     if (e.tears) { k.ell(cx, yc + e.hB * sc - .3, e.w * sc + 1, 2.2, P.tear); k.ell(cx - f * 2, yc + e.hB * sc - 1.2, 2, .8, P.white); }
   });
   // upper lash + flick
