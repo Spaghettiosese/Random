@@ -53,7 +53,7 @@ GER: [
   F('g_anti', 'Anti-Comintern Pact', 1, 2, 'g_axis', { rel: { JAP: 40, HUN: 20, ROM: 10 }, infl: 30 }, 'A common front against Bolshevism.', hist),
   F('g_tri', 'Tripartite Pact', 1, 3, 'g_anti', { fn: c => ['JAP', 'HUN', 'ROM', 'BUL'].forEach(t => { if (ok(t) && C(t).ai && C(t).ideology !== 'dem' && C(t).ideology !== 'com' && !factionOf(t) && !atWar(t, c.tag)) joinFaction(t, c.tag); }), tip: 'Japan, Hungary, Romania and Bulgaria may join the Axis' }, 'Three empires divide the world between them.', { req: warReq, ai: 3 }),
   F('g_anschluss', 'Anschluss', 2, 1, 'g_rhine', { fn: anschluss, tip: 'Austria is united with the Reich (if nobody guarantees it)', tension: 5 }, 'One people, one Reich.', { req: both(existsReq('AUT'), dateReq(1938, 2)), ai: 6 }),
-  F('g_sudeten', 'Demand the Sudetenland', 2, 2, 'g_anschluss', { play: { vs: 'CZE', provs: ['Karlsbad', 'Reichenberg'] } }, 'Three million Germans live under Czech rule. Not for long.', { req: both(existsReq('CZE'), dateReq(1938, 8)), ai: 6 }),
+  F('g_sudeten', 'Demand the Sudetenland', 2, 2, 'g_anschluss', { play: { vs: 'CZE', provs: ['Karlsbad', 'Reichenberg'], noBackHist: ['FRA', 'ENG', 'ROM', 'YUG', 'SOV', 'POL'] } }, 'Three million Germans live under Czech rule. Not for long.', { req: both(existsReq('CZE'), dateReq(1938, 8)), ai: 6 }),
   F('g_czech', 'Fate of Czechoslovakia', 2, 3, 'g_sudeten', { fn: germanCzech, tip: 'Occupy Bohemia and Moravia if the West stands aside; otherwise open a play for annexation' }, 'The rump state cannot be allowed to survive.', { req: both(existsReq('CZE'), dateReq(1939, 2)), ai: 6 }),
   F('g_memel', 'Memel Ultimatum', 1, 4, 'g_czech', { play: { vs: 'LIT', provs: ['Memel'], force: 'concede', days: 12 } }, 'The Memelland returns home.', { req: existsReq('LIT'), ai: 5 }),
   F('g_pact', 'Molotov–Ribbentrop Pact', 3, 4, 'g_czech', { nap: 'SOV', flag: 'mr_pact', eventFor: ['SOV', 'mr_pact_sov', 2] }, 'A pact with the devil buys a free hand in the west.', { req: both(existsReq('SOV'), dateReq(1939, 6)), ai: 6 }),
@@ -259,7 +259,7 @@ function focusDaily(c) {
   if (++c.focus.prog < f.days) return; c.focus.cur = null; c.focus.done[f.id] = G.day;
   if (f.fnGen) hireFree(c);
   applyEff(c, focusEff(c, f)); claimCache();
-  logMsg(`${c.name} completes the focus “${f.name}”.`, c.major ? 'world' : 'info', [c.tag]);
+  G.log.push({ d: G.day, text: `${c.name} completes the focus “${f.name}”.`, kind: 'info' });
   if (c.tag === G.player) UIH.notify(`Focus complete: ${f.name}. Choose a new national focus.`, 'focus');
 }
 function hireFree(c) { c.pp += 40; hireGeneral(c); }

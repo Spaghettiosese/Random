@@ -46,8 +46,8 @@ function aiLaws(c) {
 }
 function aiRecruit(c) {
   const war = isAtWar(c.tag), thr = aiThreat(c), n = c._ndiv || 0, B = c.budget; if (c.training.length >= (war ? 8 : 3)) return;
-  const target = Math.max(2, Math.round((c.stats.corePop / 2200) * (0.5 + thr * 1.6) * (c.major ? 1.25 : 1)) + (war ? 6 : 0));
-  if (n >= (war ? Math.max(target * 2, c.stats.corePop / 500) : target)) return; if (B.army > B.income * (war ? 0.7 : 0.3 + thr * 0.2) && !war) return; if (c.manpower < 30) return;
+  const target = Math.max(2, Math.round((c.stats.corePop / 2200) * (0.5 + thr * 1.6) * (c.major ? 1.25 : 1) * (c.major && c.ideology === 'fas' ? 1.5 : 1)) + (war ? 6 : 0));
+  if (n >= (war ? Math.max(target * 1.5, c.stats.corePop / 700) : target)) return; if (B.army > B.income * (war ? 0.7 : 0.3 + thr * 0.2) && !war) return; if (c.manpower < 30) return;
   const eqOK = g => (c.stock[g] || 0) > 30 || (c.market[g] && c.market[g].s > 5);
   let t = 'inf'; const r = Math.random();
   if (c.techs.m_tank1 && eqOK('tanks') && r < 0.15) t = 'arm'; else if (c.techs.m_mot && eqOK('autos') && c.stock.autos > 40 && r < 0.25) t = 'mot'; else if (c.techs.m_art1 && eqOK('artillery') && r < 0.5) t = 'hvy'; else if (c.techs.m_mtn && r < 0.58) t = 'mtn'; else if (!eqOK('arms') && war) t = 'mil';

@@ -151,7 +151,8 @@ function militaryWeekly(c) {
   // reinforcement
   for (const a of mine) { if (a.oos) continue; const p = P(a.loc), cap = (8 + (p.b.railway || 0) * 3 + p.dev * 2 + (p.b.port ? 3 : 0)) * (1 + M(c, 'supply')); const over = armiesAt(a.loc).reduce((n, x) => n + (x.owner === c.tag ? x.divs.length : 0), 0) > cap * 1.5;
     for (const d of a.divs) { if (over) { d.str = Math.max(0.2, d.str - 0.01); continue; } if (d.str >= 1) continue; const u = UNITS[d.t]; let f = Math.min(0.12, 1 - d.str); f = Math.min(f, c.manpower / u.mp);
-      for (const g in u.eq) f = Math.min(f, (c.stock[g] || 0) / u.eq[g]); if (f <= 0.001) continue; d.str += f; c.manpower -= f * u.mp; for (const g in u.eq) c.stock[g] -= f * u.eq[g]; } }
+      const keys = Object.keys(u.eq), pr = keys[0]; f = Math.min(f, (c.stock[pr] || 0) / u.eq[pr]); if (f <= 0.001) continue; let r = 1; for (const g of keys) if (g !== pr) r = Math.min(r, (c.stock[g] || 0) / (f * u.eq[g])); f *= 0.5 + 0.5 * Math.min(1, r);
+      d.str += f; c.manpower -= f * u.mp; for (const g of keys) c.stock[g] = Math.max(0, (c.stock[g] || 0) - f * u.eq[g]); } }
   for (const g of ['arms', 'artillery', 'tanks', 'autos']) c.stock[g] = Math.max(0, (c.stock[g] || 0) * 0.997);
   const mt = maxManpower(c) - inService(c); if (c.manpower < mt) c.manpower += (mt - c.manpower) * 0.04; else c.manpower = Math.max(0, mt + (c.manpower - mt) * 0.9);
   c.stock.aircraft *= 0.998; c.stock.ships *= 0.9992;

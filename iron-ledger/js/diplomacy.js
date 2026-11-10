@@ -123,7 +123,7 @@ function checkCapitulation(tag) {
   for (const p of G.P) if (p.owner === tag && p.cores.includes(tag)) { tot += p.vp; if (p.ctrl !== tag && atWar(tag, p.ctrl)) lost += p.vp; }
   if (!tot) { for (const p of G.P) if (p.owner === tag) { tot += p.vp; if (p.ctrl !== tag && atWar(tag, p.ctrl)) lost += p.vp; } }
   const lim = clamp(0.58 + (c.ws - 50) / 220 + (c.major ? 0.08 : 0) + M(c, 'caplimit') + (c.civilOf || G.wars.some(w => w.civil && (w.att.includes(tag) || w.def.includes(tag))) ? 0.15 : 0), 0.4, 0.92), capLost = atWar(tag, P(c.capital).ctrl);
-  if (lost / tot >= lim || (capLost && lost / tot >= lim * 0.7)) capitulate(tag);
+  if (lost / tot >= lim || (capLost && lost / tot >= lim * 0.85)) capitulate(tag);
 }
 function capitulate(tag) {
   const c = C(tag); c.capitulated = true; const occ = {}; for (const p of G.P) if (p.owner === tag && p.ctrl !== tag) occ[p.ctrl] = (occ[p.ctrl] || 0) + p.vp;
@@ -170,7 +170,7 @@ const GOAL_TXT = g => ({ take: 'cede ' + (g.provs || []).map(i => P(i).name).joi
 function startPlay(a, b, goal, opt = {}) {
   if (!ok(a) || !ok(b) || atWar(a, b) || C(a).overlord || friendly(a, b) || G.plays.some(p => p.a === a && p.b === b)) return null; if (goal.type === 'take' && !goal.provs.length) return null;
   if (hasPact('truce', a, b)) G.pacts = G.pacts.filter(p => !(p.t === 'truce' && ((p.a === a && p.b === b) || (p.a === b && p.b === a))));
-  const pl = { id: G.nid++, a, b, goal, day: G.day, dur: opt.days || 35, A: [a], B: [b], force: opt.force || null, noBack: opt.noBack || [] }; G.plays.push(pl);
+  const pl = { id: G.nid++, a, b, goal, day: G.day, dur: opt.days || 35, A: [a], B: [b], force: opt.force || null, noBack: (opt.noBack || []).concat(G.historical ? opt.noBackHist || [] : []) }; G.plays.push(pl);
   const size = goal.type === 'take' ? sum(goal.provs, i => P(i).claims.includes(a) || P(i).cores.includes(a) ? 1 : 3) : goal.type === 'annex' ? 4 + provsOf(b).length : 5;
   C(a).infamy += Math.min(25, size) * (1 + M(C(a), 'infamy')); G.tension = clamp(G.tension + 1 + Math.min(4, size * 0.3), 0, 100); dropPacts(a, b); addRel(a, b, -30);
   logMsg(`Diplomatic play: ${cname(a)} demands that ${cname(b)} ${GOAL_TXT(goal)}.`, 'world'); return pl;

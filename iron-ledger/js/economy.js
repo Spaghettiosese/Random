@@ -2,7 +2,7 @@
 'use strict';
 const priceOf = (base, d, s) => base * clamp(1 + 0.75 * (d - s) / Math.max(1, Math.min(d, s)), 0.25, 1.75);
 const provLevels = p => { let n = 0; for (const t in p.b) n += p.b[t]; return n; };
-const infraCap = (p, c) => (5 + p.dev * 2 + (p.b.railway || 0) * 8 + (p.b.port ? 3 : 0)) * (1 + M(c, 'infra'));
+const infraCap = (p, c) => (8 + p.dev * 5 + (p.b.railway || 0) * 8 + (p.b.port ? 3 : 0)) * (1 + M(c, 'infra'));
 const ruralCap = p => 4 + Math.floor(p.pop / 450);
 const resCap = (p, r) => p.res[r] * 8;
 const RES_OF = { coalm: 'coal', ironm: 'iron', oilr: 'oil', rubberp: 'rubber' };
@@ -96,7 +96,7 @@ function econFinish(c, warm) {
   const command = c.laws.econ === 'command'; if (command) B.state = Math.max(0, profits) * 0.45;
   if (c.overlord && C(c.overlord).exists) { B.tribute = -B.tax * 0.1; C(c.overlord).money += B.tax * 0.1; C(c.overlord)._trib = (C(c.overlord)._trib || 0) + B.tax * 0.1; }
   if (c._trib) { B.tribute += c._trib; c._trib = 0; }
-  B.welfare = M(c, 'welfare') * st.pop / 1000 * 26 * wl; B.gov = govCost; B.army = armyPay; B.procure = procure * 0.6;
+  B.welfare = M(c, 'welfare') * st.pop / 1000 * 26 * wl; B.gov = Math.min(govCost, Math.max(B.tax * 0.35, 20)); B.army = armyPay; B.procure = procure * 0.6;
   B.interest = c.money < 0 ? -c.money * 0.0012 : 0;
   B.income = B.tax + B.tariff + B.state + Math.max(0, B.tribute); B.expense = B.gov + B.army + B.procure + B.constr + B.welfare + B.interest + Math.max(0, -B.tribute);
   B.net = B.income - B.expense;
@@ -110,7 +110,7 @@ function econFinish(c, warm) {
   if (warm) return;
   c.money += B.net;
   const lim = Math.max(8000, B.income * 70);
-  if (c.money < -lim) { addSpirit(c, 'bankruptcy', 540); c.money = -lim * 0.25; c.stab = Math.max(0, c.stab - 12); logMsg(`${c.name} has defaulted on its debts!`, 'world', [c.tag]); }
+  if (c.money < -lim) { addSpirit(c, 'bankruptcy', 540); c.money = -lim * 0.25; c.stab = Math.max(0, c.stab - 12); logMsg(`${c.name} has defaulted on its debts!`, c.major ? 'world' : 'info', [c.tag]); }
   const inv = Math.max(0, profits) * 0.3 * (1 + M(c, 'invest')); if (inv > 0 && !command) c.invPool = Math.min(c.invPool + inv, 4000 + B.income * 8);
   construct(c);
   if (!command && c.pq.length < 2 && c.invPool > 1500 && st.cpts > 0) { const o = buildOptions(c, true)[0]; if (o && o.score > 0) c.pq.push({ prov: o.prov, type: o.type, prog: 0 }); }

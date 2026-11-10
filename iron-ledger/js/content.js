@@ -2,6 +2,7 @@
 'use strict';
 const SPIRITS = {
   versailles: ['Legacy of Versailles', 'A humiliated nation yearns to tear up the treaty.', { ws: 8, drift_fas: 0.1 }],
+  general_staff: ['The General Staff', 'A professional officer corps schooled in mission command.', { atk: 0.1, org: 0.12, train: 0.1 }],
   rearmament: ['Rearmament', 'The Reich rebuilds its armed forces at breakneck speed.', { mil_out: 0.15, train: 0.1, needs: -0.04 }],
   four_year_plan: ['Four Year Plan', 'The economy is being readied for war.', { mil_out: 0.12, build: 0.1 }],
   blitzkrieg: ['Blitzkrieg', 'Armour, aircraft and audacity.', { atk: 0.15, tank: 0.2, org: 0.15 }],

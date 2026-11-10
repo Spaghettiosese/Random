@@ -18,7 +18,7 @@ const dateObj = d => new Date(DAY0 + d * 864e5);
 const dateStr = d => { const t = dateObj(d === undefined ? G.day : d); return t.getUTCDate() + ' ' + MONTHS[t.getUTCMonth()] + ' ' + t.getUTCFullYear(); };
 const dayOf = (y, m, d) => Math.round((Date.UTC(y, m - 1, d) - DAY0) / 864e5);
 const year = () => dateObj(G.day).getUTCFullYear();
-const fmt = n => { const a = Math.abs(n); return a >= 1e6 ? (n / 1e6).toFixed(a >= 1e7 ? 1 : 2) + 'M' : a >= 1e4 ? (n / 1e3).toFixed(a >= 1e5 ? 0 : 1) + 'K' : a >= 100 ? Math.round(n) + '' : a >= 10 ? n.toFixed(1).replace(/\.0$/, '') : n.toFixed(2).replace(/\.?0+$/, ''); };
+const fmt = n => { const a = Math.abs(n); return a >= 1e9 ? (n / 1e9).toFixed(2) + 'B' : a >= 1e6 ? (n / 1e6).toFixed(a >= 1e7 ? 1 : 2) + 'M' : a >= 1e4 ? (n / 1e3).toFixed(a >= 1e5 ? 0 : 1) + 'K' : a >= 100 ? Math.round(n) + '' : a >= 10 ? n.toFixed(1).replace(/\.0$/, '') : n.toFixed(2).replace(/\.?0+$/, ''); };
 const pct = (x, d = 0) => (x >= 0 ? '+' : '') + (x * 100).toFixed(d) + '%';
 const alive = () => Object.values(G.C).filter(c => c.exists);
 const provsOf = t => G.P.filter(p => p.owner === t);
