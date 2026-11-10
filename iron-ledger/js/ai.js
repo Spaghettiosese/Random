@@ -71,7 +71,7 @@ function aiDiplomacy(c) {
     if (mine > their * 1.8) { c.infl -= 40; startPlay(c.tag, t, { type: 'take', provs: tg[t] }); return; } }
 }
 function aiDecisions(c) { for (const id in DECISIONS) { const d = DECISIONS[id]; if (!d.ai || Math.random() > d.ai * 0.5 || (d.aiIf && !d.aiIf(c))) continue; if (decisionState(c, id) === '' && c.pp > d.cost + 60) { takeDecision(c, id); return; } } }
-function aiMonthly(c) { aiFocus(c); aiResearch(c); aiProjects(c); aiLaws(c); aiDiplomacy(c); aiDecisions(c); aiGenerals(c);
+function aiMonthly(c) { aiFocus(c); aiResearch(c); aiProjects(c); aiIntel(c); aiLend(c); aiLaws(c); aiDiplomacy(c); aiDecisions(c); aiGenerals(c);
   if (c.ig && c.legit < 30 && c.pp > 60) { const out = IG_IDS.filter(g => !c.ig[g].gov && c.ig[g].appr > -3).sort((a, b) => c.ig[b].clout - c.ig[a].clout)[0]; if (out && IG_IDS.filter(g => c.ig[g].gov).length < 3) toggleGov(c, out); } }
 function aiWeekly(c) { aiEconomy(c); aiRecruit(c); }
 

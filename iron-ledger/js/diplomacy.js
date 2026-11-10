@@ -106,7 +106,7 @@ function annex(a, tag, peaceful) {
   eliminate(tag, a); logMsg(`${A.name} annexes ${c.name}.`, 'world'); G.tension = clamp(G.tension + (peaceful ? 3 : 1), 0, 100); UIH.mapDirty();
 }
 function makeSubject(a, t) {
-  const c = C(t); if (!c.exists || a === t) return; leaveFaction(t); c.overlord = a; dropPacts(a, t); c.capitulated = false;
+  const c = C(t); if (!c.exists || a === t) return; leaveFaction(t); c.overlord = a; c.autonomy = 35; dropPacts(a, t); c.capitulated = false;
   for (const w of G.wars) { w.att = w.att.filter(x => x !== t); w.def = w.def.filter(x => x !== t); } G._wc = null;
   for (const w of G.wars) { const s = w.att.includes(a) ? 'att' : w.def.includes(a) ? 'def' : null; if (s) joinWar(w, t, s); }
   logMsg(`${c.name} becomes a subject of ${cname(a)}.`, 'world'); repatriate();

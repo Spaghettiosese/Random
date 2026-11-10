@@ -59,11 +59,11 @@ function econSupplyDemand(c) {
   mk.autos.d += need.autos || 0; mk.oil.d += need.oil || 0; mk.coal.d += (c.stock.ships || 0) * 0.02;
 }
 function worldTrade(cs) {
-  const gs = G.wp; let gS, gD;
+  const gs = G.wp; let gS, gD; for (const c of cs) c._tp = tradePacts(c.tag);
   for (const g of GOOD_IDS) {
     let W = 0, O = 0; gS = 0; gD = 0;
-    for (const c of cs) { const m = c.market[g], o = clamp(0.55 + M(c, 'tradecap') + Math.min(0.2, c.stats.ports * 0.01) - (c.blockade || 0), 0.03, 1); c._open = o; gS += m.s; gD += m.d;
-      const net = m.s - m.d; m._w = net < 0 ? -net * o : 0; m._o = net > 0 ? net * o * 0.9 : 0; W += m._w; O += m._o; }
+    for (const c of cs) { const m = c.market[g], o = clamp(0.55 + M(c, 'tradecap') + Math.min(0.2, c.stats.ports * 0.01) + Math.min(0.2, (c._tp || 0) * 0.03) - (c.blockade || 0), 0.03, 1), pol = c.tpol ? c.tpol[g] : 0; c._open = o; gS += m.s; gD += m.d;
+      const net = m.s - m.d; m._w = net < 0 && pol !== 'noimp' ? -net * o : 0; m._o = net > 0 && pol !== 'noexp' ? net * o * 0.9 : 0; W += m._w; O += m._o; }
     const T = Math.min(W, O);
     for (const c of cs) { const m = c.market[g]; m.imp = W > 0 ? m._w * T / W : 0; m.exp = O > 0 ? m._o * T / O : 0; }
     gs[g] = { p: priceOf(GOODS[g][1], gD, gS), s: gS, d: gD, t: T };
@@ -94,7 +94,7 @@ function econFinish(c, warm) {
   const bneed = st.pop / 2500 + st.levels / 12 + 3, teff = clamp(0.45 + 0.55 * st.bureau / bneed, 0.45, 1.05) * (1 + M(c, 'tax')), rate = TAX_RATE[c.taxLevel];
   B.tax = rate * teff * (wages + armyPay + subs * 0.35) + rate * 0.5 * teff * Math.max(0, profits); B.tariff = tariffs;
   const command = c.laws.econ === 'command'; if (command) B.state = Math.max(0, profits) * 0.45;
-  if (c.overlord && C(c.overlord).exists) { B.tribute = -B.tax * 0.1; C(c.overlord).money += B.tax * 0.1; C(c.overlord)._trib = (C(c.overlord)._trib || 0) + B.tax * 0.1; }
+  if (c.overlord && C(c.overlord).exists) { const tr = B.tax * tributeRate(c); B.tribute = -tr; C(c.overlord).money += tr; C(c.overlord)._trib = (C(c.overlord)._trib || 0) + tr; }
   if (c._trib) { B.tribute += c._trib; c._trib = 0; }
   B.welfare = M(c, 'welfare') * st.pop / 1000 * 26 * wl; B.gov = Math.min(govCost, Math.max(B.tax * 0.35, 20)); B.army = armyPay; B.procure = procure * 0.6;
   B.interest = c.money < 0 ? -c.money * 0.0012 : 0;

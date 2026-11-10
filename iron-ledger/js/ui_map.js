@@ -15,12 +15,13 @@ function mapInit() {
     if (segs.length) INNER.push([a, b, segs]); }
   const el = document.getElementById('mapmodes'); el.innerHTML = MODES.map(m => `<button data-mode="${m[0]}">${m[1]}</button>`).join('');
   el.onclick = e => { const m = e.target.dataset.mode; if (m) { MV.mode = m; MV.dirty = true; mapModeButtons(); } }; mapModeButtons();
-  let drag = null, moved = false, pinch = null; const pts = new Map();
-  mapCv.addEventListener('pointerdown', e => { mapCv.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]); drag = [e.clientX, e.clientY, MV.x, MV.y]; moved = false; if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = [Math.hypot(a[0] - b[0], a[1] - b[1]), MV.s]; } });
+  let drag = null, moved = false, pinch = null, box = null; const pts = new Map();
+  mapCv.addEventListener('pointerdown', e => { mapCv.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]); drag = [e.clientX, e.clientY, MV.x, MV.y]; moved = false; box = e.shiftKey && e.button === 0 ? [e.clientX, e.clientY] : null; if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = [Math.hypot(a[0] - b[0], a[1] - b[1]), MV.s]; } });
   mapCv.addEventListener('pointermove', e => { if (!pts.has(e.pointerId)) { mapHover(e); return; } pts.set(e.pointerId, [e.clientX, e.clientY]);
+    if (box) { const r = mapCv.getBoundingClientRect(); if (Math.abs(e.clientX - box[0]) + Math.abs(e.clientY - box[1]) > 6) { MV.box = [box[0] - r.left, box[1] - r.top, e.clientX - r.left, e.clientY - r.top]; moved = true; MV.dirty = true; } return; }
     if (pts.size === 2 && pinch) { const [a, b] = [...pts.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); zoomAt((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, pinch[1] * d / pinch[0] / MV.s); moved = true; return; }
     if (!drag) return; const dx = e.clientX - drag[0], dy = e.clientY - drag[1]; if (Math.abs(dx) + Math.abs(dy) > 5) moved = true; if (moved) { MV.x = drag[2] - dx / MV.s; MV.y = drag[3] - dy / MV.s; clampView(); MV.dirty = true; } });
-  const up = e => { const had = pts.has(e.pointerId); pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (had && !moved && e.type === 'pointerup') mapClick(e, e.button === 2); drag = null; };
+  const up = e => { if (box && MV.box) { const b = MV.box; box = null; MV.box = null; pts.delete(e.pointerId); drag = null; MV.dirty = true; uiBoxSelect(b); return; } box = null; const had = pts.has(e.pointerId); pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (had && !moved && e.type === 'pointerup') mapClick(e, e.button === 2); drag = null; };
   mapCv.addEventListener('pointerup', up); mapCv.addEventListener('pointercancel', up);
   mapCv.addEventListener('contextmenu', e => e.preventDefault());
   mapCv.addEventListener('wheel', e => { e.preventDefault(); zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.18 : 1 / 1.18); }, { passive: false });
@@ -97,10 +98,11 @@ function mapDraw() {
   for (const id in G.armies) { const a = G.armies[id]; if (far && a.owner !== pl && !atWar(pl, a.owner)) continue; const b = PBOX[a.loc]; if (b[2] < vx0 || b[0] > vx1 || b[3] < vy0 || b[1] > vy1) continue; const k = a.loc + '|' + a.owner; (by[k] || (by[k] = [])).push(a); }
   const slot = {}; ctx.font = '600 11px Barlow, sans-serif';
   for (const k in by) { const list = by[k], a0 = list[0], m = MAP.P[a0.loc], n = slot[a0.loc] = (slot[a0.loc] || 0) + 1, w = far ? 18 : 30, h = far ? 11 : 16, x = X(m.x) - w / 2 + (n - 1) * (w + 2) - 0, y = Y(m.y) - h - 5;
-    const divs = sum(list, a => a.divs.length), c = C(a0.owner), sel = list.some(a => a.id === SEL.army), org = sum(list, a => sum(a.divs, d => d.org)) / Math.max(1, divs), str = sum(list, a => sum(a.divs, d => d.str)) / Math.max(1, divs);
+    const divs = sum(list, a => a.divs.length), c = C(a0.owner), sel = list.some(a => a.id === SEL.army || (SEL.multi && SEL.multi.includes(a.id))), org = sum(list, a => sum(a.divs, d => d.org)) / Math.max(1, divs), str = sum(list, a => sum(a.divs, d => d.str)) / Math.max(1, divs);
     ctx.fillStyle = a0.owner === pl ? '#f4ecd0' : atWar(pl, a0.owner) ? '#f0b0a0' : '#c8ccd0'; ctx.fillRect(x, y, w, h); ctx.fillStyle = c.color; ctx.fillRect(x, y, 6, h);
     ctx.fillStyle = '#3a9a4a'; ctx.fillRect(x + 6, y + h - 2.5, (w - 6) * org, 2.5); ctx.fillStyle = '#c08030'; ctx.fillRect(x + 6, y, (w - 6) * str, 1.5);
     ctx.strokeStyle = sel ? '#fff' : '#000'; ctx.lineWidth = sel ? 2.5 : 1; ctx.strokeRect(x, y, w, h); ctx.fillStyle = '#111'; if (!far) ctx.fillText(divs + (list.some(a => a.path.length) ? '›' : '') + (list.some(a => a.oos) ? '!' : ''), x + 6 + (w - 6) / 2, y + h / 2);
     MV.hits.push([x, y, w, h, a0.loc, a0.owner]); }
+  if (MV.box) { const b = MV.box; ctx.strokeStyle = '#fff'; ctx.setLineDash([4, 3]); ctx.lineWidth = 1.5; ctx.strokeRect(b[0], b[1], b[2] - b[0], b[3] - b[1]); ctx.setLineDash([]); ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(b[0], b[1], b[2] - b[0], b[3] - b[1]); }
   for (const b of G.battles) { const m = MAP.P[b.prov], x = X(m.x), y = Y(m.y) + 14; if (x < 0 || y < 0 || x > MV.w || y > MV.h) continue; ctx.fillStyle = '#000b'; ctx.fillRect(x - 17, y - 5, 34, 9); ctx.fillStyle = '#d04030'; ctx.fillRect(x - 16, y - 4, 32, 7); ctx.fillStyle = '#40a050'; ctx.fillRect(x - 16, y - 4, 32 * b.bal, 7); ctx.font = '13px sans-serif'; ctx.fillText('⚔', x, y - 12); }
 }

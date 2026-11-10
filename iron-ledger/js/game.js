@@ -8,8 +8,8 @@ function dayTick() {
   for (const c of cs) { politicsDaily(c); focusDaily(c); }
   playDaily(); eventsDaily();
   for (const c of cs) { if (!c.exists) continue; const h = hashTag(c.tag); if ((G.day + h) % 2 === 0) aiArmies(c.tag); if (c.ai && !c.capitulated && (G.day + h) % 7 === 0) aiWeekly(c); }
-  if (G.day % 7 === 0) { economyTick(false); for (const c of alive()) { researchTick(c); militaryWeekly(c); projectTick(c); } }
-  if (first) { diplomacyMonthly(); for (const c of alive()) { politicsMonthly(c); monthlyPops(c); if (c.ai && !c.capitulated) aiMonthly(c); eventsMonthly(c); }
+  if (G.day % 7 === 0) { economyTick(false); { const pl = C(G.player); if (pl && pl.exists && !pl.ai) autoBuild(pl); } for (const c of alive()) { researchTick(c); militaryWeekly(c); projectTick(c); lendLeaseTick(c); intelTick(c); } }
+  if (first) { diplomacyMonthly(); subjectsMonthly(); { const pl = C(G.player); if (pl && pl.exists && !pl.ai) autoTrade(pl); } for (const c of alive()) { politicsMonthly(c); monthlyPops(c); if (c.ai && !c.capitulated) aiMonthly(c); eventsMonthly(c); }
     if (dt.getUTCMonth() === 0) yearly(); }
   if (G.day % 30 === 0) for (const c of alive()) checkCapitulation(c.tag);
 }

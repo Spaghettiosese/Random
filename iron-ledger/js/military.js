@@ -30,9 +30,9 @@ function regionOf(start, tag) { const seen = new Set([start]), st = [start]; whi
 function borderProvs(tag) { return heldBy(tag).filter(p => NB[p.id].some(e => !e.sea && P(e.to).ctrl !== tag)).sort((a, b) => b.vp - a.vp); }
 function assignGeneral(a, g) { const c = C(a.owner); for (const x of armiesOf(a.owner)) if (x.gen === g.id) x.gen = null; if (a.gen) { const o = genOf(a); if (o) o.army = null; } a.gen = g.id; g.army = a.id; }
 function hireGeneral(c) { if (c.pp < 40) return null; c.pp -= 40; const g = { id: G.nid++, name: pick(['A.', 'B.', 'C.', 'E.', 'F.', 'G.', 'H.', 'J.', 'K.', 'L.', 'M.', 'N.', 'P.', 'R.', 'S.', 'T.', 'V.', 'W.']) + ' ' + pick(NAMEPOOL[c.np] || NAMEPOOL.west), skill: rint(1, 3), trait: pick(Object.keys(TRAITS)), xp: 0 }; c.gens.push(g); return g; }
-function recruit(c, type, n = 1) {
+function recruit(c, type, n = 1, loc) {
   const u = UNITS[type]; if (u.tech && !c.techs[u.tech]) return 0; let k = 0;
-  for (let i = 0; i < n; i++) { if (c.manpower < u.mp) break; c.manpower -= u.mp; c.training.push({ t: type, days: Math.round(u.days / (1 + M(c, 'train'))) }); k++; } return k;
+  for (let i = 0; i < n; i++) { if (c.manpower < u.mp) break; c.manpower -= u.mp; const days = Math.round(u.days / (1 + M(c, 'train'))); c.training.push({ t: type, days, total: days, loc }); k++; } return k;
 }
 function militaryNeeds(c) {
   const need = { arms: 0, artillery: 0, tanks: 0, autos: 0, oil: 0 }, war = isAtWar(c.tag) ? 1 : 0.35; let n = 0;
@@ -143,7 +143,7 @@ function militaryWeekly(c) {
   const war = isAtWar(c.tag), mine = armiesOf(c.tag);
   // training
   for (const t of c.training) t.days -= 7; const done = c.training.filter(t => t.days <= 0); c.training = c.training.filter(t => t.days > 0);
-  for (const t of done) spawnDivisions(c, t.t, 1, undefined, 0.3); if (done.length && c.tag === G.player) UIH.notify(`${done.length} new division${done.length > 1 ? 's' : ''} finished training.`, 'mil');
+  for (const t of done) { if (c.recruitNew) { const loc = t.loc !== undefined && P(t.loc).ctrl === c.tag ? t.loc : P(c.capital).ctrl === c.tag ? c.capital : (heldBy(c.tag)[0] || {}).id; if (loc === undefined) continue; let a = armiesAt(loc).find(x => x.owner === c.tag && x.recruits && x.divs.length < 8 && !x.battle); if (!a) { a = newArmy(c, loc); a.recruits = true; a.auto = false; } a.divs.push({ t: t.t, str: 0.3, org: 0.6, xp: 0 }); } else spawnDivisions(c, t.t, 1, t.loc, 0.3); } if (done.length && c.tag === G.player) UIH.notify(`${done.length} new division${done.length > 1 ? 's' : ''} finished training.`, 'mil');
   // supply
   if (war) { const sup = new Set(), st = []; for (const p of G.P) if ((p.ctrl === c.tag || friendly(c.tag, p.ctrl)) && (p.cores.includes(p.ctrl) || (p.coastal && !(c.blockade > 0.3)))) { sup.add(p.id); st.push(p.id); }
     while (st.length) { const x = st.pop(); for (const e of NB[x]) if (!e.sea && !sup.has(e.to)) { const q = P(e.to); if (q.ctrl === c.tag || friendly(c.tag, q.ctrl)) { sup.add(e.to); st.push(e.to); } } }

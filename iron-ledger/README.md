@@ -8,6 +8,23 @@ Open `index.html` in a browser. No build step, no server.
 
 ## Updates
 
+### 1.2 "Allied Nations"
+
+- **United States** (119 focuses), **United Kingdom** (133) and **France** (102) get large new
+  focus trees with political alternatives and full industry, army, navy, air and science branches.
+- **Intelligence Agency**: found an agency and run covert operations (steal blueprints, sabotage,
+  propaganda, unrest, infiltrate a general staff, stage a coup) from the Intel tab.
+- **Lend-Lease**: ship a standing share of war production to a country at war.
+- **Puppet system**: subjects have autonomy and four levels with different tribute; tighten or
+  loosen control, levy manpower, raise colonial divisions, invest, annex or free them; release
+  nations whose homelands you hold; as a subject, seek autonomy or declare independence.
+- **Army rework**: a Recruit tab with muster point, new-army formation and a visible training
+  queue; rename armies; detach or transfer single divisions.
+- **Quality of life**: select whole stacks, Shift-click and Shift-drag to mass-select, group
+  orders, right-click a foreign country to open its diplomacy page.
+- **Automation**: auto-build (Balanced / Civilian / Military) and auto-trade; a Trade tab with
+  per-good import and export bans. Trade agreements now raise trade openness.
+
 ### 1.1.1
 
 - Anschluss and Sudetenland: the historical timetable now binds only the AI, the Sudeten
@@ -39,7 +56,7 @@ Initial release.
   state and private construction queues.
 - **Politics**: eight interest groups with clout and approval, legitimacy, 13 law categories,
   law debates, elections, ideology support, coups and civil wars.
-- **Focus trees**: unique trees for Germany, Hungary, Austria, the Soviet Union, the United States, the United
+- **Focus trees**: unique trees for Germany, the United States, the United Kingdom, France, Hungary, Austria, the Soviet Union, the United States, the United
   Kingdom, France, Italy, Japan, China, Poland, Spain and Turkey, each with historical and
   alternative paths; a generic tree with four political paths for everyone else.
 - **Military**: seven division types, equipment made by your own war industry, historical and

@@ -1,6 +1,6 @@
 // Headless simulation: node test/sim.js [years] [player]
 const fs = require('fs'), vm = require('vm'), path = require('path');
-const files = ['data/provinces.js', 'data/map.js', 'data/countries.js', 'js/defs.js', 'js/core.js', 'js/economy.js', 'js/politics.js', 'js/military.js', 'js/diplomacy.js', 'js/focus.js', 'js/content.js', 'js/focus_gd.js', 'js/projects.js', 'js/ai.js', 'js/game.js'];
+const files = ['data/provinces.js', 'data/map.js', 'data/countries.js', 'js/defs.js', 'js/core.js', 'js/economy.js', 'js/politics.js', 'js/military.js', 'js/diplomacy.js', 'js/focus.js', 'js/content.js', 'js/focus_gd.js', 'js/projects.js', 'js/allied.js', 'js/systems.js', 'js/ai.js', 'js/game.js'];
 const src = files.map(f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8')).join('\n;\n') + '\n;globalThis.API = { PN, newGame, gameTick, G: () => G, C, alive, provsOf, armiesOf, dateStr, UIH, countryStr, fmt, navalPower, airPower, serialize, deserialize, focusTree, TREES, genericTree, effText, DECISIONS, EVENTS, SPIRITS, TECHS, BLD, applyEff };';
 vm.runInThisContext(src, { filename: 'bundle.js' });
 const A = globalThis.API, years = +(process.argv[2] || 5), world = [];
