@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brass &amp; Steel: Gun Range</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="view"></canvas>
+
+<div id="scope"><div class="ring"></div><div class="h"></div><div class="v"></div><div class="tick t1"></div><div class="tick t2"></div><div class="tick t3"></div></div>
+
+<div id="hud" class="hidden">
+  <div id="crosshair"><i></i><i></i><i></i><i></i><b></b></div>
+  <div id="hitmarker"></div>
+  <div id="pops"></div>
+  <div id="stats">
+    <div><label>SCORE</label><span id="score">0</span></div>
+    <div><label>ACCURACY</label><span id="acc">--</span></div>
+    <div id="drill"></div>
+  </div>
+  <div id="msg" class="hidden"></div>
+  <div id="reload-hint" class="hidden">R to reload</div>
+  <div id="weapon">
+    <div id="gun-name"></div>
+    <div id="gun-sub"></div>
+    <div class="count"><span id="ammo">0</span><span id="mag"></span></div>
+  </div>
+  <div id="slots"></div>
+  <div id="keys">LMB fire &middot; RMB aim &middot; R reload &middot; F inspect &middot; 1-5 / wheel / Q switch &middot; Shift sprint &middot; Space jump &middot; B drill &middot; T reset</div>
+</div>
+
+<div id="start">
+  <div class="panel">
+    <h1 id="start-title">BRASS &amp; STEEL</h1>
+    <p class="tag">a first-person gun range</p>
+    <table>
+      <tr><td>Mouse</td><td>Look</td><td>Left click</td><td>Fire</td></tr>
+      <tr><td>W A S D</td><td>Move</td><td>Right click</td><td>Aim down sights</td></tr>
+      <tr><td>Shift</td><td>Sprint</td><td>R</td><td>Reload</td></tr>
+      <tr><td>Space</td><td>Jump</td><td>F</td><td>Inspect weapon</td></tr>
+      <tr><td>1 - 5 / wheel</td><td>Switch gun</td><td>Q</td><td>Last gun</td></tr>
+      <tr><td>B</td><td>30-second drill</td><td>T</td><td>Reset targets</td></tr>
+    </table>
+    <button id="start-btn">Click to play</button>
+  </div>
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

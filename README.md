@@ -64,3 +64,32 @@ Settings → **Eric's face** lets you load a photo from your computer and line t
 * `js/ball.js` and `js/boss.js`: basketball physics/shooting and the boss fight
 * `js/audio.js`: every sound (bell, drums, screeches, music box, ambience) is synthesized with the Web Audio API. Optional text-to-speech voice acting is in Settings
 * `vendor/three.module.min.js`: three.js r160 (MIT), vendored so the game works offline
+
+---
+
+# Brass & Steel (gun range)
+
+A separate first-person gun range game lives in [`gunrange/`](gunrange/). It shares the vendored three.js and also has no build step. Serve the repo root as above and open `/gunrange/`.
+
+Five guns, each with its own draw, fire, reload and inspect animations:
+
+| Key | Gun | Notes |
+| --- | --- | --- |
+| 1 | Kestrel 9 | Semi-auto pistol, slide locks back when empty |
+| 2 | Longhorn .357 | Revolver, speedloader reload, cylinder spin on inspect |
+| 3 | VX-5 Carbine | Full-auto, red dot sight |
+| 4 | Brawler 12 | Pump shotgun, loads one shell at a time (fire to interrupt) |
+| 5 | Sentinel .308 | Bolt-action with an 8x scope |
+
+| Control | Action |
+| --- | --- |
+| Mouse / W A S D | Look / move |
+| Left click / right click | Fire / aim down sights |
+| R / F | Reload / inspect |
+| 1-5, wheel, Q | Switch gun / last gun |
+| Shift / Space | Sprint / jump |
+| B / T | Start the 30-second pop-up drill / reset targets and score |
+
+Targets: scored paper bullseyes, a moving target on a rail, a falling plate rack, and swinging gongs at 50, 75 and 100 m.
+
+Code: `js/anim.js` (keyframe clips with monotone cubic interpolation, layered with procedural recoil and sway), `js/guns.js` (models, stats, clips), `js/range.js` (world and targets), `js/audio.js` (synthesised sound), `js/main.js` (player, weapon logic, HUD).
