@@ -1,7 +1,7 @@
 // Headless simulation: node test/sim.js [years] [player]
 const fs = require('fs'), vm = require('vm'), path = require('path');
-const files = ['data/provinces.js', 'data/map.js', 'data/countries.js', 'js/defs.js', 'js/core.js', 'js/economy.js', 'js/politics.js', 'js/military.js', 'js/diplomacy.js', 'js/focus.js', 'js/content.js', 'js/ai.js', 'js/game.js'];
-const src = files.map(f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8')).join('\n;\n') + '\n;globalThis.API = { newGame, gameTick, G: () => G, C, alive, provsOf, armiesOf, dateStr, UIH, countryStr, fmt, navalPower, airPower, serialize, deserialize, focusTree, TREES, genericTree, effText, DECISIONS, EVENTS, SPIRITS, TECHS, BLD, applyEff };';
+const files = ['data/provinces.js', 'data/map.js', 'data/countries.js', 'js/defs.js', 'js/core.js', 'js/economy.js', 'js/politics.js', 'js/military.js', 'js/diplomacy.js', 'js/focus.js', 'js/content.js', 'js/focus_gd.js', 'js/projects.js', 'js/ai.js', 'js/game.js'];
+const src = files.map(f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8')).join('\n;\n') + '\n;globalThis.API = { PN, newGame, gameTick, G: () => G, C, alive, provsOf, armiesOf, dateStr, UIH, countryStr, fmt, navalPower, airPower, serialize, deserialize, focusTree, TREES, genericTree, effText, DECISIONS, EVENTS, SPIRITS, TECHS, BLD, applyEff };';
 vm.runInThisContext(src, { filename: 'bundle.js' });
 const A = globalThis.API, years = +(process.argv[2] || 5), world = [];
 A.UIH.popup = p => { if (p.options && p.options[0].fn) p.options[0].fn(); };
@@ -10,6 +10,8 @@ const t0 = Date.now(); A.newGame(process.argv[3] || 'SWI'); A.G().historical = t
 // validate content references
 for (const k in A.TREES) for (const f of A.TREES[k]) { A.effText(f.eff, A.C(k)); for (const p of (f.pre || '').split(/[|,]/)) if (p && !A.TREES[k].find(x => x.id === p)) throw new Error(k + ' focus ' + f.id + ' bad prereq ' + p); for (const p of (f.mutex || '').split(',')) if (p && !A.TREES[k].find(x => x.id === p)) throw new Error(k + ' bad mutex ' + p); }
 for (const c of A.alive()) for (const f of A.focusTree(c)) A.effText(f.eff, c);
+for (const k in A.TREES) for (const f of A.TREES[k]) for (const key of ['claim', 'core', 'fort']) { const v = f.eff[key]; if (Array.isArray(v)) v.forEach(n => { if (typeof n === 'string' && !A.C(n)) A.PN(n); }); }
+console.log('focus counts', Object.keys(A.TREES).map(k => k + ' ' + A.TREES[k].length).join(', '));
 for (const k in A.DECISIONS) A.effText(A.DECISIONS[k].eff, A.C('GER'));
 console.log('init ms', Date.now() - t0);
 const rep = () => { const G = A.G(); console.log('\n== ' + A.dateStr() + '  tension ' + G.tension.toFixed(0) + '  wars ' + G.wars.map(w => w.name + ' [' + w.att.join(',') + ' v ' + w.def.join(',') + ']').join('; '));

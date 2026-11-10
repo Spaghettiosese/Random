@@ -69,20 +69,21 @@ function occupy(p, tag) {
   if (p.vp >= 10 && C(old)) logMsg(`${p.name} falls to ${cname(tag)}.`, C(old).major || p.vp >= 20 ? 'world' : 'info', [old, tag]);
   checkCapitulation(old); if (p.owner !== old) checkCapitulation(p.owner);
 }
-function militaryDaily() {
+function militaryHourly() {
+  const hr = G.hour || 0;
   for (const id in G.armies) { const a = G.armies[id]; if (!a.divs.length) { removeArmy(a); continue; }
     const c = C(a.owner);
-    if (!a.battle) { const r = 0.025 * (1 + M(c, 'org')) * (a.oos ? 0.3 : 1), mx = a.oos ? 0.4 : 1; for (const d of a.divs) if (d.org < mx) d.org = Math.min(mx, d.org + r); }
+    if (hr === 0 && !a.battle) { const r = 0.025 * (1 + M(c, 'org')) * (a.oos ? 0.3 : 1), mx = a.oos ? 0.4 : 1; for (const d of a.divs) if (d.org < mx) d.org = Math.min(mx, d.org + r); }
     if (!a.path.length || a.battle) continue;
     const nx = a.path[0], p = P(nx), e = NB[a.loc].find(q => q.to === nx); if (!e || !passable(a.owner, p)) { a.path = []; continue; }
     const hostile = atWar(a.owner, p.ctrl);
     if (hostile) { const defs = armiesAt(nx).filter(x => atWar(a.owner, x.owner)); if (defs.length) { if (e.sea && !seaOK(a.owner, p)) { a.path = []; continue; } joinBattle(a, nx); continue; } }
-    a.prog += 1; if (a.prog < moveDays(a, a.loc, nx, e.sea)) continue;
+    a.prog += 1 / 24; if (a.prog < moveDays(a, a.loc, nx, e.sea)) continue;
     if (hostile && e.sea && !seaOK(a.owner, p)) { a.path = []; continue; }
     a.loc = nx; a.path.shift(); a.prog = 0; a.dug = 0; if (hostile) { occupy(p, a.owner); for (const d of a.divs) d.org *= 0.7; }
   }
-  for (const b of G.battles.slice()) resolveBattle(b);
-  for (const id in G.armies) { const a = G.armies[id]; if (!a.path.length && !a.battle) a.dug = Math.min(10, (a.dug || 0) + 1); }
+  if (hr % 6 === 0) for (const b of G.battles.slice()) resolveBattle(b);
+  if (hr === 0) for (const id in G.armies) { const a = G.armies[id]; if (!a.path.length && !a.battle) a.dug = Math.min(10, (a.dug || 0) + 1); }
 }
 function removeArmy(a) { const g = genOf(a); if (g) g.army = null; if (a.battle) leaveBattle(a); delete G.armies[a.id]; }
 function joinBattle(a, prov) {
@@ -115,11 +116,11 @@ function resolveBattle(b) {
   if (!att.length) return end();
   const defs = armiesAt(b.prov).filter(x => atWar(att[0].owner, x.owner));
   if (!defs.length || !atWar(att[0].owner, p.ctrl)) { for (const a of att) a.prog = 99; return end(); }
-  const A = sidePower(att, true, p, new Set(defs.map(d => d.owner))), D = sidePower(defs, false, p, A.owners); b.days++;
-  const dmgD = 0.02 * clamp((A.atk / Math.max(1, D.tough)) ** 0.8, 0.15, 4) * rnd(0.8, 1.2), dmgA = 0.02 * clamp((D.atk / Math.max(1, A.tough)) ** 0.8, 0.15, 4) * rnd(0.8, 1.2);
-  const hit = (S, dmg) => { const n = S.eng.length || 1, k = Math.min(1.6, 12 / n); for (const [d, a] of S.eng) { d.org = Math.max(0, d.org - dmg * k); const sl = Math.min(d.str, dmg * 0.11 * k); d.str -= sl; d.xp = Math.min(1, d.xp + 0.004); const c = C(a.owner); c.casualties += sl * UNITS[d.t].mp; c.warExh = Math.min(100, c.warExh + sl * 0.5 / Math.max(1, c._ndiv || 1) * 30); } };
+  const A = sidePower(att, true, p, new Set(defs.map(d => d.owner))), D = sidePower(defs, false, p, A.owners); b.days += 0.25;
+  const dmgD = 0.005 * clamp((A.atk / Math.max(1, D.tough)) ** 0.8, 0.15, 4) * rnd(0.8, 1.2), dmgA = 0.005 * clamp((D.atk / Math.max(1, A.tough)) ** 0.8, 0.15, 4) * rnd(0.8, 1.2);
+  const hit = (S, dmg) => { const n = S.eng.length || 1, k = Math.min(1.6, 12 / n); for (const [d, a] of S.eng) { d.org = Math.max(0, d.org - dmg * k); const sl = Math.min(d.str, dmg * 0.11 * k); d.str -= sl; d.xp = Math.min(1, d.xp + 0.001); const c = C(a.owner); c.casualties += sl * UNITS[d.t].mp; c.warExh = Math.min(100, c.warExh + sl * 0.5 / Math.max(1, c._ndiv || 1) * 30); } };
   hit(D, dmgD); hit(A, dmgA); b.bal = dmgD / (dmgD + dmgA);
-  for (const a of att.concat(defs)) { a.divs = a.divs.filter(d => d.str > 0.05); const g = genOf(a); if (g) { g.xp += 0.02; if (g.xp > g.skill * 2 + 2 && g.skill < 5) { g.skill++; g.xp = 0; } } }
+  for (const a of att.concat(defs)) { a.divs = a.divs.filter(d => d.str > 0.05); const g = genOf(a); if (g) { g.xp += 0.005; if (g.xp > g.skill * 2 + 2 && g.skill < 5) { g.skill++; g.xp = 0; } } }
   const avg = S => { const l = S.divs; return l.length ? sum(l, x => x[0].org) / l.length : 0; };
   const aBroken = avg(A) < 0.12 || !att.some(a => a.divs.length), dBroken = avg(D) < 0.1 || !defs.some(a => a.divs.length);
   if (dBroken) { for (const a of defs) retreat(a, att[0].owner); for (const a of att) { a.prog = 99; const g = genOf(a); if (g) g.xp += 0.5; } battleNote(b, att, defs, true); return end(); }
@@ -127,7 +128,7 @@ function resolveBattle(b) {
 }
 function battleNote(b, att, defs, won) {
   const tags = [...new Set(att.concat(defs).map(a => a.owner))]; if (!tags.includes(G.player)) return; const mine = att.some(a => a.owner === G.player);
-  UIH.notify(`${mine === won ? 'Victory' : 'Defeat'} at ${P(b.prov).name}: ${cname(att[0].owner)} ${won ? 'breaks through' : 'is repulsed'} after ${b.days} days.`, mine === won ? 'good' : 'bad');
+  UIH.notify(`${mine === won ? 'Victory' : 'Defeat'} at ${P(b.prov).name}: ${cname(att[0].owner)} ${won ? 'breaks through' : 'is repulsed'} after ${Math.max(1, Math.round(b.days))} days.`, mine === won ? 'good' : 'bad');
 }
 function retreat(a, enemy) {
   if (!a.divs.length) return removeArmy(a); if (a.battle) leaveBattle(a);

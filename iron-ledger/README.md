@@ -6,6 +6,24 @@ pops, goods and production methods, interest groups, laws and diplomatic plays).
 
 Open `index.html` in a browser. No build step, no server.
 
+## Updates
+
+### 1.1 "Götterdämmerung"
+
+- **Germany reworked**: a 263-focus tree in eight sections (foreign policy, party and state,
+  a four-way opposition path, economy, army, air force, navy, secret weapons).
+- **Hungary** (90 focuses) and **Austria** (75 focuses) get their own trees, including a
+  restored Dual Monarchy and an Austria that can defy or accept the Anschluss.
+- **Special Projects**: fifteen secret programmes, from radar networks to the atomic bomb,
+  researched one at a time in a new Projects tab.
+- **Hourly clock**: time advances hour by hour and all game speeds are slower.
+- **New main menu** with country selection and update notes; section buttons for large trees.
+- Focus trees can now be written in a compact text format (`js/focus_gd.js`).
+
+### 1.0
+
+Initial release.
+
 ## What is in it
 
 - **Map**: 477 provinces and 73 playable countries with 1936 borders, drawn from Natural Earth data.
@@ -14,7 +32,7 @@ Open `index.html` in a browser. No build step, no server.
   state and private construction queues.
 - **Politics**: eight interest groups with clout and approval, legitimacy, 13 law categories,
   law debates, elections, ideology support, coups and civil wars.
-- **Focus trees**: unique trees for Germany, the Soviet Union, the United States, the United
+- **Focus trees**: unique trees for Germany, Hungary, Austria, the Soviet Union, the United States, the United
   Kingdom, France, Italy, Japan, China, Poland, Spain and Turkey, each with historical and
   alternative paths; a generic tree with four political paths for everyone else.
 - **Military**: seven division types, equipment made by your own war industry, historical and

@@ -9,21 +9,10 @@ const cn = t => `${flag(t, 1)} ${cname(t)}`;
 const btn = (label, a, data = '', cls = '', tp = '', dis = false) => `<button class="${cls}" data-a="${a}" ${data}${tip(tp)}${dis ? ' disabled' : ''}>${label}</button>`;
 const bar = (v, cls = '') => `<span class="bar ${cls}"><i style="width:${clamp(v * 100, 0, 100)}%"></i></span>`;
 const me = () => C(G.player);
-const SPEED_MS = [0, 700, 320, 140, 55, 16];
-const TABS = [['country', '🏛️', 'Nation'], ['politics', '⚖️', 'Politics'], ['economy', '💰', 'Economy'], ['build', '🏗️', 'Build'], ['focus', '🎯', 'Focus'], ['decisions', '📜', 'Decide'], ['research', '🔬', 'Research'], ['military', '⚔️', 'Military'], ['diplomacy', '🌐', 'Diplo'], ['log', '📰', 'News']];
+const SPEED_MS = [0, 420, 180, 70, 25, 8]; // milliseconds per game hour
+const TABS = [['country', '🏛️', 'Nation'], ['politics', '⚖️', 'Politics'], ['economy', '💰', 'Economy'], ['build', '🏗️', 'Build'], ['focus', '🎯', 'Focus'], ['decisions', '📜', 'Decide'], ['research', '🔬', 'Research'], ['projects', '🧪', 'Projects'], ['military', '⚔️', 'Military'], ['diplomacy', '🌐', 'Diplo'], ['log', '📰', 'News']];
 
 // ---------- start screen ----------
-function startScreen() {
-  initStatic(); const majors = Object.keys(COUNTRY_DEF).filter(t => COUNTRY_DEF[t].maj), blurb = { GER: 'Rearm, expand, and gamble on a short war — or topple the regime.', SOV: 'Industrialise at breakneck speed. Purge the army, or trust it.', USA: 'End the Depression and decide when isolation ends.', ENG: 'Hold an empire together while the dictators rise.', FRA: 'A paralysed republic behind the Maginot Line.', ITA: 'A new Roman empire, or a turn against Berlin.', JAP: 'Army or Navy: strike north, or strike south.', CHI: 'Unite the warlords and survive the coming invasion.' };
-  let save = null; try { save = localStorage.getItem(SAVE_KEY); } catch (e) { }
-  $('start').hidden = false;
-  $('start').innerHTML = `<div class="inner"><div><h1>Iron <span>Ledger</span><br>1936</h1></div>
-    <p class="lede">A grand strategy game of the last years of peace. Run a market economy of pops, goods and production methods; steer interest groups and laws; follow a national focus tree; and command armies and generals across 477 provinces when diplomacy fails.</p>
-    <div class="row"><label class="row"><input type="checkbox" id="hist" checked> Historical AI <span class="dim">(other nations follow their historical focus paths and timetable)</span></label>${save ? btn('Continue saved game', 'loadGame', '', 'pri') : ''}</div>
-    <h3>Major powers</h3><div class="grid">${majors.map(t => { const d = COUNTRY_DEF[t]; return `<button class="pickc" data-a="pick" data-t="${t}"><b><span class="flag" style="background:${d.c}"></span>${d.n}</b><small>${d.ld} · ${IDEO[d.i][0]}</small><span>${blurb[t]}</span></button>`; }).join('')}</div>
-    <h3>Other nations</h3><div class="minors">${Object.keys(COUNTRY_DEF).filter(t => !COUNTRY_DEF[t].maj).sort((a, b) => COUNTRY_DEF[a].n.localeCompare(COUNTRY_DEF[b].n)).map(t => `<button data-a="pick" data-t="${t}"${tip(`${COUNTRY_DEF[t].ld} · ${IDEO[COUNTRY_DEF[t].i][0]}${COUNTRY_DEF[t].ov ? ' · subject of ' + COUNTRY_DEF[COUNTRY_DEF[t].ov].n : ''}`)}><span class="flag sm" style="background:${COUNTRY_DEF[t].c}"></span>${COUNTRY_DEF[t].n}</button>`).join('')}</div>
-    <p class="dim">Map data: Natural Earth (public domain). An original game; not affiliated with any other title.</p></div>`;
-}
 function boot() {
   $('start').hidden = true; claimCache(); warCache();
   UIH.notify = toast; UIH.popup = p => { UI.popups.push(p); showPopup(); }; UIH.mapDirty = () => { MV.dirty = true; MV.labels = null; }; UIH.refresh = renderPanel;
@@ -33,9 +22,9 @@ function boot() {
 }
 function loop(ts) {
   requestAnimationFrame(loop); if (!G) return; const dt = Math.min(500, ts - (UI.last || ts)); UI.last = ts; let ticked = false;
-  if (!G.paused && !UI.popups.length && G.speed > 0) { UI.acc += dt; const ms = SPEED_MS[G.speed]; let n = 0; while (UI.acc >= ms && n < 4) { UI.acc -= ms; n++; try { gameTick(); } catch (e) { console.error(e); G.paused = true; toast('Simulation error: ' + e.message, 'bad'); break; } ticked = true; if (UI.popups.length) break; } if (UI.acc > ms * 4) UI.acc = 0;
-    if (ticked && dateObj(G.day).getUTCDate() === 1 && dateObj(G.day).getUTCMonth() % 6 === 0) saveGame(true); }
-  if (ticked) { renderTop(); MV.dirty = true; if (ts - UI.lastPanel > 600 && !document.querySelector('#panel select:focus')) { renderPanel(); renderProv(); UI.lastPanel = ts; } }
+  if (!G.paused && !UI.popups.length && G.speed > 0) { UI.acc += dt; const ms = SPEED_MS[G.speed]; let n = 0; while (UI.acc >= ms && n < 8) { UI.acc -= ms; n++; try { hourTick(); } catch (e) { console.error(e); G.paused = true; toast('Simulation error: ' + e.message, 'bad'); break; } ticked = true; if (UI.popups.length) break; } if (UI.acc > ms * 8) UI.acc = 0;
+    if (ticked && G.hour === 0 && dateObj(G.day).getUTCDate() === 1 && dateObj(G.day).getUTCMonth() % 6 === 0 && UI.saved !== G.day) { UI.saved = G.day; saveGame(true); } }
+  if (ticked) { if (ts - (UI.lastTop || 0) > 110) { renderTop(); UI.lastTop = ts; MV.dirty = true; } if (ts - UI.lastPanel > 700 && !document.querySelector('#panel select:focus')) { renderPanel(); renderProv(); UI.lastPanel = ts; } }
   if (MV.dirty) mapDraw();
 }
 function renderAll() { renderTop(); renderPanel(); renderProv(); MV.dirty = true; }
@@ -59,15 +48,15 @@ function renderTop() {
     ${r('🪖', c._ndiv || 0, '<b>Divisions</b> in the field')}
     ${r('🌡️', G.tension.toFixed(0) + '%', '<b>World tension</b><br>Rises with aggression. Democracies need tension to act.', G.tension > 60 ? 'warn' : '')}
     <span data-a="tab" data-t="focus" style="cursor:pointer" class="${f ? '' : 'warn'}">🎯 ${f ? `${f.name} <span class="dim">${c.focus.prog}/${f.days}</span>` : 'No national focus!'}</span></div>
-    <div id="clock"><span class="date">${dateStr()}</span>${btn(G.paused ? '▶' : '⏸', 'pause', '', G.paused ? 'pri' : '', 'Pause / resume (Space)')}${btn('−', 'speed', 'data-d="-1"', 'sm')}<span class="num"${tip('Game speed')}>${'▮'.repeat(G.speed)}${'▯'.repeat(5 - G.speed)}</span>${btn('+', 'speed', 'data-d="1"', 'sm')}${btn('☰', 'menu', '', '', 'Save, load and options')}</div>`;
-  const dots = { focus: !c.focus.cur && focusTree(c).some(x => focusState(c, x) === 'available'), research: Object.keys(c.research).some(k => !c.research[k] && techAvailable(c, k).length), build: !c.queue.length && c.money > 0, politics: !c.enact && c.pp > 300 };
+    <div id="clock"><span class="date"><span class="hour">${String(G.hour || 0).padStart(2, '0')}:00</span> ${dateStr()}</span>${btn(G.paused ? '▶' : '⏸', 'pause', '', G.paused ? 'pri' : '', 'Pause / resume (Space)')}${btn('−', 'speed', 'data-d="-1"', 'sm')}<span class="num"${tip('Game speed')}>${'▮'.repeat(G.speed)}${'▯'.repeat(5 - G.speed)}</span>${btn('+', 'speed', 'data-d="1"', 'sm')}${btn('☰', 'menu', '', '', 'Save, load and options')}</div>`;
+  const pj = c.proj || {}; const dots = { projects: !pj.cur && Object.keys(PROJECTS).some(id => projectState(c, id) === 'available'), focus: !c.focus.cur && focusTree(c).some(x => focusState(c, x) === 'available'), research: Object.keys(c.research).some(k => !c.research[k] && techAvailable(c, k).length), build: !c.queue.length && c.money > 0, politics: !c.enact && c.pp > 300 };
   document.querySelectorAll('#tabs button').forEach(b => { b.classList.toggle('on', b.dataset.t === UI.tab); let d = b.querySelector('.dot'); if (dots[b.dataset.t] && !d) b.insertAdjacentHTML('beforeend', '<span class="dot"></span>'); else if (!dots[b.dataset.t] && d) d.remove(); });
 }
 // ---------- panels ----------
 function renderPanel() {
   const p = $('panel'); if (!UI.tab) { p.hidden = true; return; } p.hidden = false; const st = p.scrollTop, tr = p.querySelector('.tree'), ts = tr ? [tr.scrollLeft, tr.scrollTop] : null;
   p.classList.toggle('wide', UI.tab === 'focus');
-  p.innerHTML = `<div class="row"><h2>${TABS.find(t => t[0] === UI.tab)[2] === 'Diplo' ? 'Diplomacy' : ({ country: me().name, build: 'Construction', decisions: 'Decisions', log: 'World News', focus: 'National Focus' })[UI.tab] || TABS.find(t => t[0] === UI.tab)[2]}</h2>${btn('✕', 'tab', `data-t="${UI.tab}"`, 'close sm')}</div>` + PANELS[UI.tab](me());
+  p.innerHTML = `<div class="row"><h2>${TABS.find(t => t[0] === UI.tab)[2] === 'Diplo' ? 'Diplomacy' : ({ country: me().name, build: 'Construction', decisions: 'Decisions', projects: 'Special Projects', log: 'World News', focus: 'National Focus' })[UI.tab] || TABS.find(t => t[0] === UI.tab)[2]}</h2>${btn('✕', 'tab', `data-t="${UI.tab}"`, 'close sm')}</div>` + PANELS[UI.tab](me());
   p.scrollTop = st; const tr2 = p.querySelector('.tree'); if (tr2 && ts) { tr2.scrollLeft = ts[0]; tr2.scrollTop = ts[1]; }
 }
 const supBar = c => `<div class="pie"${tip(Object.keys(IDEO).map(i => `${IDEO[i][0]}: ${c.sup[i].toFixed(0)}%`).join('<br>'))}>${Object.keys(IDEO).map(i => `<i style="width:${c.sup[i]}%;background:${IDEO[i][1]}"></i>`).join('')}</div>`;
@@ -135,6 +124,7 @@ const PANELS = {
       <div class="card hl"><div class="row sp"><h4>${sel.name}</h4><span class="pill">${stTxt}</span></div><i class="dim">${sel.desc}</i><div>${effText(sel.eff, c)}</div>
       ${sel.req ? `<div class="${sel.req[0](c) ? 'pos' : 'neg'}">Requires: ${sel.req[1]}</div>` : ''}${sel.ideo ? `<div class="${c.ideology === sel.ideo ? 'pos' : 'neg'}">Requires a ${IDEO[sel.ideo][0].toLowerCase()} government</div>` : ''}${sel.mutex ? `<div class="dim">Excludes: ${sel.mutex.split(',').map(m => (tree.find(x => x.id === m) || {}).name).join(', ')}</div>` : ''}
       <div class="row"><span class="dim">${sel.days} days</span>${btn(cur && cur.id !== sel.id ? 'Switch to this focus' : 'Begin focus', 'focusStart', `data-f="${sel.id}"`, 'pri', cur && cur.id !== sel.id ? 'Progress on the current focus is lost' : '', st !== 'available')}</div></div>
+      ${tree.some(f => f.sec) ? `<div class="row"><span class="dim">Jump to</span>${tree.filter(f => f.sec).map(f => btn(f.sec, 'focusSec', `data-x="${f.x}" data-f="${f.id}"`, 'sm')).join('')}<span class="dim">${Object.keys(c.focus.done).length} / ${tree.length} completed</span></div>` : ''}
       <div class="tree"><div style="position:relative;width:${(mx + 1) * W + 24}px;height:${(my + 1) * H + 24}px"><svg width="${(mx + 1) * W + 24}" height="${(my + 1) * H + 24}" style="position:absolute;inset:0">${lines}</svg>${tree.map(f => { const [x, y] = pos(f); return `<div class="fnode ${focusState(c, f)}${f.id === sel.id ? ' sel' : ''}" style="left:${x}px;top:${y}px" data-a="focusSel" data-f="${f.id}">${f.name}</div>`; }).join('')}</div></div>`;
   },
   decisions(c) {
@@ -179,6 +169,15 @@ const PANELS = {
     h += `<h3>Nations</h3><table><tr><th>Nation</th><th class="r">Opinion</th><th>Status</th></tr>${list.map(k => { const o = opinion(k.tag, c.tag), f = factionOf(k.tag); return `<tr class="click" data-a="diploSel" data-t="${k.tag}"><td>${cn(k.tag)}</td><td class="r ${o < -20 ? 'neg' : o > 20 ? 'pos' : ''}">${o.toFixed(0)}</td><td>${atWar(c.tag, k.tag) ? '<span class="pill neg">War</span>' : ''}${k.overlord === c.tag ? '<span class="pill">Subject</span>' : c.overlord === k.tag ? '<span class="pill">Overlord</span>' : ''}${hasPact('ally', c.tag, k.tag) ? '<span class="pill">Ally</span>' : ''}${f ? `<span class="pill">${f.name}</span>` : ''}</td></tr>`; }).join('')}</table>`;
     return h;
   },
+  projects(c) {
+    const pr = c.proj || (c.proj = { cur: null, prog: 0, done: {} }), cur = pr.cur ? PROJECTS[pr.cur] : null, rate = projRate(c);
+    let h = `<div class="dim">Secret programmes that lie beyond ordinary research. One runs at a time; universities, literacy and certain national focuses speed the work.</div><div class="kv"><span>Project work / week</span><span>${rate.toFixed(1)}</span><span${tip('Accumulates while no project is running, and is spent on the next one.')}>Banked progress</span><span>${(c.projPts || 0).toFixed(0)}</span></div>`;
+    h += cur ? `<div class="card hl"><div class="row sp"><b>${cur[1]} ${cur[0]}</b><span class="dim">${(100 * pr.prog / cur[3]).toFixed(0)}%</span></div>${bar(pr.prog / cur[3])}<i class="dim">${cur[4]}</i></div>` : '<div class="warn">No project under way — choose one.</div>';
+    const grp = { available: [], locked: [], done: [], obsolete: [] }; for (const id in PROJECTS) { const st = projectState(c, id); if (st !== 'active') grp[st].push(id); }
+    const card = (id, st) => { const p = PROJECTS[id]; return `<div class="card"><div class="row sp"><b>${p[1]} ${p[0]}</b>${st === 'available' ? btn(cur ? 'Switch' : 'Begin', 'project', `data-p="${id}"`, 'sm pri', cur ? 'Progress on the current project is lost' : '') : `<span class="pill">${{ locked: 'Locked', done: 'Completed', obsolete: 'Already known' }[st]}</span>`}</div><i class="dim">${p[4]}</i><div>${effText(p[5], c)}</div><div class="dim">Work ${p[3]}${p[6] > year() ? ` · ahead of its time until ${p[6]}` : ''}${st === 'locked' ? ' · needs ' + p[2].filter(t => !c.techs[t]).map(t => TECHS[t][0]).join(', ') + (id === 'bomb' && !c.techs.p_atomic ? '' : '') : ''}</div></div>`; };
+    for (const k of ['available', 'locked', 'done']) if (grp[k].length) h += `<h3>${{ available: 'Available', locked: 'Locked', done: 'Completed' }[k]}</h3>` + grp[k].map(id => card(id, k)).join('');
+    return h;
+  },
   log() { return G.log.slice().reverse().slice(0, 120).map(l => `<div class="${l.kind === 'world' ? '' : 'dim'}"><span class="dim num">${dateStr(l.d)}</span> ${l.text}</div>`).join(''); }
 };
 const pmText = pm => `${pm[0]}: ${Object.keys(pm[2]).map(g => pm[2][g] + ' ' + GOODS[g][0]).join(' + ') || 'labour'} → ${Object.keys(pm[3]).map(g => pm[3][g] + ' ' + GOODS[g][0]).join(' + ') || 'services to the state'}`;
@@ -207,14 +206,14 @@ function uiSelectArmies(loc, owner) {
 function uiMoveArmy(id) { const a = G.armies[SEL.army]; if (!a || a.owner !== G.player) return; if (orderMove(a, id)) { a.auto = false; toast(`${a.name} marches for ${P(id).name}.`, 'mil'); } else toast(`${a.name} cannot reach ${P(id).name}. Is it neutral ground, or do we lack naval superiority?`, 'bad'); renderAll(); }
 // ---------- actions ----------
 const ACT = {
-  pick(d) { const h = $('hist'); newGame(d.t); G.historical = !h || h.checked; boot(); UIH.popup({ title: `${me().name}, 1 January 1936`, icon: '🗺️', desc: `You lead <b>${me().name}</b>. The game starts paused.<br><br>• Choose a <b>national focus</b> and three <b>research</b> projects.<br>• Queue <b>construction</b> and check your <b>budget</b> — goods in shortage are expensive.<br>• <b>Politics</b>: pass laws with the backing of interest groups.<br>• <b>Military</b>: raise divisions, appoint generals. Armies on Auto are led by your staff; click a counter and right-click a province to take command yourself.<br>• <b>Diplomacy</b>: press demands through diplomatic plays, or find friends before others do.<br><br>Press <b>Space</b> or ▶ to let time run.`, options: [{ name: 'To work.' }] }); },
+  startGame() { newGame(MENU.tag); G.historical = MENU.hist; boot(); UIH.popup({ title: `${me().name}, 1 January 1936`, icon: '🗺️', desc: `You lead <b>${me().name}</b>. The game starts paused.<br><br>• Choose a <b>national focus</b>, three <b>research</b> fields and a <b>special project</b>.<br>• Queue <b>construction</b> and check your <b>budget</b> — goods in shortage are expensive.<br>• <b>Politics</b>: pass laws with the backing of interest groups.<br>• <b>Military</b>: raise divisions, appoint generals. Armies on Auto are led by your staff; click a counter and right-click a province to take command yourself.<br>• <b>Diplomacy</b>: press demands through diplomatic plays, or find friends before others do.<br><br>Press <b>Space</b> or ▶ to let time run.`, options: [{ name: 'To work.' }] }); },
   loadGame() { try { const s = localStorage.getItem(SAVE_KEY); if (!s) return toast('No saved game found.', 'bad'); deserialize(s); G.paused = true; UI.popups = []; showPopup(); boot(); toast('Game loaded.'); } catch (e) { toast('Could not load the saved game.', 'bad'); } },
   tab(d) { UI.tab = UI.tab === d.t && !d.keep ? null : d.t; renderAll(); },
   sub(d) { UI.sub[d.k] = d.v; renderPanel(); },
   pause() { G.paused = !G.paused; renderTop(); },
   speed(d) { G.speed = clamp(G.speed + +d.d, 1, 5); renderTop(); },
   popup(d) { const p = UI.popups.shift(), o = p.options[+d.i]; showPopup(); if (o.fn) o.fn(); renderAll(); showPopup(); },
-  menu() { UIH.popup({ title: 'Iron Ledger 1936', icon: '☰', desc: `Historical AI is <b>${G.historical ? 'on' : 'off'}</b>. The game autosaves every six months in this browser.`, options: [{ name: 'Resume' }, { name: 'Save game', fn: () => saveGame() }, { name: 'Load saved game', fn: () => ACT.loadGame() }, { name: `Turn historical AI ${G.historical ? 'off' : 'on'}`, fn: () => { G.historical = !G.historical; } }, { name: 'Quit to the start screen', fn: () => { G.paused = true; startScreen(); } }] }); },
+  menu() { UIH.popup({ title: 'Iron Ledger 1936', icon: '☰', desc: `Version ${VERSION}. Historical AI is <b>${G.historical ? 'on' : 'off'}</b>. The game autosaves every six months in this browser.`, options: [{ name: 'Resume' }, { name: 'Save game', fn: () => saveGame() }, { name: 'Load saved game', fn: () => ACT.loadGame() }, { name: `Turn historical AI ${G.historical ? 'off' : 'on'}`, fn: () => { G.historical = !G.historical; } }, { name: 'Quit to the main menu', fn: () => { G.paused = true; MENU.screen = 'main'; startScreen(); } }] }); },
   gov(d) { if (!toggleGov(me(), d.g)) toast('Needs 25 political power, and a government needs at least one group.', 'bad'); renderAll(); },
   lawOpen(d) { UI.lawOpen = UI.lawOpen === d.c ? null : d.c; renderPanel(); },
   law(d) { startLaw(me(), d.c, d.l); renderAll(); },
@@ -224,6 +223,8 @@ const ACT = {
   build(d) { const c = me(), p = d.p !== undefined ? +d.p : (bestProvFor(c, d.t) || {}).id; if (p === undefined || !queueBuild(c, d.t, p)) toast('Cannot build that there.', 'bad'); else toast(`${BLD[d.t].name} queued in ${P(p).name}.`, 'build'); renderAll(); },
   unqueue(d) { me().queue.splice(+d.i, 1); renderPanel(); },
   focusSel(d) { UI.focusSel = d.f; renderPanel(); },
+  focusSec(d) { UI.focusSel = d.f; renderPanel(); const t = document.querySelector('#panel .tree'); if (t) { t.scrollLeft = Math.max(0, +d.x * 146 - t.clientWidth / 2 + 80); t.scrollTop = 0; } },
+  project(d) { const c = me(); if (c.proj) c.proj.cur = null; if (startProject(c, d.p)) toast(`Special project: ${PROJECTS[d.p][0]}.`, 'tech'); renderAll(); },
   focusStart(d) { const c = me(); c.focus.cur = null; if (startFocus(c, d.f)) toast(`National focus: ${focusById(c, d.f).name}.`, 'focus'); renderAll(); },
   decide(d) { takeDecision(me(), d.d); renderAll(); },
   research(d) { startResearch(me(), d.t); renderAll(); },
@@ -244,7 +245,8 @@ const ACT = {
   diplo(d) { const r = diploAction(d.id, G.player, d.t); toast(r || `${DIPLO[d.id].name}: ${cname(d.t)} agrees.`, r ? 'bad' : 'good'); renderAll(); },
   play(d) { const c = me(), why = canPlay(c.tag, d.t); if (why) return toast(why, 'bad'); const goal = { type: d.g, provs: d.p ? d.p.split(',').map(Number) : [] }; if (startPlay(c.tag, d.t, goal)) c.infl -= 40; renderAll(); }
 };
-const CHG = { pm(el) { me().pm[el.dataset.t] = +el.value; me().pmAuto = false; }, assignSel(el) { const a = G.armies[SEL.army], g = me().gens.find(x => x.id === +el.value); if (a && g) assignGeneral(a, g); renderPanel(); } };
+Object.assign(ACT, MENU_ACT);
+const CHG = { hist(el) { MENU.hist = el.checked; }, pm(el) { me().pm[el.dataset.t] = +el.value; me().pmAuto = false; }, assignSel(el) { const a = G.armies[SEL.army], g = me().gens.find(x => x.id === +el.value); if (a && g) assignGeneral(a, g); renderPanel(); } };
 function saveGame(quiet) { try { localStorage.setItem(SAVE_KEY, serialize()); if (!quiet) toast('Game saved in this browser.', 'good'); } catch (e) { if (!quiet) toast('Saving is not available here.', 'bad'); } }
 document.addEventListener('click', e => { const el = e.target.closest('[data-a]'); if (!el || el.disabled) return; const f = ACT[el.dataset.a]; if (f) { $('tip').hidden = true; f(el.dataset, el); } });
 document.addEventListener('change', e => { const el = e.target.closest('[data-ch]'); if (el && CHG[el.dataset.ch]) CHG[el.dataset.ch](el); });
