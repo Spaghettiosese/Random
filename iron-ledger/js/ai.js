@@ -46,7 +46,7 @@ function aiLaws(c) {
 }
 function aiRecruit(c) {
   const war = isAtWar(c.tag), thr = aiThreat(c), n = c._ndiv || 0, B = c.budget; if (c.training.length >= (war ? 8 : 3)) return;
-  const target = Math.max(2, Math.round((c.stats.corePop / 2200) * (0.5 + thr * 1.6) * (c.major ? 1.25 : 1) * (c.major && c.ideology === 'fas' ? 1.5 : 1)) + (war ? 6 : 0));
+  const target = Math.max(2, Math.round((c.stats.corePop / 2200) * (0.5 + thr * 1.6) * (c.major ? 1.25 : 1) * (c.major && c.ideology === 'fas' ? 1.5 : 1) * (c.ideology === 'dem' && !war ? 0.6 : 1)) + (war ? 6 : 0));
   if (n >= (war ? Math.max(target * 1.5, c.stats.corePop / 700) : target)) return; if (B.army > B.income * (war ? 0.7 : 0.3 + thr * 0.2) && !war) return; if (c.manpower < 30) return;
   const eqOK = g => (c.stock[g] || 0) > 30 || (c.market[g] && c.market[g].s > 5);
   let t = 'inf'; const r = Math.random();
@@ -89,7 +89,10 @@ function aiArmies(tag) {
     if (any) fronts.push({ id: p.id, need: need * (p.ctrl === tag ? 1 : 0.5) + p.vp * 2 - (friendAt[p.id] || 0) * 0.6, x: MAP.P[p.id].x, y: MAP.P[p.id].y }); }
   const capThreat = NB[c.capital].some(e => hostile(P(e.to)) && !e.sea) && P(c.capital).ctrl === tag;
   let capGuard = armiesAt(c.capital).some(a => a.owner === tag);
+  // the Phoney War: democracies do not open offensives in the first months unless their own soil is invaded
+  const phoney = c.ideology === 'dem' && !G.P.some(p => p.owner === tag && p.cores.includes(tag) && p.ctrl !== tag) && G.wars.some(w => (w.att.includes(tag) || w.def.includes(tag)) && G.day - w.start < 300);
   for (const a of mine) {
+    if (a.order) continue;
     if (a.battle) { const b = G.battles.find(x => x.id === a.battle); if (b && b.days > 6 && b.bal < 0.4 && sum(a.divs, d => d.org) / a.divs.length < 0.3) { a.path = []; } continue; }
     if (a.path.length && G.day - (a._t || 0) < 25) continue;
     const org = sum(a.divs, d => d.org) / a.divs.length, here = P(a.loc), my = armyStr(a) * (0.4 + 0.6 * org);
@@ -99,8 +102,8 @@ function aiArmies(tag) {
     if (org > 0.5 && !a.oos) for (const e of NB[a.loc]) { const q = P(e.to); if (!hostile(q)) continue; if (e.sea && (!seaOK(tag, q) || e.sea > 1500)) continue;
       const def = (strAt[q.id] || 0) * (1 + TERRAIN[q.ter][1] + q.fort * 0.12) * (e.sea ? 1.5 : 1); let att = my; for (const x of armiesAt(a.loc)) if (x !== a && (x.owner === tag || friendly(tag, x.owner)) && (x.path[0] === q.id || x.auto)) att += armyStr(x) * 0.8;
       for (const b of G.battles) if (b.prov === q.id) att += sum(b.att, i => G.armies[i] && G.armies[i].loc !== a.loc ? armyStr(G.armies[i]) : 0);
-      const ratio = att / Math.max(1, def); if (def > 0 && ratio < (c.ws > 60 ? 1.15 : 1.35)) continue;
-      let fn2 = 0; for (const e2 of NB[q.id]) if (!e2.sea && (P(e2.to).ctrl === tag || friendly(tag, P(e2.to).ctrl))) fn2++; if (fn2 < 2 && !e.sea && q.vp < 10 && Math.random() < 0.8) continue;
+      const ratio = att / Math.max(1, def); if (def > 0 && ratio < (phoney ? 3.2 : c.major && c.ideology === 'fas' ? 0.95 : c.ws > 60 ? 1.15 : 1.35)) continue; if (phoney && def === 0 && !q.cores.includes(tag) && C(q.owner).major) continue;
+      let fn2 = 0; for (const e2 of NB[q.id]) if (!e2.sea && (P(e2.to).ctrl === tag || friendly(tag, P(e2.to).ctrl))) fn2++; if (fn2 < 2 && !e.sea && q.vp < 10 && Math.random() < (c.major && c.ideology === 'fas' ? 0.4 : 0.8)) continue;
       const s = q.vp + fn2 * 2 + (def === 0 ? 6 : 0) + Math.min(4, ratio) + (q.cores.includes(tag) ? 4 : 0) + (q.id === C(q.owner).capital ? 6 : 0) + Math.random() * 2; if (s > bs) { bs = s; best = q.id; } }
     if (best !== null && (!a.home || P(best).cores.includes(tag))) { a.path = [best]; a.prog = 0; a._t = G.day; continue; }
     if (a.home) { if (!here.cores.includes(tag) && P(c.capital).ctrl === tag) orderMove(a, c.capital); const hf = fronts.filter(f => P(f.id).cores.includes(tag) && P(f.id).ctrl === tag && NB[f.id].some(e => !e.sea && hostile(P(e.to)))); if (hf.length && !hf.some(f => f.id === a.loc)) { hf.sort((x, y) => y.need - x.need); orderMove(a, hf[0].id); a._t = G.day; } continue; }

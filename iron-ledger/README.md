@@ -8,6 +8,25 @@ Open `index.html` in a browser. No build step, no server.
 
 ## Updates
 
+### 1.3 "Eastern Front"
+
+- **Soviet Union, Czechoslovakia, Finland and Romania** get new focus trees.
+- **Every national tree now has 230+ focuses**: shared sections add doctrine trees with exclusive
+  paths, a programme per technology, law campaigns, interest-group politics, great-power
+  relations and development of the country's own provinces.
+- **Cabinet**: three ministers and three high-command seats with standing bonuses.
+- **Occupation and Resistance**: occupation policy, requisition income, unrest, sabotage, uprisings.
+- **Offensive Orders**: give armies an objective and a stance; they fight their way there.
+- **The Verdict of History** (unique): five legacy ledgers earn the leader a lasting epithet,
+  with a chronicle and a Year in Review each January.
+- **World news and reaction events**: news popups for major events, decisions for the Rhineland,
+  the Anschluss and Spain, and a prompt to step into any great-power crisis.
+- **Wars screen** and a war/peace indicator in the top bar.
+- **Interface**: outliner with alerts; left-drag box selection, right-drag / WASD map movement,
+  keys 1-5 for speed.
+- **Balance**: France, Britain and Poland start less ready; democracies sit out a Phoney War;
+  the German AI attacks more readily.
+
 ### 1.2 "Allied Nations"
 
 - **United States** (119 focuses), **United Kingdom** (133) and **France** (102) get large new

@@ -93,6 +93,7 @@ function fx(str, desc) {
       case 'build': case 'units': case 'equip': case 'rel': case 'ideo': e[k] = kvs(v); break;
       case 'tech': case 'claim': case 'core': case 'law': case 'rmspirit': case 'guarantee': e[k] = csv(v); break;
       case 'fort': e.fort = isNaN(+v) ? csv(v) : +v; break;
+      case 'allies': { const l = csv(v); fns.push(c => l.forEach(t => ok(t) && !atWar(c.tag, t) && addPact('ally', c.tag, t))); tips.push('Alliances with ' + l.map(t => COUNTRY_DEF[t].n).join(', ')); break; }
       case 'join': case 'war': case 'setIdeo': case 'flag': case 'cflag': case 'faction': case 'news': case 'ally': e[k] = v; break;
       case 'nap': csv(v).forEach(t => { fns.push(c => ok(t) && addPact('nap', c.tag, t, 365 * 5)); tips.push('Non-aggression pact with ' + COUNTRY_DEF[t].n); }); break;
       case 'trade': { const l = csv(v); fns.push(c => l.forEach(t => ok(t) && !atWar(c.tag, t) && addPact('trade', c.tag, t))); tips.push('Trade agreements with ' + l.map(t => COUNTRY_DEF[t].n).join(', ')); break; }

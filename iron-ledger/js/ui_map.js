@@ -15,13 +15,19 @@ function mapInit() {
     if (segs.length) INNER.push([a, b, segs]); }
   const el = document.getElementById('mapmodes'); el.innerHTML = MODES.map(m => `<button data-mode="${m[0]}">${m[1]}</button>`).join('');
   el.onclick = e => { const m = e.target.dataset.mode; if (m) { MV.mode = m; MV.dirty = true; mapModeButtons(); } }; mapModeButtons();
+  // Left-drag draws a selection box; right- or middle-drag (or one finger) pans; a right-click without dragging gives orders.
   let drag = null, moved = false, pinch = null, box = null; const pts = new Map();
-  mapCv.addEventListener('pointerdown', e => { mapCv.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]); drag = [e.clientX, e.clientY, MV.x, MV.y]; moved = false; box = e.shiftKey && e.button === 0 ? [e.clientX, e.clientY] : null; if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = [Math.hypot(a[0] - b[0], a[1] - b[1]), MV.s]; } });
+  mapCv.addEventListener('mousedown', e => { if (e.button === 1) e.preventDefault(); });
+  mapCv.addEventListener('pointerdown', e => { mapCv.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]); moved = false; MV.box = null;
+    box = e.pointerType === 'mouse' && e.button === 0 ? [e.clientX, e.clientY] : null; drag = box ? null : [e.clientX, e.clientY, MV.x, MV.y];
+    if (pts.size === 2) { box = null; const [a, b] = [...pts.values()]; pinch = [Math.hypot(a[0] - b[0], a[1] - b[1]), MV.s]; } });
   mapCv.addEventListener('pointermove', e => { if (!pts.has(e.pointerId)) { mapHover(e); return; } pts.set(e.pointerId, [e.clientX, e.clientY]);
-    if (box) { const r = mapCv.getBoundingClientRect(); if (Math.abs(e.clientX - box[0]) + Math.abs(e.clientY - box[1]) > 6) { MV.box = [box[0] - r.left, box[1] - r.top, e.clientX - r.left, e.clientY - r.top]; moved = true; MV.dirty = true; } return; }
     if (pts.size === 2 && pinch) { const [a, b] = [...pts.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); zoomAt((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, pinch[1] * d / pinch[0] / MV.s); moved = true; return; }
+    if (box) { const r = mapCv.getBoundingClientRect(); if (Math.abs(e.clientX - box[0]) + Math.abs(e.clientY - box[1]) > 6) { MV.box = [box[0] - r.left, box[1] - r.top, e.clientX - r.left, e.clientY - r.top]; moved = true; MV.dirty = true; } return; }
     if (!drag) return; const dx = e.clientX - drag[0], dy = e.clientY - drag[1]; if (Math.abs(dx) + Math.abs(dy) > 5) moved = true; if (moved) { MV.x = drag[2] - dx / MV.s; MV.y = drag[3] - dy / MV.s; clampView(); MV.dirty = true; } });
-  const up = e => { if (box && MV.box) { const b = MV.box; box = null; MV.box = null; pts.delete(e.pointerId); drag = null; MV.dirty = true; uiBoxSelect(b); return; } box = null; const had = pts.has(e.pointerId); pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (had && !moved && e.type === 'pointerup') mapClick(e, e.button === 2); drag = null; };
+  const up = e => { const had = pts.has(e.pointerId); pts.delete(e.pointerId); if (pts.size < 2) pinch = null;
+    if (box && MV.box) { const bx = MV.box; box = null; MV.box = null; drag = null; MV.dirty = true; uiBoxSelect(bx, e.shiftKey); return; } box = null;
+    if (had && !moved && e.type === 'pointerup') mapClick(e, e.button === 2); drag = null; };
   mapCv.addEventListener('pointerup', up); mapCv.addEventListener('pointercancel', up);
   mapCv.addEventListener('contextmenu', e => e.preventDefault());
   mapCv.addEventListener('wheel', e => { e.preventDefault(); zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.18 : 1 / 1.18); }, { passive: false });

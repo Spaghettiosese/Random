@@ -34,7 +34,7 @@ function std(x, o = {}) {
 }
 const hist = { ai: 3 }, alt = { ai: 0 };
 const germanCzech = c => { const z = C('CZE'); if (!z.exists) return; const backed = alive().some(k => k.major && !hasSpirit(k, 'appeasement') && !hasSpirit(k, 'political_paralysis') && (hasPact('guar', k.tag, 'CZE') || friendly(k.tag, 'CZE')));
-  if (backed || (!z.ai)) { startPlay(c.tag, 'CZE', { type: 'annex' }); return; }
+  if (backed || !z.ai || z.flags.resist) { startPlay(c.tag, 'CZE', { type: 'annex' }); return; }
   if (ok('HUN')) ['Košice', 'Uzhhorod'].forEach(n => PN(n).owner === 'CZE' && transferProv(PN(n), 'HUN')); annex(c.tag, 'CZE', true); G.flags.czech_gone = G.day; logMsg('German troops march into Prague. Czechoslovakia has ceased to exist.', 'world'); queueEvent('end_appeasement', 'ENG', 5); queueEvent('end_appeasement', 'FRA', 6); };
 const anschluss = c => { const a = C('AUT'); if (!a.exists) return; if (!a.ai || alive().some(k => k.major && k.tag !== c.tag && hasPact('guar', k.tag, 'AUT'))) startPlay(c.tag, 'AUT', { type: 'annex' }); else { annex(c.tag, 'AUT', true); provsOf(c.tag).filter(p => p.orig === 'AUT').forEach(p => p.cores.push(c.tag)); } };
 const lowCountries = c => { ['BEL', 'HOL', 'LUX'].forEach(t => { if (ok(t) && !atWar(c.tag, t) && !friendly(c.tag, t)) declareWar(c.tag, t, [{ by: c.tag, vs: t, type: 'puppet' }]); }); if (ok('FRA') && !atWar(c.tag, 'FRA')) declareWar(c.tag, 'FRA', [{ by: c.tag, vs: 'FRA', type: 'take', provs: [PNAME.Metz] }]); };

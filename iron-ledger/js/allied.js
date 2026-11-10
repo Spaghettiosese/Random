@@ -197,7 +197,7 @@ understanding|Anglo-German Understanding|9|4|buf|regency|nap GER; rel GER 40, IT
 comintern|Hands Across the Baltic|1|5|unionsoc|fn joinComintern|London and Moscow in step.|
 lesson|The Lesson of Munich|4|5|appease|rmspirit appeasement; ws 8|The paper he waved was worth nothing.|req wakeup; ai 8
 londonaxis|London–Berlin Axis|9|5|understanding|fn joinAxis|An alliance nobody in 1936 would have believed.|
-guar|Guarantee Poland|5|6|lesson|steel|rmspirit appeasement; guarantee POL, ROM, GRE; ws 8|Thus far and no further.|ai 9
+guar|Guarantee Poland|5|6|lesson|steel|rmspirit appeasement, peace_dividend; guarantee POL, ROM, GRE; ws 8|Thus far and no further.|ai 9
 service|National Service|4|7|guar|law limited; mp 300|Conscription in peacetime, for the first time.|ai 4
 coalition|War Coalition|5|7|guar|stab 6; legit 8; ig union 4|All parties, one government.|req majorwar; ai 6
 churchill|Their Finest Hour|5|8|coalition|service|fn leaderChurchill; spirit finest_hour; law war_econ; ws 20|We shall never surrender.|req majorwar; ai 10
@@ -356,7 +356,7 @@ council|Supreme War Council|19|2|britain|spirit Allied War Council: org .04, atk
 frontier|Hold the Frontier|17|3|belgium|soviet|fort Lille, Metz; spirit Frontier Positions: def .05|Let them come to us.|mx dyle
 dyle|The Dyle Plan|18|3|belgium|units mot 1; spirit Advance into Belgium [540]: atk .04|Meet them on someone else's soil.|mx frontier
 orders|American Orders|19|3|council|belgium|fn buyAmerican; rel USA 20|Gold shipped to Canada, fighters shipped back.|
-sacree|Union Sacrée|18|4|dyle|frontier|orders|rmspirit great_war_trauma, maginot_mentality; ws 20; law war_econ|Once more, the nation in arms.|req majorwar; ai 10
+sacree|Union Sacrée|18|4|dyle|frontier|orders|rmspirit great_war_trauma, maginot_mentality, peace_dividend; ws 20; law war_econ|Once more, the nation in arms.|req majorwar; ai 10
 union|Franco-British Union|18|5|sacree|rel ENG 50; spirit Indissoluble Union: caplimit .2, ws 10|No longer two nations, but one.|req majorwar
 algiers|Fight On from Algiers|19|5|sacree|fort Algiers; spirit Empire at War: caplimit .25|The government and the fleet cross the sea.|req enemyOnSoil
 appeal|The Appeal of 18 June|19|6|algiers|fn leaderDeGaulle; units inf 4; ws 15|France has lost a battle. France has not lost the war.|

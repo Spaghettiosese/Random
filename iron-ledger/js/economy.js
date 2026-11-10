@@ -123,7 +123,7 @@ function construct(c) {
   const run = (q, amount, priv) => { while (amount > 0.01 && q.length) { const it = q[0], p = P(it.prov), cost = BLD[it.type].cost;
       if (p.owner !== c.tag || p.ctrl !== c.tag || !canBuild(c, it.type, p)) { q.shift(); continue; }
       const u = Math.min(amount, cost - it.prog); it.prog += u; amount -= u; if (priv) c.invPool -= u * 55;
-      if (it.prog >= cost - 0.01) { p.b[it.type] = (p.b[it.type] || 0) + 1; q.shift(); if (c.tag === G.player && !priv) UIH.notify(`${BLD[it.type].name} completed in ${p.name}.`, 'build'); } } };
+      if (it.prog >= cost - 0.01) { p.b[it.type] = (p.b[it.type] || 0) + 1; q.shift(); if (!priv) legacyAdd(c, 'build', 1); if (c.tag === G.player && !priv) UIH.notify(`${BLD[it.type].name} completed in ${p.name}.`, 'build'); } } };
   run(c.pq, ppts, true); run(c.queue, pts - ppts, false);
 }
 // Rank what would be most profitable / most needed to build.

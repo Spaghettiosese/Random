@@ -182,7 +182,7 @@ function playDaily() {
   for (const pl of G.plays.slice()) { const A = C(pl.a), B = C(pl.b), t = G.day - pl.day; if (!A.exists || !B.exists || atWar(pl.a, pl.b)) { G.plays.splice(G.plays.indexOf(pl), 1); continue; }
     if (t === 8) for (const k of alive()) { if (pl.A.includes(k.tag) || pl.B.includes(k.tag)) continue; let side = null;
         if (friendly(k.tag, pl.b) || hasPact('guar', k.tag, pl.b) || hasPact('ally', k.tag, pl.b)) side = 'B'; else if (friendly(k.tag, pl.a) || hasPact('ally', k.tag, pl.a)) side = 'A'; if (!side) continue;
-        if (side === 'B' && (pl.noBack.includes(k.tag) || hasSpirit(k, 'appeasement') && !hasPact('guar', k.tag, pl.b) || hasSpirit(k, 'isolationism') || hasSpirit(k, 'political_paralysis') && !hasPact('guar', k.tag, pl.b))) { if (k.major) logMsg(`${k.name} declines to back ${B.name}.`, 'world'); continue; }
+        if (side === 'B' && (k.ai || k.tag !== G.player) && (pl.noBack.includes(k.tag) || hasSpirit(k, 'appeasement') && !hasPact('guar', k.tag, pl.b) || hasSpirit(k, 'isolationism') || hasSpirit(k, 'political_paralysis') && !hasPact('guar', k.tag, pl.b))) { if (k.major) logMsg(`${k.name} declines to back ${B.name}.`, 'world'); continue; }
         const go = () => { pl[side].push(k.tag); logMsg(`${k.name} backs ${cname(side === 'A' ? pl.a : pl.b)} in the crisis.`, k.major ? 'world' : 'info', [pl.a, pl.b]); };
         if (k.tag === G.player && !k.ai && !k.overlord) UIH.popup({ title: 'A Crisis Abroad', icon: '⚖️', desc: `${A.name} demands that ${B.name} ${GOAL_TXT(pl.goal)}. Our commitments point towards ${cname(side === 'A' ? pl.a : pl.b)}. Do we back them — at the risk of war?`, options: [{ name: 'We back them.', fn: go }, { name: 'We stay out of it.', tip: 'Relations suffer', fn: () => addRel(k.tag, side === 'A' ? pl.a : pl.b, -25) }] }); else go(); }
     if (t < pl.dur) continue; G.plays.splice(G.plays.indexOf(pl), 1);
@@ -193,7 +193,7 @@ function playDaily() {
         else if (R < 0.55 && !pl.force) backA(); else goA(); };
     if (pl.force === 'concede') concede(); else if (pl.force === 'resist') fight();
     else if (pl.b === G.player && !B.ai) UIH.popup({ title: 'An Ultimatum', icon: '📜', desc: `${A.name} demands that we ${GOAL_TXT(pl.goal)}.<br><br>Their side: ${pl.A.map(cname).join(', ')}<br>Our side: ${pl.B.map(cname).join(', ')}<br>Estimated strength ratio: ${R.toFixed(2)} : 1`, options: [{ name: 'We will never yield.', fn: fight }, { name: 'We have no choice…', tip: 'Stability -8', fn: concede }] });
-    else { const backed = pl.B.some(x => x !== pl.b && C(x).major); if (R > (backed ? 2.6 : 1.5) * (0.7 + B.ws / 160) && pl.goal.type !== 'annex' || (pl.goal.type === 'annex' && R > 6 && !backed && B.ws < 45)) concede(); else fight(); }
+    else if (B.flags.resist && pl.goal.type !== 'regime') fight(); else { const backed = pl.B.some(x => x !== pl.b && C(x).major); if (R > (backed ? 2.6 : 1.5) * (0.7 + B.ws / 160) && pl.goal.type !== 'annex' || (pl.goal.type === 'annex' && R > 6 && !backed && B.ws < 45)) concede(); else fight(); }
   }
 }
 function applyGoal(a, b, g) { if (g.type === 'take') g.provs.forEach(i => P(i).owner === b && transferProv(P(i), a)); else if (g.type === 'annex') annex(a, b, true); else if (g.type === 'puppet') { makeSubject(a, b); setIdeology(C(b), C(a).ideology, true); } else if (g.type === 'regime') setIdeology(C(b), C(a).ideology, true); claimCache(); }
