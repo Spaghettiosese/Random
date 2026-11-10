@@ -50,7 +50,7 @@ function addSpirit(c, id, days) {
 }
 function removeSpirit(c, id) { const n = c.spirits.length; c.spirits = c.spirits.filter(s => s.id !== id); if (c.spirits.length !== n) dirty(c); }
 const hasSpirit = (c, id) => c.spirits.some(s => s.id === id);
-const MOD_NAME = { pp: 'Political power/day', stab: 'Stability', ws: 'War support', tax: 'Tax efficiency', build: 'Construction speed', output: 'Industrial output', mil_out: 'War industry output', res_out: 'Extraction output', farm_out: 'Farm output', research: 'Research speed', atk: 'Army attack', def: 'Army defence', org: 'Organisation', train: 'Training speed', manpower: 'Manpower', conscr: 'Conscriptable population', supply: 'Supply', air: 'Air power', navy: 'Naval power', tradecap: 'Trade openness', legit: 'Legitimacy', rad: 'Radicalism', needs: 'Consumer demand', infl: 'Influence gain', invest: 'Private investment', literacy: 'Literacy growth', tank: 'Armour effectiveness', entrench: 'Entrenchment', upkeep: 'Army upkeep', welfare: 'Welfare spending', infra: 'Infrastructure', bombing: 'Strategic bombing', cas: 'Close air support', civdef: 'Bombing protection', drift_dem: 'Democratic drift', drift_fas: 'Fascist drift', drift_com: 'Communist drift', drift_aut: 'Authoritarian drift', sway: 'Diplomatic sway', growth: 'Population growth', infamy: 'Infamy from aggression' };
+const MOD_NAME = { pp: 'Political power/day', stab: 'Stability', ws: 'War support', tax: 'Tax efficiency', build: 'Construction speed', output: 'Industrial output', mil_out: 'War industry output', res_out: 'Extraction output', farm_out: 'Farm output', research: 'Research speed', atk: 'Army attack', def: 'Army defence', org: 'Organisation', train: 'Training speed', manpower: 'Manpower', conscr: 'Conscriptable population', supply: 'Supply', air: 'Air power', navy: 'Naval power', tradecap: 'Trade openness', legit: 'Legitimacy', rad: 'Radicalism', needs: 'Consumer demand', infl: 'Influence gain', invest: 'Private investment', literacy: 'Literacy growth', tank: 'Armour effectiveness', entrench: 'Entrenchment', upkeep: 'Army upkeep', caplimit: 'Will to fight on', welfare: 'Welfare spending', infra: 'Infrastructure', bombing: 'Strategic bombing', cas: 'Close air support', civdef: 'Bombing protection', drift_dem: 'Democratic drift', drift_fas: 'Fascist drift', drift_com: 'Communist drift', drift_aut: 'Authoritarian drift', sway: 'Diplomatic sway', growth: 'Population growth', infamy: 'Infamy from aggression' };
 const MOD_ABS = { pp: 1, stab: 1, ws: 1, legit: 1, welfare: 1, drift_dem: 1, drift_fas: 1, drift_com: 1, drift_aut: 1 };
 const MOD_BAD = { rad: 1, upkeep: 1, needs: 0, infamy: 1 };
 function modText(eff) {
@@ -185,7 +185,7 @@ function newGame(player) {
   for (const tag in COUNTRY_DEF) {
     const d = COUNTRY_DEF[tag], preset = d.l || d.i;
     const c = G.C[tag] = { tag, name: d.n, adj: d.a, color: d.c, major: !!d.maj, exists: true, ai: tag !== player, ideology: d.i, sup: Object.assign({ dem: 10, fas: 10, com: 10, aut: 10 }, d.sup || { [d.i]: 64, dem: d.i === 'dem' ? 64 : 14, aut: d.i === 'aut' ? 64 : 12 }), leader: d.ld, party: d.p, capital: PNAME[d.cap], overlord: d.ov || null,
-      pp: 50, infl: 30, stab: d.stab || 55, ws: d.ws || (d.i === 'dem' ? 25 : 45), rad: 0.1, legit: 50, money: 0, taxLevel: 2, milProd: 1, laws: Object.assign({}, LAW_PRESET[preset], d.law || {}), enact: null, ig: {}, nextElection: dayOf(1936 + rint(0, 3), rint(1, 12), 1),
+      pp: 50, infl: 30, stab: d.stab || 55, ws: d.ws || (d.i === 'dem' ? 25 : 45), rad: 0.1, legit: 50, money: 0, taxLevel: 2, milProd: 1, laws: Object.assign({}, LAW_PRESET[preset], ['USA', 'ENG', 'CAN', 'AST', 'NZL', 'SAF', 'IRE', 'RAJ'].includes(tag) ? { conscription: 'volunteer' } : {}, d.law || {}), enact: null, ig: {}, nextElection: dayOf(1936 + rint(0, 3), rint(1, 12), 1),
       spirits: [], techs: {}, research: { prod: null, mil: null, soc: null }, focus: { cur: null, prog: 0, done: {} }, dcd: {}, flags: {}, market: {}, ful: {}, pm: {}, act: {}, queue: [], pq: [], invPool: 0, gdp: 0, w: 0.3, sol: 10, lit: d.lit,
       manpower: 0, stock: { arms: 0, artillery: 0, tanks: 0, aircraft: d.air || 0, ships: d.navy || 0, autos: 0 }, milNeed: {}, training: [], gens: [], np: d.np || 'west', rel: {}, infamy: 0, budget: { income: 0 }, capitulated: false, warExh: 0, casualties: 0, bt: {} };
     let s = 0; for (const k in c.sup) s += c.sup[k]; for (const k in c.sup) c.sup[k] = c.sup[k] * 100 / s;
@@ -214,7 +214,7 @@ function initIGs(c, preset) {
   for (const g of IG_IDS) c.ig[g] = { base: b[g], clout: b[g], appr: 0, gov: gov.includes(g), mods: [] };
 }
 function generateBuildings() {
-  const share = [0.05, 0.13, 0.24, 0.36, 0.5, 0.62];
+  const share = [0.06, 0.2, 0.38, 0.55, 0.7, 0.82];
   for (const p of G.P) {
     const c = C(p.owner), L = Math.max(1, Math.round(p.pop * 0.3 / EMP * share[p.dev])), w = {}, b = p.b; let used = 0;
     const put = (t, n) => { n = Math.round(n); if (n > 0) { b[t] = (b[t] || 0) + n; used += n; } };

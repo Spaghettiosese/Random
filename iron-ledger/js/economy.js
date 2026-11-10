@@ -49,8 +49,10 @@ function econSupplyDemand(c) {
     const peas = Math.max(0, wf - used); st.emp += used; st.peas += peas;
     for (const g in SUBSIST) mk[g].s += SUBSIST[g] * peas / 1000 * (1 - p.dmg) * (0.8 + 0.4 * p.dev / 5);
   }
-  const nf = (1 + M(c, 'needs')) * st.pop / 1000;
+  st.empPop = Math.min(st.pop, st.emp / 0.3 + (c._ndiv || 0) * 40); st.peasPop = st.pop - st.empPop;
+  const nf = (1 + M(c, 'needs')) * st.empPop / 1000;
   for (const g in NEEDS) mk[g].d += (NEEDS[g][0] + NEEDS[g][1] * c.w) * nf;
+  for (const g in PEAS_NEED) mk[g].d += PEAS_NEED[g] * st.peasPop / 1000;
   // armed forces
   const need = c.milNeed = militaryNeeds(c);
   for (const g of MIL_GOODS) mk[g].d += Math.max(mk[g].s, need[g] || 0);
@@ -75,9 +77,9 @@ function econFinish(c, warm) {
   // building finances
   let wages = 0, profits = 0, va = 0, govW = 0, govCost = 0; const wl = 0.6 + 0.8 * c.w, minW = 230 * wl;
   for (const t in c.bt) { const o = c.bt[t], def = BLD[t], pm = def.pms[c.pm[t] || 0]; let cost = 0, rev = 0; for (const g in pm[2]) cost += pm[2][g] * o.th * mk[g].p * c.ful[g];
-    if (def.cat === 'gov') { const w = o.lv * 420 * wl * (t === 'construction' && !(c.queue.length || c.pq.length) ? 0.4 : 1); govW += w; wages += w; if (t === 'construction') B.constr += cost + w; else govCost += cost + w; o.va = 0; o.profit = -cost - w; continue; }
+    if (def.cat === 'gov') { const w = o.lv * (t === 'railway' || t === 'port' ? 60 : 220) * wl * (t === 'construction' && !(c.queue.length || c.pq.length) ? 0.15 : 1); govW += w; wages += w; if (t === 'construction') B.constr += (cost + w) * (c.queue.length || !c.pq.length ? 1 - ({ laissez: 0.6, interventionism: 0.35, corporatist: 0.25, traditionalism: 0.3, command: 0 })[c.laws.econ] * (c.pq.length ? 1 : 0) : 0.1); else govCost += cost + w; o.va = 0; o.profit = -cost - w; continue; }
     for (const g in pm[3]) rev += pm[3][g] * o.th * o.om * mk[g].p;
-    const v = rev - cost, w = Math.max(minW * o.th, 0.55 * v); o.va = v; o.wage = w; o.profit = v - w; o.rev = rev; va += v; wages += w; profits += v - w;
+    const v = rev - cost, w = Math.max(minW * o.th, 0.6 * v); o.va = v; o.wage = w; o.profit = v - w; o.rev = rev; va += v; wages += w; profits += v - w;
     if (def.cat !== 'military') { const perLv = o.th > 0.01 ? v / o.th : 0; c.act[t] = clamp(c.act[t] + (perLv < minW * 0.75 ? -0.04 : 0.05), 0.35, 1); }
   }
   let subs = 0; for (const g in SUBSIST) subs += SUBSIST[g] * st.peas / 1000 * mk[g].p; st.subsVal = subs;
@@ -94,21 +96,22 @@ function econFinish(c, warm) {
   const command = c.laws.econ === 'command'; if (command) B.state = Math.max(0, profits) * 0.45;
   if (c.overlord && C(c.overlord).exists) { B.tribute = -B.tax * 0.1; C(c.overlord).money += B.tax * 0.1; C(c.overlord)._trib = (C(c.overlord)._trib || 0) + B.tax * 0.1; }
   if (c._trib) { B.tribute += c._trib; c._trib = 0; }
-  B.welfare = M(c, 'welfare') * st.pop / 1000 * 26 * wl; B.gov = govCost; B.army = armyPay; B.procure = procure;
+  B.welfare = M(c, 'welfare') * st.pop / 1000 * 26 * wl; B.gov = govCost; B.army = armyPay; B.procure = procure * 0.6;
   B.interest = c.money < 0 ? -c.money * 0.0012 : 0;
   B.income = B.tax + B.tariff + B.state + Math.max(0, B.tribute); B.expense = B.gov + B.army + B.procure + B.constr + B.welfare + B.interest + Math.max(0, -B.tribute);
   B.net = B.income - B.expense;
   // pops
-  const dispo = wages + armyPay + subs + (command ? 0.1 : 0.4) * Math.max(0, profits) + B.welfare - B.tax, pk = st.pop / 1000 || 1; let A = 0, Bc = 0;
+  const eS = st.pop ? st.empPop / st.pop : 0, subTax = rate * teff * subs * 0.35, dispo = wages + armyPay + (command ? 0.25 : 0.6) * Math.max(0, profits) + B.welfare * eS - (B.tax - subTax), pk = st.empPop / 1000 || 1; let A = 0, Bc = 0, PB = 0;
+  for (const g in PEAS_NEED) PB += PEAS_NEED[g] * mk[g].p; const pr = clamp((subs - subTax + B.welfare * (1 - eS)) / Math.max(1, PB * st.peasPop / 1000), 0, 1.2);
   for (const g in NEEDS) { A += NEEDS[g][0] * mk[g].p; Bc += NEEDS[g][1] * mk[g].p; }
   const wT = clamp((dispo * 0.92 / pk - A) / Bc, 0, 1); c.w += (wT - c.w) * (warm ? 0.35 : 0.08);
-  const ff = cons ? consF / cons : 1; c.solPrev = c.sol; c.sol = clamp(4 + 21 * c.w - 9 * (1 - ff) - (dispo * 0.92 / pk < A ? 3 * (1 - dispo * 0.92 / pk / A) : 0), 1, 30);
+  const ff = cons ? consF / cons : 1; c.solPrev = c.sol; c.solM = clamp(7 + 20 * c.w - 9 * (1 - ff) - (dispo * 0.92 / pk < A ? 3 * (1 - dispo * 0.92 / pk / A) : 0), 1, 30); c.solP = clamp(2 + 5 * pr - 4 * (1 - c.ful.grain), 1, 10); c.sol = c.solM * eS + c.solP * (1 - eS);
   c.gdp = (va + subs + govW + armyPay) * 52; c.unemp = 0;
   if (warm) return;
   c.money += B.net;
-  const lim = Math.max(3000, B.income * 70);
+  const lim = Math.max(8000, B.income * 70);
   if (c.money < -lim) { addSpirit(c, 'bankruptcy', 540); c.money = -lim * 0.25; c.stab = Math.max(0, c.stab - 12); logMsg(`${c.name} has defaulted on its debts!`, 'world', [c.tag]); }
-  const inv = Math.max(0, profits) * 0.3 * (1 + M(c, 'invest')); if (inv > 0 && !command) c.invPool = Math.min(c.invPool + inv, 60000 + B.income * 30);
+  const inv = Math.max(0, profits) * 0.3 * (1 + M(c, 'invest')); if (inv > 0 && !command) c.invPool = Math.min(c.invPool + inv, 4000 + B.income * 8);
   construct(c);
   if (!command && c.pq.length < 2 && c.invPool > 1500 && st.cpts > 0) { const o = buildOptions(c, true)[0]; if (o && o.score > 0) c.pq.push({ prov: o.prov, type: o.type, prog: 0 }); }
   for (const p of G.P) if (p.owner === c.tag && p.dmg > 0) p.dmg = Math.max(0, p.dmg - 0.015);
@@ -119,7 +122,7 @@ function construct(c) {
   if (!c.queue.length && c.pq.length) ps = 1; const ppts = Math.min(pts * ps, c.invPool / 55);
   const run = (q, amount, priv) => { while (amount > 0.01 && q.length) { const it = q[0], p = P(it.prov), cost = BLD[it.type].cost;
       if (p.owner !== c.tag || p.ctrl !== c.tag || !canBuild(c, it.type, p)) { q.shift(); continue; }
-      const u = Math.min(amount, cost - it.prog); it.prog += u; amount -= u; if (priv) { c.invPool -= u * 55; c.money += u * 30; }
+      const u = Math.min(amount, cost - it.prog); it.prog += u; amount -= u; if (priv) c.invPool -= u * 55;
       if (it.prog >= cost - 0.01) { p.b[it.type] = (p.b[it.type] || 0) + 1; q.shift(); if (c.tag === G.player && !priv) UIH.notify(`${BLD[it.type].name} completed in ${p.name}.`, 'build'); } } };
   run(c.pq, ppts, true); run(c.queue, pts - ppts, false);
 }
@@ -140,13 +143,13 @@ function queueBuild(c, type, provId) {
 function monthlyPops(c) {
   const g = 0.0008 + (c.sol - 10) * 0.00004 + M(c, 'growth') * 0.001;
   for (const p of G.P) if (p.owner === c.tag) p.pop = Math.max(1, Math.round(p.pop * (1 + g - p.dmg * 0.002)));
-  const le = LAWS.edu.laws[c.laws.edu][1].literacy || 0; c.lit = clamp(c.lit + (le + M(c, 'literacy') - (le || 0)) * 0 + (le * 0.0012 + (M(c, 'literacy') - le) * 0.001) * (1 - c.lit), 0.02, 0.995);
+  const le = LAWS.edu.laws[c.laws.edu][1].literacy || 0; c.lit = clamp(c.lit + (le * 0.0012 + (M(c, 'literacy') - le) * 0.001) * (1 - c.lit), 0.02, 0.995);
 }
 // ---------- research ----------
 function researchTick(c) {
   const inn = c.innov = (2 + c.stats.innov + c.lit * 4 + Math.sqrt(c.gdp / 52) * 0.02) * (1 + M(c, 'research')) * (0.5 + 0.5 * c.lit);
   const cats = Object.keys(c.research), active = cats.filter(k => c.research[k]); if (!active.length) { c.resBank = Math.min(60, (c.resBank || 0) + inn * 0.3); return; }
-  for (const k of active) { const r = c.research[k], ahead = Math.max(0, TECHS[r.id][2] - year()); r.prog += inn / active.length / (1 + ahead * 0.6);
+  for (const k of active) { const r = c.research[k], ahead = Math.max(0, TECHS[r.id][2] - year()); r.prog += inn / active.length / (1 + ahead * 1.5);
     if (r.prog >= techCost(r.id)) { c.research[k] = null; grantTech(c, r.id); if (c.tag === G.player) UIH.notify(`Research complete: ${TECHS[r.id][0]}.`, 'tech'); } }
 }
 const techAvailable = (c, cat) => Object.keys(TECHS).filter(t => TECHS[t][1] === cat && !c.techs[t]).sort((a, b) => TECHS[a][2] - TECHS[b][2]);

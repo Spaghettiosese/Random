@@ -26,7 +26,7 @@ const IG_IDEO = { ind: { dem: 0.6, aut: 0.3, fas: 0.1 }, land: { aut: 0.7, fas: 
 const hasElections = c => (c.laws.power === 'universal' || c.laws.power === 'census') && c.laws.gov !== 'oneparty' && c.laws.gov !== 'council' && c.laws.gov !== 'theocracy';
 
 function politicsDaily(c) {
-  c.pp += Math.max(0.2, 1.1 + c.legit / 100 + M(c, 'pp')); if (c.pp > 2000) c.pp = 2000;
+  c.pp += Math.max(0.15, 0.55 + c.legit / 180 + M(c, 'pp')); if (c.pp > 2000) c.pp = 2000;
   c.infl = Math.min(400, c.infl + (0.25 + (c.major ? 0.25 : 0)) * (1 + M(c, 'infl')));
 }
 function igApproval(c, g) {
@@ -45,12 +45,12 @@ function politicsMonthly(c) {
   if (!ng) { c.ig.army.gov = true; }
   c.legitBonus = (c.legitBonus || 0) * 0.97;
   const base = { monarchy: 14, theocracy: 14, oneparty: 16, council: 14, presidential: 8, parliamentary: 6 }[c.laws.gov] + (c.laws.power === 'autocracy' ? 8 : 0);
-  c.legit = clamp(18 + base + gc * 0.75 - 9 * Math.max(0, ng - 3) + M(c, 'legit') + c.sup[c.ideology] * 0.22 + happy + c.legitBonus, 0, 100);
+  c.legit = clamp(8 + base + gc * 0.6 - 9 * Math.max(0, ng - 3) + M(c, 'legit') + c.sup[c.ideology] * 0.15 + happy * 0.6 + c.legitBonus, 0, 100);
   // radicals
   const drop = (c.solPrevM === undefined ? 0 : c.solPrevM - c.sol); c.solPrevM = c.sol;
-  let rt = 0.06 + Math.max(0, 0.32 - c.w) * 0.6 + Math.max(0, drop) * 0.06 + c.warExh * 0.004 + (TAX_RATE[c.taxLevel] - 0.26) * 0.5 + (100 - c.legit) * 0.0012;
+  let rt = 0.05 + Math.max(0, 9 - c.sol) * 0.02 + Math.max(0, drop) * 0.06 + c.warExh * 0.004 + (TAX_RATE[c.taxLevel] - 0.18) * 0.5 + (100 - c.legit) * 0.0012;
   rt = clamp(rt * (1 + M(c, 'rad')), 0, 1); c.rad += (rt - c.rad) * 0.15;
-  const stT = clamp(34 + c.legit * 0.3 + (c.sol - 10) * 1.3 - c.rad * 70 + M(c, 'stab') - c.warExh * 0.35 + (c.capitulated ? -20 : 0), 0, 100); c.stab += (stT - c.stab) * 0.12;
+  const stT = clamp(30 + c.legit * 0.25 + (c.sol - 9) * 0.9 - c.rad * 70 + M(c, 'stab') - c.warExh * 0.35 + (c.capitulated ? -20 : 0), 0, 100); c.stab += (stT - c.stab) * 0.12;
   const defWar = G.wars.some(w => w.def.includes(c.tag));
   const wsT = clamp(({ fas: 58, com: 52, aut: 42, dem: 26 })[c.ideology] + G.tension * 0.35 + (defWar ? 35 : atW ? 12 : 0) + M(c, 'ws') - c.warExh * 0.5, 0, 100); c.ws += (wsT - c.ws) * 0.12;
   c.warExh = Math.max(0, c.warExh - (atW ? 0 : 2));
@@ -76,7 +76,7 @@ function setIdeology(c, ideo, quiet) {
   if (COUNTRY_DEF[c.tag] && COUNTRY_DEF[c.tag].law && COUNTRY_DEF[c.tag].law.gov === 'monarchy' && (ideo === 'dem' || ideo === 'aut')) c.laws.gov = 'monarchy';
   for (const g of IG_IDS) c.ig[g].gov = IDEO_GOV[ideo].includes(g);
   const alt = (ALT_LEADERS[c.tag.slice(0, 3)] || {})[ideo]; if (alt) { c.leader = alt[0]; c.party = alt[1]; } else { c.party = GEN_PARTY[ideo]; c.leader = pick(NAMEPOOL[c.np]) + ' ' + pick(['Government', 'Cabinet', 'Council']); }
-  if (c.sup[ideo] < 45) shiftSupport(c, { [ideo]: 45 - c.sup[ideo] });
+  if (c.sup[ideo] < 56) shiftSupport(c, { [ideo]: 56 - c.sup[ideo] });
   c.enact = null; dirty(c); recalcRelations(c.tag);
   const f = factionOf(c.tag); if (f && f.leader !== c.tag && C(f.leader).ideology !== ideo && !isAtWar(c.tag)) leaveFaction(c.tag);
   if (!quiet) logMsg(`${c.name}: a ${IDEO[ideo][0].toLowerCase()} government under ${c.leader} takes power.`, 'world', [c.tag]);
@@ -134,7 +134,7 @@ function election(c) {
   const win = Object.keys(ide).sort((a, b) => ide[b] - ide[a])[0];
   shiftSupport(c, { [win]: 4 });
   const txt = `${IGS[gov[0]][0]} lead the new government (${gov.map(g => IGS[g][0]).join(', ')}).`;
-  if (win !== c.ideology && ide[win] > 40) { logMsg(`Election in ${c.name}: the ${IDEO[win][0].toLowerCase()} opposition wins. ${txt}`, 'world', [c.tag]); setIdeology(c, win, true); if (win !== 'dem') { c.laws.power = LAW_PRESET[win].power; dirty(c); } }
+  if (win !== c.ideology && ide[win] > (win === 'dem' ? 40 : 50)) { logMsg(`Election in ${c.name}: the ${IDEO[win][0].toLowerCase()} opposition wins. ${txt}`, 'world', [c.tag]); setIdeology(c, win, true); if (win !== 'dem') { c.laws.power = LAW_PRESET[win].power; dirty(c); } }
   else logMsg(`Election in ${c.name}: ${txt}`, c.major ? 'world' : 'info', [c.tag]);
   if (c.tag === G.player) UIH.popup({ title: `Election in ${c.name}`, icon: '🗳️', desc: `The votes are counted.<br><br>${IG_IDS.map(g => `${IGS[g][1]} ${IGS[g][0]}: <b>${votes[g].toFixed(1)}%</b>`).join('<br>')}<br><br>${txt}`, options: [{ name: 'The people have spoken.' }] });
   politicsMonthly2(c);
