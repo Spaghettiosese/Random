@@ -43,7 +43,7 @@ function friendly(a, b) {
 function joinWar(w, t, side) {
   const c = C(t); if (!c || !c.exists || w.att.includes(t) || w.def.includes(t)) return; const other = side === 'att' ? w.def : w.att;
   if (w[side].some(m => atWar(m, t))) return; w[side].push(t); G._wc = null; for (const o of other) dropPacts(t, o);
-  if (!w.civil && !w.ww && w.att.some(t => C(t).major) && w.def.some(t => C(t).major) && w.att.length + w.def.length > 6) { w.ww = true; w.name = 'Second World War'; logMsg('The conflict has become a world war.', 'world'); }
+  if (!w.civil && !w.ww && w.att.some(t => C(t).major) && w.def.some(t => C(t).major) && w.att.length + w.def.length > 6 && w.att.concat(w.def).filter(t => !C(t).overlord).length >= 4) { w.ww = true; w.name = 'Second World War'; logMsg('The conflict has become a world war.', 'world'); }
   logMsg(`${c.name} joins the ${w.name} ${side === 'att' ? 'against ' + cname(w.def[0]) : 'against ' + cname(w.att[0])}.`, c.major ? 'world' : 'info', [t]);
   for (const s of alive()) if (s.overlord === t) joinWar(w, s.tag, side);
   repatriate(); UIH.mapDirty();

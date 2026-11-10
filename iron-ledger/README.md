@@ -8,6 +8,19 @@ Open `index.html` in a browser. No build step, no server.
 
 ## Updates
 
+### 1.4 "Rising Sun"
+
+Asia rebuilt.
+
+- **Five new focus trees**, each over 230 focuses: Japan (Imperial Way, Control Faction, civilian purge or people's front; strike north or strike south), China (unify the warlords, fight the War of Resistance), Communist China (base areas, united front or civil war, the People's Republic), the Philippines (the ten-year road to independence) and Mongolia (Party, lamas and two giant neighbours).
+- **A new map of China**: Guangxi, Yunnan, Shanxi, Sichuan and the Ma lands start as warlord cliques, Chinese subjects with very high autonomy.
+- **Balance of Power**: an internal rivalry bar for Japan, China, Communist China, the Philippines and Mongolia, moved by focuses and political power, with bonuses and costs in each band.
+- **Warlords and Unification**: China wears down and absorbs the cliques, or reconciles them in a federation; Japan can buy a warlord out of the war.
+- **Naval Invasions**: land armies on an enemy coast within 3,800 km by sea, given naval superiority. The AI does it too.
+- **Collaboration Governments**: turn occupied enemy land into a subject state from the Diplomacy tab.
+- **Seasons and Weather**: winter, mud and monsoon slow marches and blunt attacks; new Weather map mode.
+- Communist base areas can take over uprisings in occupied China. Authoritarian AI governments no longer vote themselves out of power. A war is only called a world war when four or more sovereign states are in it.
+
 ### 1.3 "Eastern Front"
 
 - **Soviet Union, Czechoslovakia, Finland and Romania** get new focus trees.

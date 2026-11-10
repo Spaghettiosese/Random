@@ -1,6 +1,6 @@
 // Headless simulation: node test/sim.js [years] [player]
 const fs = require('fs'), vm = require('vm'), path = require('path');
-const files = ['data/provinces.js', 'data/map.js', 'data/countries.js', 'js/defs.js', 'js/core.js', 'js/economy.js', 'js/politics.js', 'js/military.js', 'js/diplomacy.js', 'js/focus.js', 'js/content.js', 'js/focus_gd.js', 'js/projects.js', 'js/allied.js', 'js/systems.js', 'js/eastern.js', 'js/v13.js', 'js/ai.js', 'js/game.js'];
+const files = ['data/provinces.js', 'data/map.js', 'data/countries.js', 'js/defs.js', 'js/core.js', 'js/economy.js', 'js/politics.js', 'js/military.js', 'js/diplomacy.js', 'js/focus.js', 'js/content.js', 'js/focus_gd.js', 'js/projects.js', 'js/allied.js', 'js/systems.js', 'js/eastern.js', 'js/v13.js', 'js/asia.js', 'js/ai.js', 'js/game.js'];
 const src = files.map(f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8')).join('\n;\n') + '\n;globalThis.API = { PN, newGame, gameTick, G: () => G, C, alive, provsOf, armiesOf, dateStr, UIH, countryStr, fmt, navalPower, airPower, serialize, deserialize, focusTree, TREES, genericTree, effText, DECISIONS, EVENTS, SPIRITS, TECHS, BLD, applyEff };';
 vm.runInThisContext(src, { filename: 'bundle.js' });
 const A = globalThis.API, years = +(process.argv[2] || 5), world = [];
@@ -22,3 +22,5 @@ try { for (let d = 1; d <= years * 365; d++) { A.gameTick(); if (d % 365 === 0) 
 console.log('\nWORLD LOG\n' + world.join('\n'));
 const s = A.serialize(); A.deserialize(s); A.gameTick(); console.log('\nsave size', s.length, 'total ms', Date.now() - t0);
 if (process.env.BUDGET) for (const t of process.env.BUDGET.split(',')) { const c = A.C(t); console.log(t, JSON.stringify(c.budget, (k, v) => typeof v === 'number' ? Math.round(v) : v), 'milProd', c.milProd, 'queue', c.queue.length, 'pq', c.pq.length, 'inv', Math.round(c.invPool), 'cpts', Math.round(c.stats.cpts)); }
+if (process.env.FOC) for (const t of process.env.FOC.split(',')) { const c = A.C(t); console.log(t, c.ideology, 'bop', c.bop, Object.keys(c.focus.done).filter(k => !k.startsWith('x_')).map(k => k + '@' + (1936 + c.focus.done[k] / 365).toFixed(1)).join(' ')); }
+if (process.env.FOC) { const c = A.C('JAP'); console.log('day', A.G().day, 'cur', c.focus.cur, 'n', Object.keys(c.focus.done).length, ['j_south','j_indo','j_pearl','j_kodo','j_tosei','j_north'].map(k => k + ':' + focusState(c, focusById(c, k)) + ':' + JSON.stringify(focusById(c, k).ai)).join(' '), Object.keys(c.focus.done).slice(-8).map(k => k + '@' + c.focus.done[k]).join(' ')); }

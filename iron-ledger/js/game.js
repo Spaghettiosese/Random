@@ -6,10 +6,10 @@ function gameTick() { for (let i = 0; i < 24; i++) hourTick(); } // one full day
 function dayTick() {
   G.day++; const cs = alive(), dt = dateObj(G.day), first = dt.getUTCDate() === 1;
   for (const c of cs) { politicsDaily(c); focusDaily(c); }
-  playDaily(); eventsDaily(); ordersTick();
-  for (const c of cs) { if (!c.exists) continue; const h = hashTag(c.tag); if ((G.day + h) % 2 === 0) aiArmies(c.tag); if (c.ai && !c.capitulated && (G.day + h) % 7 === 0) aiWeekly(c); }
+  playDaily(); eventsDaily(); ordersTick(); invasionsTick();
+  for (const c of cs) { if (!c.exists) continue; const h = hashTag(c.tag); if ((G.day + h) % 2 === 0) aiArmies(c.tag); if (c.ai && !c.capitulated && (G.day + h) % 7 === 0) { aiWeekly(c); if ((G.day + h) % 21 === 0) aiInvasions(c); } }
   if (G.day % 7 === 0) { economyTick(false); occupationTick(); { const pl = C(G.player); if (pl && pl.exists && !pl.ai) autoBuild(pl); } for (const c of alive()) { researchTick(c); militaryWeekly(c); projectTick(c); lendLeaseTick(c); intelTick(c); } }
-  if (first) { diplomacyMonthly(); subjectsMonthly(); { const pl = C(G.player); if (pl && pl.exists && !pl.ai) autoTrade(pl); } for (const c of alive()) { politicsMonthly(c); monthlyPops(c); legacyMonthly(c); if (c.ai && !c.capitulated) { aiMonthly(c); aiCabinet(c); } eventsMonthly(c); }
+  if (first) { diplomacyMonthly(); subjectsMonthly(); { const pl = C(G.player); if (pl && pl.exists && !pl.ai) autoTrade(pl); } for (const c of alive()) { politicsMonthly(c); monthlyPops(c); legacyMonthly(c); bopMonthly(c); if (c.ai && !c.capitulated) { aiMonthly(c); aiCabinet(c); } eventsMonthly(c); }
     if (dt.getUTCMonth() === 0) yearly(); }
   if (G.day % 30 === 0) for (const c of alive()) checkCapitulation(c.tag);
 }

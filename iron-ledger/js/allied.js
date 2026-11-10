@@ -425,7 +425,7 @@ const intelOf = c => c.intel || (c.intel = { lvl: 0, ops: [] });
 const AGENCY_COST = [100, 150, 200];
 const OPS = {
   steal: { name: 'Steal Blueprints', icon: '📐', cost: 25, days: 60, base: 45, desc: 'Copy a technology they have and we lack.', can: (c, t) => Object.keys(t.techs).some(x => TECHS[x] && !c.techs[x]) ? '' : 'They know nothing we do not',
-    win: (c, t) => { const l = Object.keys(t.techs).filter(x => TECHS[x] && !c.techs[x]).sort((a, b) => TECHS[a][2] - TECHS[b][2]); const x = l[0]; if (TECHS[x][2] <= year() + 1) { grantTech(c, x); return `We obtained ${TECHS[x][0]}.`; } c.resBank = (c.resBank || 0) + 60; for (const k in c.research) if (c.research[k]) c.research[k].prog += 30; return 'Their papers speed our own research.'; } },
+    win: (c, t) => { const l = Object.keys(t.techs).filter(x => TECHS[x] && !c.techs[x]).sort((a, b) => TECHS[a][2] - TECHS[b][2]); const x = l[0]; if (x && TECHS[x][2] <= year() + 1) { grantTech(c, x); return `We obtained ${TECHS[x][0]}.`; } c.resBank = (c.resBank || 0) + 60; for (const k in c.research) if (c.research[k]) c.research[k].prog += 30; return 'Their papers speed our own research.'; } },
   sabotage: { name: 'Sabotage Industry', icon: '💥', cost: 20, days: 30, base: 50, desc: 'Wreck machinery in their greatest industrial centre.', can: () => '',
     win: (c, t) => { const p = heldBy(t.tag).sort((a, b) => provLevels(b) - provLevels(a))[0]; if (!p) return 'Nothing left to wreck.'; p.dmg = Math.min(0.6, p.dmg + 0.15); return `Fires and derailments cripple ${p.name}.`; } },
   propaganda: { name: 'Spread Propaganda', icon: '📣', cost: 20, days: 45, base: 60, desc: 'Fund newspapers and parties that share our ideology.', can: (c, t) => c.ideology === t.ideology ? 'They already share our ideology' : '',

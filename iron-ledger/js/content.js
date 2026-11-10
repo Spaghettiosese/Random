@@ -23,6 +23,7 @@ const SPIRITS = {
   zaibatsu: ['Zaibatsu', 'Four family combines own most of what matters.', { invest: 0.2, mil_out: 0.05 }],
   peace_dividend: ['Unready for War', 'Twenty years of disarmament conferences have left the forces hollow.', { mil_out: -0.15, train: -0.15, org: -0.06, atk: -0.04 }],
   obsolete_army: ['Army of 1920', 'Brave, numerous and equipped for the last war.', { atk: -0.08, def: -0.04, org: -0.05 }],
+  clique_army: ['Clique Army', 'Soldiers loyal to their general first and to China second.', { org: -0.08, tax: -0.15, def: 0.05 }],
   rearmament: ['Rearmament', 'The Reich rebuilds its armed forces at breakneck speed.', { mil_out: 0.15, train: 0.1, needs: -0.04 }],
   four_year_plan: ['Four Year Plan', 'The economy is being readied for war.', { mil_out: 0.12, build: 0.1 }],
   blitzkrieg: ['Blitzkrieg', 'Armour, aircraft and audacity.', { atk: 0.15, tank: 0.2, org: 0.15 }],
@@ -104,7 +105,7 @@ function setupScenario() {
   const co = (tag, list) => list.forEach(n => { const p = PN(n); if (!p.cores.includes(tag)) p.cores.push(tag); });
   cl('GER', ['Memel', 'Karlsbad', 'Reichenberg', 'Danzig']); co('GER', ['Vienna', 'Innsbruck']);
   cl('HUN', ['Košice', 'Uzhhorod', 'Cluj']); cl('ITA', ['Tirana']); cl('BUL', ['Constanța']); co('LIT', ['Wilno']); cl('ARG', ['Stanley']);
-  co('CHI', ['Mukden', 'Hsinking', 'Harbin', 'Qiqihar', 'Hailar', 'Chengde', "Yan'an"]); provsOf('CHI').forEach(p => p.cores.push('PRC')); cl('PRC', []);
+  const CLQ = ['GXC', 'YUN', 'SHX', 'XSM', 'SIC']; co('CHI', ['Mukden', 'Hsinking', 'Harbin', 'Qiqihar', 'Hailar', 'Chengde', "Yan'an"]); CLQ.forEach(t => { provsOf(t).forEach(p => p.cores.push('CHI')); C(t).autonomy = 78; }); provsOf('CHI').concat(...CLQ.map(provsOf)).forEach(p => p.cores.push('PRC')); cl('PRC', []);
   co('SOV', []); cl('BOL', []); cl('JAP', []);
   // colonies are not cores of their masters
   const home = { ENG: 'United Kingdom', FRA: 'France', ITA: 'Italy', SPA: 'Spain', POR: 'Portugal', BEL: 'Belgium', HOL: 'Netherlands', DEN: 'Denmark', JAP: 'Japan', USA: 'United States of America', AST: 'Australia', SAF: 'South Africa' };

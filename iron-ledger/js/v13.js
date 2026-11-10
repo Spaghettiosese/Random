@@ -89,7 +89,8 @@ function occupationTick() {
     if (occPolicy(o) === 'harsh') { o.manpower += p.pop * 0.00002; p.dmg = Math.min(0.5, p.dmg + 0.004); }
     if (p.unrest > 60) for (const a of armiesAt(p.id)) if (a.owner === o.tag) for (const d of a.divs) { d.org = Math.max(0.1, d.org - 0.08); d.str = Math.max(0.1, d.str - 0.01); }
     if (p.unrest >= 100 && !g && !NB[p.id].some(e => !e.sea && gar[e.to + '|' + o.tag])) {
-      if (own.exists && !own.capitulated && atWar(p.owner, o.tag)) { p.ctrl = p.owner; p.unrest = 30; logMsg(`An uprising liberates ${p.name} from ${o.name}.`, p.vp >= 8 ? 'world' : 'info', [o.tag, p.owner]); UIH.mapDirty(); }
+      if (G.flags.prc_bases && p.owner !== 'PRC' && chineseSoil(p) && ok('PRC') && !C('PRC').capitulated && atWar('PRC', o.tag)) { p.owner = 'PRC'; p.ctrl = 'PRC'; p.unrest = 0; logMsg(`Communist partisans set up a base area at ${p.name}.`, 'info', [o.tag, 'PRC', 'CHI']); UIH.mapDirty(); }
+      else if (own.exists && !own.capitulated && atWar(p.owner, o.tag)) { p.ctrl = p.owner; p.unrest = 30; logMsg(`An uprising liberates ${p.name} from ${o.name}.`, p.vp >= 8 ? 'world' : 'info', [o.tag, p.owner]); UIH.mapDirty(); }
       else { p.unrest = 70; p.dmg = Math.min(0.6, p.dmg + 0.1); if (o.tag === G.player) UIH.notify(`Partisans wreck factories and rail lines around ${p.name}.`, 'bad'); } }
   }
 }

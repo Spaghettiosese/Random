@@ -136,3 +136,7 @@ select { font: inherit; color: var(--paper); background: var(--slate2); border: 
 #panel > .row:first-child { border-bottom: 1px solid var(--brass2); padding-bottom: 6px; }
 .card { box-shadow: inset 0 1px 0 #ffffff0a; }
 @media (max-width: 720px) { #outliner { display: none; } #toasts { top: 8px; } }
+/* 1.4: balance of power bar */
+.bop{position:relative;height:12px;border-radius:6px;margin:6px 0;background:linear-gradient(90deg,#b8553f,#5b6670 50%,#3f7fb8)}
+.bop i{position:absolute;top:0;bottom:0;width:1px;background:rgba(0,0,0,.45)}
+.bop b{position:absolute;top:-4px;width:6px;height:20px;margin-left:-3px;border-radius:3px;background:#f2e6c8;box-shadow:0 0 0 1px #000}
