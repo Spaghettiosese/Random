@@ -173,7 +173,9 @@ function startPlay(a, b, goal, opt = {}) {
   const pl = { id: G.nid++, a, b, goal, day: G.day, dur: opt.days || 35, A: [a], B: [b], force: opt.force || null, noBack: (opt.noBack || []).concat(G.historical ? opt.noBackHist || [] : []) }; G.plays.push(pl);
   const size = goal.type === 'take' ? sum(goal.provs, i => P(i).claims.includes(a) || P(i).cores.includes(a) ? 1 : 3) : goal.type === 'annex' ? 4 + provsOf(b).length : 5;
   C(a).infamy += Math.min(25, size) * (1 + M(C(a), 'infamy')); G.tension = clamp(G.tension + 1 + Math.min(4, size * 0.3), 0, 100); dropPacts(a, b); addRel(a, b, -30);
-  logMsg(`Diplomatic play: ${cname(a)} demands that ${cname(b)} ${GOAL_TXT(goal)}.`, 'world'); return pl;
+  logMsg(`Diplomatic play: ${cname(a)} demands that ${cname(b)} ${GOAL_TXT(goal)}.`, 'world');
+  if (a === G.player && !C(a).ai) UIH.popup({ title: 'The Demand Is Delivered', icon: '📜', desc: `Our ambassador has handed ${cname(b)} our demand: ${GOAL_TXT(goal)}.<br><br>Other powers have about a week to take sides. In <b>${pl.dur} days</b> ${cname(b)} must yield or fight. Follow the crisis in the Diplomacy tab.`, options: [{ name: 'Let them sweat.' }] });
+  return pl;
 }
 function playStrength(list) { return sum(list, t => countryStr(t) + C(t).gdp / 4000); }
 function playDaily() {
@@ -184,7 +186,7 @@ function playDaily() {
         const go = () => { pl[side].push(k.tag); logMsg(`${k.name} backs ${cname(side === 'A' ? pl.a : pl.b)} in the crisis.`, k.major ? 'world' : 'info', [pl.a, pl.b]); };
         if (k.tag === G.player && !k.ai && !k.overlord) UIH.popup({ title: 'A Crisis Abroad', icon: '⚖️', desc: `${A.name} demands that ${B.name} ${GOAL_TXT(pl.goal)}. Our commitments point towards ${cname(side === 'A' ? pl.a : pl.b)}. Do we back them — at the risk of war?`, options: [{ name: 'We back them.', fn: go }, { name: 'We stay out of it.', tip: 'Relations suffer', fn: () => addRel(k.tag, side === 'A' ? pl.a : pl.b, -25) }] }); else go(); }
     if (t < pl.dur) continue; G.plays.splice(G.plays.indexOf(pl), 1);
-    const R = playStrength(pl.A) / Math.max(1, playStrength(pl.B)), concede = () => { logMsg(`${B.name} backs down and agrees to ${GOAL_TXT(pl.goal)}.`, 'world'); B.stab = Math.max(0, B.stab - 8); applyGoal(pl.a, pl.b, pl.goal); addPact('truce', pl.a, pl.b, 365); },
+    const R = playStrength(pl.A) / Math.max(1, playStrength(pl.B)), concede = () => { logMsg(`${B.name} backs down and agrees to ${GOAL_TXT(pl.goal)}.`, 'world'); if (pl.a === G.player && !A.ai) UIH.popup({ title: 'They Yield', icon: '🕊️', desc: `${B.name} backs down. Without a shot fired, they agree to ${GOAL_TXT(pl.goal)}.`, options: [{ name: 'A bloodless victory.' }] }); B.stab = Math.max(0, B.stab - 8); applyGoal(pl.a, pl.b, pl.goal); addPact('truce', pl.a, pl.b, 365); },
       fight = () => { logMsg(`${B.name} rejects the demands of ${A.name}.`, 'world'); const goA = () => { const g = [Object.assign({ by: pl.a, vs: pl.b }, pl.goal)]; const w = declareWar(pl.a, pl.b, g, null, true); if (!w) return; const sa = w.att.includes(pl.a) ? 'att' : 'def', sb = sa === 'att' ? 'def' : 'att'; pl.A.forEach(x => joinWar(w, x, sa)); pl.B.forEach(x => { joinWar(w, x, sb); const f = factionOf(x); if (f) f.members.forEach(m => joinWar(w, m, sb)); }); const f = factionOf(pl.a); if (f) f.members.forEach(m => joinWar(w, m, sa)); },
           backA = () => { logMsg(`${A.name} backs down. The crisis passes.`, 'world'); A.stab = Math.max(0, A.stab - 10); A.pp = Math.max(0, A.pp - 50); addPact('truce', pl.a, pl.b, 365); };
         if (pl.a === G.player && !A.ai) UIH.popup({ title: 'They Refuse', icon: '⚔️', desc: `${B.name} rejects our demands${pl.B.length > 1 ? ', backed by ' + pl.B.slice(1).map(cname).join(', ') : ''}. It is war, or humiliation.`, options: [{ name: 'Then it is war.', fn: goA }, { name: 'Back down.', tip: 'Stability -10, political power -50', fn: backA }] });

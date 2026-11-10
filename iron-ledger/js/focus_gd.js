@@ -14,10 +14,11 @@ const FNS = {
   inviteItaly: [c => { if (ok('ITA') && C('ITA').ideology === 'fas' && C('ITA').ai) joinFaction('ITA', c.tag); }, 'Fascist Italy is invited to the Axis'],
   tripartite: [c => inviteAll(c, ['JAP', 'HUN', 'ROM', 'BUL'], k => k.ideology !== 'dem' && k.ideology !== 'com'), 'Japan, Hungary, Romania and Bulgaria may join our faction'],
   anschluss: [c => { const a = C('AUT'); if (!a.exists) return; if (!a.ai || a.flags.resist || alive().some(k => k.major && k.tag !== c.tag && hasPact('guar', k.tag, 'AUT'))) startPlay(c.tag, 'AUT', { type: 'annex' }); else { annex(c.tag, 'AUT', true); provsOf(c.tag).filter(p => p.orig === 'AUT').forEach(p => p.cores.push(c.tag)); } }, 'Austria is united with the Reich. If Austria resists or is guaranteed, this opens a diplomatic play instead.'],
-  sudeten: [c => softPlay('CZE', 'take', ['Karlsbad', 'Reichenberg'], { noBackHist: ['FRA', 'ENG', 'ROM', 'YUG', 'SOV', 'POL'] })(c), 'Open a diplomatic play against Czechoslovakia for the Sudetenland'],
+  sudeten: [c => softPlay('CZE', 'take', ['Karlsbad', 'Reichenberg'], { days: 16, noBackHist: ['FRA', 'ENG', 'ROM', 'YUG', 'SOV', 'POL'] })(c), 'Open a two-week diplomatic play against Czechoslovakia for the Sudetenland. Prague yields unless a great power stands behind it.'],
   germanCzech: [c => germanCzech(c), 'Occupy Bohemia and Moravia if the West stands aside; otherwise open a play for annexation'],
   memel: [c => softPlay('LIT', 'take', ['Memel'], { force: 'concede', days: 12 })(c), 'Lithuania is forced to cede Memel'],
   mrEvent: [() => queueEvent('mr_pact_sov', 'SOV', 2), 'The Soviet Union gains claims in its sphere of influence'],
+  ostmarkBoost: [c => { c.manpower += 120; c.pp += 30; }, ''],
   danzig: [c => softPlay('POL', 'take', ['Danzig', 'Poznań', 'Katowice'], { force: 'resist', days: 20 })(c), 'Demand Danzig, Posen and Upper Silesia. Poland will refuse.'],
   west: [c => lowCountries(c), 'Declare war on the Low Countries and France'],
   weser: [c => ['DEN', 'NOR'].forEach(t => { if (ok(t) && !atWar(c.tag, t) && !friendly(c.tag, t)) declareWar(c.tag, t, [{ by: c.tag, vs: t, type: 'puppet' }]); }), 'Declare war on Denmark and Norway'],
@@ -409,7 +410,7 @@ habs|Call Otto Home|7|1|regency|fn leaderOtto; legit 10; rel AUT 40, GER -20|The
 legitim|Legitimist Officers|6|2|habs|ig army 5; units inf 2|Many colonels still wear the old decorations.|
 crown|Coronation in Buda|7|2|habs|stab 8; law monarchy; spirit Apostolic King: legit 10|Saint Stephen's crown is set on a Habsburg head once more.|
 magnates|Magnates' Compact|8|2|habs|ig land 6 .2; pp 40|The great families rally to the dynasty.|
-italyg|Guarantee from Rome|5|3|legitim|rel ITA 30; fn guarFromITA|The Duce prefers a Habsburg to a German on the Danube.|
+italyg|Guarantee from Rome|5|3|legitim|rel ITA 30; fn guarFromITA|The Duce prefers a Habsburg to a German on the Danube.|ai 0
 vienna|Vienna and Budapest|7|3|crown|rel AUT 50; ally AUT|Two capitals, one house.|
 westg|Western Sympathy|9|3|magnates|rel ENG 25, FRA 25; infl 30|London and Paris see a counterweight to Berlin.|
 union|Restore the Dual Monarchy|7|4|vienna|fn unionAustria|The Compromise of 1867, signed a second time.|req ex AUT
@@ -491,7 +492,7 @@ rome|Rome Protocols|3|3|church|rel ITA 30, HUN 20; trade ITA, HUN|Italy has divi
 seyss|A Nationalist in Cabinet|0|4|july|ideo fas 10; rel GER 20|The interior ministry is the price of quiet.|
 westa|Appeal to London and Paris|1|4|defy|rel ENG 25, FRA 25; fn guarFromWest|Austria's independence was written into their treaties.|
 pleb|The Plebiscite|2|4|defy|legit 12; stab 6; ideo aut 6; cflag resist|For a free and German, independent and social, Christian and united Austria.|
-stresa|Italian Guarantee|3|4|rome|fn guarFromITA|The Duce once moved troops for us. Perhaps again.|
+stresa|Italian Guarantee|3|4|rome|fn guarFromITA|The Duce once moved troops for us. Perhaps again.|ai 0
 mobil|General Mobilisation|1|5|westa|pleb|law extensive; mp 100; units inf 3|The classes of 1915 are called to the colours.|req tension 15
 little|Understanding with Prague|2|5|pleb|stresa|rel CZE 30, YUG 20; ally CZE|Two small states with the same neighbour.|mx neutral
 neutral|Alpine Neutrality|3|5|pleb|stresa|spirit armed_neutrality|The Swiss solution.|mx little

@@ -8,6 +8,13 @@ Open `index.html` in a browser. No build step, no server.
 
 ## Updates
 
+### 1.1.1
+
+- Anschluss and Sudetenland: the historical timetable now binds only the AI, the Sudeten
+  crisis resolves in two weeks, and the player is told when a demand is delivered and accepted.
+- National modifiers for every major power (for example Rampant Corruption and an Inept
+  Officer Corps for China), with focuses and decisions that remove the handicaps.
+
 ### 1.1 "Götterdämmerung"
 
 - **Germany reworked**: a 263-focus tree in eight sections (foreign policy, party and state,

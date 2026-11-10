@@ -8,6 +8,10 @@ const BLURB = {
 };
 const NEW_TREES = { GER: 1, HUN: 1, AUT: 1 };
 const UPDATES = [
+  ['1.1.1', 'Götterdämmerung hotfix', 'Fixes and national modifiers.', [
+    ['Anschluss and Sudetenland', 'The historical timetable now binds only the AI: as a player you can take these focuses as soon as their other requirements are met. The Sudeten crisis resolves in two weeks, and you are told when a demand is delivered and when it is accepted.'],
+    ['National modifiers', 'Every major power starts with strengths and handicaps. China suffers Rampant Corruption and an Inept Officer Corps; Italy has Industrial Weakness; France fights by Methodical Battle; the United States has a Constabulary Army but is an Industrial Giant; and more. Focuses and two new decisions remove the handicaps.'],
+    ['Country selection', 'National modifiers are shown before you start.']]],
   ['1.1', 'Götterdämmerung', 'The first major update.', [
     ['Germany reworked', 'A new national focus tree with more than 260 focuses in eight sections: foreign policy, party and state, a four-way opposition path (Kaiser, generals, republic, council republic), economy, army, air force, navy and secret weapons.'],
     ['Hungary', 'A 90-focus tree: the Regent\'s balancing act, the Vienna Awards, a Habsburg restoration and the Dual Monarchy, a democratic opening, Hungarism, and a second council republic.'],
@@ -32,7 +36,7 @@ function startScreen() {
   const shell = inner => `<canvas id="menubg"></canvas><div class="menuveil"></div>${inner}<div class="menuver">Version ${VERSION} · Map data: Natural Earth</div>`;
   if (MENU.screen === 'main') {
     el.innerHTML = shell(`<div class="menumain"><div class="logo"><div class="eyebrow">A grand strategy game</div><h1>Iron <span>Ledger</span></h1><div class="year">1936</div></div>
-      <nav class="menubtns"><button class="pri" data-a="menuGo" data-s="select">New Game</button>${save ? '<button data-a="loadGame">Continue</button>' : ''}<button data-a="menuGo" data-s="updates">Updates <span class="badge">1.1</span></button><button data-a="menuGo" data-s="help">How to Play</button></nav>
+      <nav class="menubtns"><button class="pri" data-a="menuGo" data-s="select">New Game</button>${save ? '<button data-a="loadGame">Continue</button>' : ''}<button data-a="menuGo" data-s="updates">Updates <span class="badge">1.1.1</span></button><button data-a="menuGo" data-s="help">How to Play</button></nav>
       <div class="menunews" data-a="menuGo" data-s="updates"><div class="eyebrow">Latest update</div><b>Götterdämmerung</b><span>A 260-focus German tree, new trees for Hungary and Austria, Special Projects, and an hourly clock.</span></div></div>`);
   } else if (MENU.screen === 'select') {
     const majors = Object.keys(COUNTRY_DEF).filter(t => COUNTRY_DEF[t].maj), minors = Object.keys(COUNTRY_DEF).filter(t => !COUNTRY_DEF[t].maj).sort((a, b) => (NEW_TREES[b] || 0) - (NEW_TREES[a] || 0) || COUNTRY_DEF[a].n.localeCompare(COUNTRY_DEF[b].n));
@@ -42,6 +46,7 @@ function startScreen() {
       <div class="seldetail"><div class="bigflag" style="background:${d.c}"></div><h2>${d.n}</h2><div><span class="pill" style="background:${IDEO[d.i][1]}">${IDEO[d.i][0]}</span> ${d.maj ? '<span class="pill">Major power</span>' : ''}${d.ov ? `<span class="pill">Subject of ${COUNTRY_DEF[d.ov].n}</span>` : ''}</div>
         <div>${d.ld} <span class="dim">· ${d.p}</span></div><p>${BLURB[MENU.tag] || 'Chart your own course through the gathering storm.'}</p>
         <div class="kv"><span>Provinces</span><span>${f.provs}</span><span>Population</span><span>${f.pop.toFixed(1)}M</span><span>Divisions</span><span>${f.divs}</span><span>Literacy</span><span>${(d.lit * 100).toFixed(0)}%</span><span>National focus tree</span><span>${n} focuses${tree ? ' · unique' : ' · generic'}</span></div>
+        ${d.sp ? `<div class="row">${d.sp.map(s => `<span class="spirit"${tip(`<b>${SPIRITS[s][0]}</b><br><i>${SPIRITS[s][1]}</i><br>${modText(SPIRITS[s][2])}`)}>✦ ${SPIRITS[s][0]}</span>`).join('')}</div>` : ''}
         ${d.g ? `<div class="dim">Generals: ${d.g.slice(0, 4).map(g => g[0]).join(', ')}${d.g.length > 4 ? '…' : ''}</div>` : ''}
         <label class="row"><input type="checkbox" id="hist" data-ch="hist"${MENU.hist ? ' checked' : ''}> <span>Historical AI <span class="dim">— other nations follow history's timetable</span></span></label>
         <button class="pri play" data-a="startGame">Play as ${d.n}</button></div></div>`);
