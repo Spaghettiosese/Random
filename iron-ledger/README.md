@@ -8,6 +8,19 @@ Open `index.html` in a browser. No build step, no server.
 
 ## Updates
 
+### 1.5 "Dragon and Sun"
+
+Asia done properly.
+
+- **Six trees written by hand**, each over 230 focuses with no generic filler: Japan, China, Communist China, the Philippines, Mongolia and (new) Manchukuo. Every political road runs fifteen to twenty-five focuses deep.
+- **Border Conflicts**: six weeks of fighting on a frontier without a declaration of war, for prestige, experience and sometimes a claimed province.
+- **Embargoes**: the larger the share of the world economy that embargoes a nation, the harder its trade and output are hit.
+- **Support Companies and Army Experience**: spend experience on artillery, engineers, reconnaissance, field hospitals and signals, three per army.
+- **Air Missions**: superiority, ground support, strategic bombing, naval strike or home defence.
+- **Game Rules**: difficulty, and strengthen or weaken eight powers before the game starts.
+- Balance of Power for Manchukuo; a Kwantung garrison so Manchukuo is not overrun in 1937; focus prerequisites may now be alternatives of groups.
+- Tree sources are in `js/tree_*.js`, written in a compact format laid out automatically by `autoTree` (`js/asia_tools.js`).
+
 ### 1.4 "Rising Sun"
 
 Asia rebuilt.

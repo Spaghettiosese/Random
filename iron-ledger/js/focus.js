@@ -248,7 +248,7 @@ const focusById = (c, id) => focusTree(c).find(f => f.id === id);
 function focusState(c, f) {
   if (c.focus.done[f.id]) return 'done'; if (c.focus.cur === f.id) return 'active';
   if (f.mutex && f.mutex.split(',').some(m => c.focus.done[m] || c.focus.cur === m)) return 'blocked';
-  if (f.pre) { const any = f.pre.includes('|'), parts = f.pre.split(any ? '|' : ','); if (any ? !parts.some(p => c.focus.done[p]) : !parts.every(p => c.focus.done[p])) return 'locked'; }
+  if (f.pre && !f.pre.split('|').some(g => g.split(',').every(p => c.focus.done[p]))) return 'locked'; // alternatives separated by |, each a comma list
   if (f.ideo && c.ideology !== f.ideo) return 'unmet';
   if (f.req && !f.req[0](c)) return 'unmet';
   return 'available';
