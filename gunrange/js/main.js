@@ -1,6 +1,7 @@
 import * as THREE from '../../vendor/three.module.min.js';
 import { Animator } from './anim.js';
-import { GUNS, makeCasing, makeForearm } from './guns.js';
+import { makeCasing, makeForearm } from './guns.js';
+import { GUNS, CATS } from './arsenal.js';
 import { buildRange } from './range.js';
 import { Sfx } from './audio.js';
 
@@ -57,6 +58,7 @@ const weapons = GUNS.map(def => {
   };
 });
 let cur = weapons[0], nextIdx = -1, lastIdx = 1;
+const catPick = CATS.map((_, c) => weapons.findIndex(w => w.def.cat === c));   // last gun used in each class
 
 // Muzzle flash: two crossed additive quads.
 const flash = new T.Group(); vmScene.add(flash); flash.visible = false;
@@ -110,14 +112,22 @@ const hud = {
   ammo: $('ammo'), mag: $('mag'), name: $('gun-name'), sub: $('gun-sub'), slots: $('slots'), score: $('score'), acc: $('acc'),
   cross: $('crosshair'), marker: $('hitmarker'), pops: $('pops'), scope: $('scope'), drill: $('drill'), msg: $('msg'), reloadHint: $('reload-hint'),
 };
-GUNS.forEach((g, i) => {
-  const d = document.createElement('div'); d.className = 'slot'; d.innerHTML = `<b>${i + 1}</b><span>${g.name}</span>`; hud.slots.appendChild(d);
+const catList = $('catlist');
+CATS.forEach((c, i) => {
+  const d = document.createElement('div'); d.className = 'slot'; d.innerHTML = `<b>${i + 1}</b><span>${c}</span>`; hud.slots.appendChild(d);
 });
+let shownCat = -1;
 function refreshHud() {
   hud.ammo.textContent = cur.ammo; hud.mag.textContent = '/ ' + cur.def.mag;
   hud.ammo.classList.toggle('low', cur.ammo <= Math.ceil(cur.def.mag * .2));
   hud.name.textContent = cur.def.name; hud.sub.textContent = cur.def.sub;
-  [...hud.slots.children].forEach((el, i) => el.classList.toggle('on', weapons[i] === cur));
+  const cat = cur.def.cat;
+  [...hud.slots.children].forEach((el, i) => el.classList.toggle('on', i === cat));
+  if (shownCat !== cat) {
+    shownCat = cat; catList.textContent = '';
+    for (const w of weapons) if (w.def.cat === cat) { const d = document.createElement('div'); d.className = 'slot'; d.textContent = w.def.name; d.dataset.id = w.def.id; catList.appendChild(d); }
+  }
+  for (const el of catList.children) el.classList.toggle('on', el.dataset.id === cur.def.id);
   hud.score.textContent = stats.score;
   hud.acc.textContent = stats.shots ? Math.round(stats.hits / stats.shots * 100) + '%' : '--';
   hud.reloadHint.classList.toggle('hidden', !(cur.ammo === 0 && cur.state === 'idle'));
@@ -138,7 +148,7 @@ function onEvent(name) {
     case 'slideRelease': w.slideLock = 0; break;
     case 'eject':
       if (w.model.rounds) w.model.rounds.visible = false;
-      for (let i = 0; i < 6; i++) spawnCasing(w, [rnd(.25), -.6 - Math.random() * .5, .9 + rnd(.3)]);
+      for (let i = w.def.ejectSpent ? w.def.mag - w.ammo : 6; i > 0; i--) spawnCasing(w, [rnd(.25), -.6 - Math.random() * .5, .9 + rnd(.3)]);
       break;
     case 'loaderShow': P.loader.visible = true; return;
     case 'shellShow': P.shell.visible = true; return;
@@ -155,7 +165,7 @@ function setIdle() { cur.state = 'idle'; refreshHud(); }
 function equip(i) {
   cur.holder.visible = false;
   lastIdx = weapons.indexOf(cur);
-  cur = weapons[i]; cur.holder.visible = true; cur.state = 'draw'; nextIdx = -1;
+  cur = weapons[i]; cur.holder.visible = true; cur.state = 'draw'; nextIdx = -1; catPick[cur.def.cat] = i;
   cur.anim.stop(0); cur.anim.update(0);
   cur.anim.play(cur.def.clips.draw, { blend: 0, onEvent, onDone: () => { if (cur.def.action === 'boltAction' && cur.needsBolt) cycle(); else setIdle(); } });
   refreshHud();
@@ -168,6 +178,15 @@ function switchTo(i) {
   nextIdx = i; cur.state = 'holster';
   play('holster', () => equip(nextIdx));
 }
+// Number keys pick a class; pressing the same class again cycles through its guns.
+function selectCat(c) {
+  if (c < 0 || c >= CATS.length) return;
+  const target = nextIdx >= 0 ? weapons[nextIdx] : cur, ti = weapons.indexOf(target);
+  if (target.def.cat !== c) return switchTo(catPick[c]);
+  let i = ti;
+  do { i = (i + 1) % weapons.length; } while (weapons[i].def.cat !== c);
+  switchTo(i);
+}
 function resetTransient() {
   const P = cur.model.parts;
   if (P.shell) P.shell.visible = false;
@@ -176,7 +195,7 @@ function resetTransient() {
 }
 function cycle() { // pump or bolt after a shot
   cur.state = 'action'; cur.needsBolt = false;
-  play(cur.def.action === 'pump' ? 'pump' : 'bolt', setIdle, { blend: .05 });
+  play(cur.def.cycleClip || (cur.def.action === 'pump' ? 'pump' : 'bolt'), setIdle, { blend: .05 });
 }
 function reload() {
   const w = cur, d = w.def;
@@ -192,7 +211,7 @@ function reload() {
     play('reloadStart', shell);
   } else {
     const clip = w.wasEmpty && d.clips.reloadEmpty ? 'reloadEmpty' : 'reload';
-    play(clip, () => { if (d.action === 'boltAction' && (w.wasEmpty || w.needsBolt)) cycle(); else setIdle(); });
+    play(clip, () => { if (d.action === 'boltAction' && (w.wasEmpty || w.needsBolt)) cycle(); else setIdle(); }, { speed: d.reloadSpeed || 1 });
   }
 }
 function inspect() {
@@ -250,13 +269,13 @@ function fire() {
   view.bloom = Math.min(3.5, view.bloom + d.bloom);
   // Muzzle flash and smoke.
   w.model.muzzle.getWorldPosition(flash.position); w.model.muzzle.getWorldQuaternion(flash.quaternion);
-  const fs = d.pellets > 1 || d.scope ? .26 : d.id === 'revolver' ? .22 : .16;
+  const fs = d.pellets > 1 || d.scope ? .26 : d.action === 'revolver' || d.cam > .03 ? .22 : .16;
   flash.scale.setScalar(fs * (.8 + Math.random() * .5)); flash.rotateZ(Math.random() * 6.28);
-  flash.visible = !(d.scope && view.ads > .9); flashT = .05; flashLight.position.copy(flash.position); flashLight.intensity = 5;
+  flash.visible = !d.noFlash && !(d.scope && view.ads > .9); flashT = .05; flashLight.position.copy(flash.position); flashLight.intensity = d.noFlash ? 0 : 5;
   for (let i = 0; i < 3; i++) addSmoke(flash.position);
   // Per-action mechanics.
   if ((d.action === 'slide' || d.action === 'bolt') && w.ammo === 0) w.slideLock = 1;
-  if (d.action === 'revolver') w.cylIdx++;
+  if (d.action === 'revolver') { w.cylIdx++; if (d.singleAction) cycle(); }
   if (d.action === 'slide' || d.action === 'bolt') spawnCasing(w);
   if (d.action === 'pump') cycle();
   if (d.action === 'boltAction') { if (w.ammo > 0) cycle(); else w.needsBolt = true; }
@@ -292,7 +311,7 @@ function addSmoke(pos) {
 const zAxis = new T.Vector3(0, 0, 1), nrm = new T.Vector3();
 function impact(hit, surface, d) {
   const obj = hit.object, n = hit.face.normal;
-  const size = (d.pellets > 1 ? .012 : d.scope ? .02 : d.id === 'revolver' ? .017 : .013) * (surface === 'steel' ? 1.8 : surface === 'paper' ? 1 : 1.5);
+  const size = (d.pellets > 1 ? .012 : d.scope ? .02 : d.action === 'revolver' ? .017 : .013) * (surface === 'steel' ? 1.8 : surface === 'paper' ? 1 : 1.5);
   const dec = decals.length >= DECAL_MAX ? decals.shift() : new T.Mesh(holeGeo, holeMats.other);
   dec.material = holeMats[surface] || holeMats.other;
   dec.position.copy(obj.worldToLocal(tmp.copy(hit.point))).addScaledVector(n, .012);
@@ -342,7 +361,7 @@ addEventListener('keydown', e => {
   if (e.repeat) return;
   keys[e.code] = true;
   if (!running) return;
-  if (e.code.startsWith('Digit')) switchTo(+e.code[5] - 1);
+  if (e.code.startsWith('Digit')) selectCat(+e.code[5] - 1);
   if (e.code === 'KeyQ') switchTo(lastIdx);
   if (e.code === 'KeyR') reload();
   if (e.code === 'KeyF') inspect();
@@ -450,7 +469,8 @@ function update(dt) {
     A.extra('bolt')[2] = Math.max(since < .025 ? since / .025 : Math.max(0, 1 - (since - .025) / .05), w.slideLockV) * .05;
   } else if (d.action === 'revolver') {
     w.cylAng = damp(w.cylAng, w.cylIdx * 60, 38, dt); A.extra('cyl')[5] = w.cylAng;
-    A.extra('hammer')[3] = since < .05 ? 0 : since < .24 ? Math.min(1, (since - .05) / .16) * 32 * (cooldown > .1 ? 1 : 0) : 0;
+    A.extra('hammer')[3] = d.singleAction ? (since < .1 ? 0 : Math.min(1, (since - .1) / .1) * 36)
+      : since < .05 ? 0 : since < .24 ? Math.min(1, (since - .05) / .16) * 32 * (cooldown > .1 ? 1 : 0) : 0;
   }
   if (dbg.freeze) A.pose(d.clips[dbg.freeze.clip], dbg.freeze.t); else A.update(dt);
 

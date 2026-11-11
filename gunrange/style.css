@@ -67,3 +67,5 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color:
 .panel td:nth-child(odd) { font-weight: 700; color: #ffcf4a; white-space: nowrap; }
 .panel button { font: inherit; font-size: 18px; font-weight: 800; letter-spacing: .1em; padding: 12px 34px; border: 0; border-radius: 6px; background: #ffcf4a; color: #17140c; cursor: pointer; }
 body.playing, body.playing #view { cursor: none; }
+#catlist { position: absolute; right: 24px; bottom: 200px; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+#catlist .slot.on { border-bottom-color: transparent; border-right: 2px solid #ffcf4a; }

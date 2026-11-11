@@ -71,25 +71,27 @@ Settings → **Eric's face** lets you load a photo from your computer and line t
 
 A separate first-person gun range game lives in [`gunrange/`](gunrange/). It shares the vendored three.js and also has no build step. Serve the repo root as above and open `/gunrange/`.
 
-Five guns, each with its own draw, fire, reload and inspect animations:
+25 guns in six classes, each with its own draw, fire, reload and inspect animations. Number keys pick a class; press the same key again to cycle through it.
 
-| Key | Gun | Notes |
+| Key | Class | Guns |
 | --- | --- | --- |
-| 1 | Kestrel 9 | Semi-auto pistol, slide locks back when empty |
-| 2 | Longhorn .357 | Revolver, speedloader reload, cylinder spin on inspect |
-| 3 | VX-5 Carbine | Full-auto, red dot sight |
-| 4 | Brawler 12 | Pump shotgun, loads one shell at a time (fire to interrupt) |
-| 5 | Sentinel .308 | Bolt-action with an 8x scope |
+| 1 | Pistols | Kestrel 9, Viper .45, Wasp MP (full-auto), Marshal .50, Whisper 22 (suppressed) |
+| 2 | Revolvers | Longhorn .357, Stubby .38, Judge .44, Peacemaker .45 (single-action) |
+| 3 | SMGs | Hornet SMG, Stinger PDW (suppressed), Thumper .45 (drum) |
+| 4 | Rifles | VX-5 Carbine, Kodiak 7.62, Lancer BR (semi), BR-9 Bullpup, Hailstorm LMG, Rancher .30-30 (lever-action) |
+| 5 | Shotguns | Brawler 12 (pump), Trench 12 (short pump), Twin 12 (break-action), Riot A12 (mag-fed semi) |
+| 6 | Snipers | Sentinel .308 (bolt, 8x), Longbow .50 (bolt, 12x), Marksman DMR (semi, 4x) |
 
 | Control | Action |
 | --- | --- |
 | Mouse / W A S D | Look / move |
 | Left click / right click | Fire / aim down sights |
 | R / F | Reload / inspect |
-| 1-5, wheel, Q | Switch gun / last gun |
+| 1-6 | Weapon class (press again to cycle) |
+| Wheel / Q | Next or previous gun / last gun |
 | Shift / Space | Sprint / jump |
 | B / T | Start the 30-second pop-up drill / reset targets and score |
 
 Targets: scored paper bullseyes, a moving target on a rail, a falling plate rack, and swinging gongs at 50, 75 and 100 m.
 
-Code: `js/anim.js` (keyframe clips with monotone cubic interpolation, layered with procedural recoil and sway), `js/guns.js` (models, stats, clips), `js/range.js` (world and targets), `js/audio.js` (synthesised sound), `js/main.js` (player, weapon logic, HUD).
+Code: `js/anim.js` (keyframe clips with monotone cubic interpolation, layered with procedural recoil and sway), `js/guns.js` (the five original models, stats and clips), `js/arsenal.js` (the other twenty: variants, a parametric long-gun builder, and the break-action, lever-action and single-action mechanisms), `js/range.js` (world and targets), `js/audio.js` (synthesised sound), `js/main.js` (player, weapon logic, HUD).

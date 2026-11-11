@@ -6,6 +6,9 @@ const SHOTS = {
   carbine:  { g: .8,  f: 6200, d: .14, th: 150, tail: .55 },
   shotgun:  { g: 1.1, f: 2600, d: .32, th: 85,  tail: .9 },
   sniper:   { g: 1.2, f: 4200, d: .36, th: 70,  tail: 1.4 },
+  smg:      { g: .65, f: 5800, d: .11, th: 190, tail: .4 },
+  supp:     { g: .3,  f: 1700, d: .09, th: 150, tail: .12 },
+  heavy:    { g: 1.35, f: 3000, d: .44, th: 55, tail: 1.7 },
 };
 // Mechanical sounds: lists of [bandpass Hz, seconds, gain, delay].
 const MECH = {

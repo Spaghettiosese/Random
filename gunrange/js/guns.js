@@ -17,23 +17,23 @@ export const m = {
   dot: new T.MeshBasicMaterial({ color: 0xff2a1a }),
 };
 
-function B(parent, mat, w, h, d, x, y, z, rx = 0, ry = 0, rz = 0) {
+export function B(parent, mat, w, h, d, x, y, z, rx = 0, ry = 0, rz = 0) {
   const o = new T.Mesh(new T.BoxGeometry(w, h, d), mat);
   o.position.set(x, y, z); o.rotation.set(rx, ry, rz); parent.add(o); return o;
 }
 // Cylinder along an axis; rFront is the radius at the -Z (or -X / -Y) end.
-function C(parent, mat, r, len, x, y, z, axis = 'z', rFront = r, seg = 14) {
+export function C(parent, mat, r, len, x, y, z, axis = 'z', rFront = r, seg = 14) {
   const o = new T.Mesh(new T.CylinderGeometry(r, rFront, len, seg), mat);
   if (axis === 'z') o.rotation.x = Math.PI / 2;
   if (axis === 'x') o.rotation.z = -Math.PI / 2;
   o.position.set(x, y, z); parent.add(o); return o;
 }
-function N(parent, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0) {
+export function N(parent, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0) {
   const o = new T.Group(); o.position.set(x, y, z); o.rotation.set(rx, ry, rz); parent.add(o); return o;
 }
 
 // Right hand wrapped round a grip. Origin = top of the grip, tilted with it.
-function gripHand(parent, x, y, z, rx) {
+export function gripHand(parent, x, y, z, rx) {
   const h = N(parent, x, y, z, rx);
   B(h, m.glove, .056, .084, .068, .005, -.054, .016);          // palm
   B(h, m.glove, .052, .062, .026, -.003, -.064, -.03);         // fingers round the front
@@ -46,7 +46,7 @@ function gripHand(parent, x, y, z, rx) {
   return h;
 }
 // Left hand as an open cup. Origin = centre of the palm, fingers on +X, thumb on -X.
-function cupHand(parent, x, y, z, rx = 0, ry = 0, rz = 0) {
+export function cupHand(parent, x, y, z, rx = 0, ry = 0, rz = 0) {
   const h = N(parent, x, y, z, rx, ry, rz);
   h.scale.setScalar(.88);
   B(h, m.glove, .078, .028, .096, 0, -.014, 0);                // palm
@@ -58,7 +58,7 @@ function cupHand(parent, x, y, z, rx = 0, ry = 0, rz = 0) {
   h.userData.wrist = N(h, -.006, -.026, .115);
   return h;
 }
-function casing(kind) {
+export function casing(kind) {
   const g = new T.Group();
   if (kind === 'shell') {
     C(g, m.red, .0095, .044, 0, 0, -.008); C(g, m.brass, .0098, .014, 0, 0, .02);
@@ -71,51 +71,58 @@ function casing(kind) {
 
 // ───────────────────────────── models ─────────────────────────────
 
-function buildPistol() {
+export function buildPistol(o = {}) {
   const root = new T.Group(), P = { root };
-  B(root, m.poly, .030, .026, .165, 0, 0, -.045);                       // frame
-  B(root, m.poly, .026, .012, .05, 0, -.017, -.1);                      // accessory rail
+  const len = o.len || 0, SM = o.slideMat || m.steel, FM = o.frameMat || m.poly, fz = -len / 2;
+  B(root, FM, .030, .026, .165 + len, 0, 0, -.045 + fz);                // frame
+  B(root, FM, .026, .012, .05, 0, -.017, -.1 - len);                    // accessory rail
   const grip = N(root, 0, -.008, .018, -.2);
-  B(grip, m.poly, .030, .1, .048, 0, -.05, 0);
+  B(grip, o.gripMat || FM, .030, .1, .048, 0, -.05, 0);
   P.mag = N(grip);
   B(P.mag, m.steel, .022, .1, .034, 0, -.052, 0);
   B(P.mag, m.black, .031, .009, .052, 0, -.105, .001);
-  B(root, m.poly, .008, .005, .054, 0, -.047, -.04);                    // trigger guard
-  B(root, m.poly, .008, .034, .005, 0, -.031, -.066);
+  if (o.magExt) { B(P.mag, m.steel, .024, o.magExt, .036, 0, -.109 - o.magExt / 2, .001); B(P.mag, m.black, .031, .009, .052, 0, -.112 - o.magExt, .001); }
+  B(root, FM, .008, .005, .054, 0, -.047, -.04);                        // trigger guard
+  B(root, FM, .008, .034, .005, 0, -.031, -.066);
   B(root, m.steel, .005, .022, .006, 0, -.026, -.034, .3);              // trigger
-  C(root, m.stainless, .0065, .18, 0, .029, -.047);                     // barrel
-  C(root, m.hole, .0042, .002, 0, .029, -.1375);
+  const bx = o.supp ? .03 : o.comp ? .0 : 0;
+  C(root, m.stainless, .0065, .18 + len + bx, 0, .029, -.047 + fz - bx / 2);  // barrel
+  let mz = -.1375 - len;
+  if (o.supp) { C(root, m.black, .0165, .15, 0, .029, mz - .09); mz -= .165; }
+  if (o.comp) { B(root, m.black, .03, .034, .04, 0, .029, mz - .02); B(root, m.hole, .031, .006, .008, 0, .04, mz - .02); mz -= .04; }
+  C(root, m.hole, .0042, .002, 0, .029, mz - .0005);
   const s = P.slide = N(root, 0, .029, -.04);
-  B(s, m.steel, .031, .032, .19, 0, 0, 0);
+  B(s, SM, .031, .032, .19 + len, 0, 0, fz);
   B(s, m.hole, .0125, .0125, .036, .0098, .0102, -.012);                // ejection port
   B(s, m.stainless, .008, .008, .03, .0105, .0105, -.012);              // chamber hood
-  B(s, m.black, .004, .007, .008, 0, .0195, -.086);                     // front sight
+  B(s, m.black, .004, .007, .008, 0, .0195, -.086 - len);               // front sight
   B(s, m.black, .006, .007, .008, -.008, .0195, .086);                  // rear sight
   B(s, m.black, .006, .007, .008, .008, .0195, .086);
   for (let i = 0; i < 5; i++) for (const sx of [-1, 1]) B(s, m.black, .001, .024, .004, sx * .0156, 0, .05 + i * .008);
+  if (o.ports) for (let i = 0; i < 3; i++) B(s, m.hole, .0315, .006, .012, 0, .008, -.05 - len - i * .02);
   P.rh = gripHand(root, 0, -.008, .018, -.2);
   P.lh = cupHand(root, -.02, -.078, 0, 0, 0, -.95);
-  return { root, parts: P, muzzle: N(root, 0, .029, -.142), eject: N(root, .022, .046, -.05) };
+  return { root, parts: P, muzzle: N(root, 0, .029, mz - .005), eject: N(root, .022, .046, -.05) };
 }
 
-function buildRevolver() {
-  const root = new T.Group(), P = { root }, S = m.stainless;
+export function buildRevolver(o = {}) {
+  const root = new T.Group(), P = { root }, S = o.frame || m.stainless, len = o.len || .135, fz = -.0805 - len;
   B(root, S, .014, .008, .078, 0, .061, -.035);                          // top strap
   B(root, S, .018, .016, .078, 0, .006, -.032);                          // lower frame
   B(root, S, .02, .062, .022, 0, .034, .014);                            // recoil shield
   B(root, S, .018, .06, .014, 0, .034, -.076);                           // barrel shroud root
-  C(root, S, .0095, .135, 0, .046, -.148);                               // barrel
-  C(root, m.hole, .0048, .002, 0, .046, -.2162);
-  B(root, S, .012, .016, .115, 0, .028, -.138);                          // under-lug
-  B(root, S, .006, .006, .135, 0, .058, -.148);                          // rib
-  B(root, m.black, .004, .011, .016, 0, .066, -.203);                    // front sight
+  C(root, S, .0095, len, 0, .046, fz + len / 2);                               // barrel
+  C(root, m.hole, .0048, .002, 0, .046, fz - .0007);
+  if (len > .05) B(root, S, .012, .016, len - .02, 0, .028, fz + len / 2 + .01);                          // under-lug
+  B(root, S, .006, .006, len, 0, .058, fz + len / 2);                          // rib
+  B(root, m.black, .004, .011, .016, 0, .066, fz + .0125);                    // front sight
   B(root, m.black, .016, .007, .012, 0, .067, .004);                     // rear sight
   B(root, S, .008, .005, .048, 0, -.032, -.022);                         // trigger guard
   B(root, S, .008, .032, .005, 0, -.017, -.045);
   B(root, S, .005, .02, .005, 0, -.014, -.016, .25);                     // trigger
   const grip = N(root, 0, 0, .022, -.32);
-  B(grip, m.wood, .027, .092, .04, 0, -.05, 0);
-  B(grip, m.woodDark, .029, .022, .046, 0, -.093, .002);
+  B(grip, o.gripMat || m.wood, .027, .092, .04, 0, -.05, 0);
+  B(grip, o.gripCap || m.woodDark, .029, .022, .046, 0, -.093, .002);
   C(grip, m.brass, .005, .029, 0, -.03, 0, 'x');                         // medallion
   P.hammer = N(root, 0, .034, .022);
   B(P.hammer, m.steel, .007, .024, .008, 0, .016, .004);
@@ -144,10 +151,10 @@ function buildRevolver() {
   P.loader.visible = false;
   P.rh = gripHand(root, 0, 0, .022, -.32);
   P.lh = cupHand(root, -.02, -.076, .004, 0, 0, -.95);
-  return { root, parts: P, rounds, muzzle: N(root, 0, .046, -.22), eject: N(root, -.035, .03, .02) };
+  return { root, parts: P, rounds, muzzle: N(root, 0, .046, fz - .005), eject: N(root, -.035, .03, .02) };
 }
 
-function buildCarbine() {
+export function buildCarbine() {
   const root = new T.Group(), P = { root };
   B(root, m.poly, .034, .046, .17, 0, .004, -.03);                       // lower receiver
   B(root, m.steel, .034, .036, .22, 0, .045, -.045);                     // upper receiver
@@ -188,44 +195,47 @@ function buildCarbine() {
   return { root, parts: P, muzzle: N(root, 0, .044, -.565), eject: N(root, .03, .052, -.04) };
 }
 
-function buildShotgun() {
-  const root = new T.Group(), P = { root };
-  B(root, m.steel, .036, .056, .2, 0, .03, -.03);                        // receiver
+export function buildShotgun(o = {}) {
+  const root = new T.Group(), P = { root }, bl = o.barrel || .5, tl = bl - .1, W = o.wood || m.wood, WD = o.woodDark || m.woodDark, ST = o.metal || m.steel;
+  B(root, ST, .036, .056, .2, 0, .03, -.03);                        // receiver
   B(root, m.hole, .02, .003, .075, 0, .0015, -.05);                      // loading port
   B(root, m.hole, .003, .02, .062, .0172, .04, -.045);                   // ejection port
-  C(root, m.steel, .0105, .5, 0, .046, -.38);                            // barrel
-  C(root, m.hole, .0085, .002, 0, .046, -.6305);
-  C(root, m.steel, .0105, .4, 0, .02, -.33);                             // magazine tube
-  C(root, m.black, .012, .02, 0, .02, -.535);
-  B(root, m.black, .014, .045, .014, 0, .033, -.5);                      // barrel clamp
-  C(root, m.brass, .0028, .006, 0, .058, -.62, 'y');                     // bead
-  B(root, m.wood, .03, .042, .11, 0, .002, .105, -.3);                   // wrist of the stock
-  B(root, m.wood, .032, .085, .2, 0, -.03, .255, -.12);
+  C(root, ST, .0105, bl, 0, .046, -.13 - bl / 2);                            // barrel
+  C(root, m.hole, .0085, .002, 0, .046, -.1305 - bl);
+  C(root, ST, .0105, tl, 0, .02, -.13 - tl / 2);                             // magazine tube
+  C(root, m.black, .012, .02, 0, .02, -.135 - tl);
+  B(root, m.black, .014, .045, .014, 0, .033, -.1 - tl);                      // barrel clamp
+  C(root, m.brass, .0028, .006, 0, .058, -.12 - bl, 'y');
+  if (o.shield) B(root, m.black, .03, .012, bl - .2, 0, .062, -.2 - (bl - .2) / 2);                     // bead
+  B(root, W, .03, .042, .11, 0, .002, .105, -.3);                   // wrist of the stock
+  B(root, W, .032, .085, .2, 0, -.03, .255, -.12);
   B(root, m.black, .034, .1, .016, 0, -.044, .358, -.12);
   B(root, m.steel, .008, .005, .05, 0, -.014, .01);                      // trigger guard
   B(root, m.steel, .005, .016, .005, 0, -.006, .012, .25);
   P.pump = N(root, 0, .02, -.3);
-  B(P.pump, m.wood, .046, .042, .15, 0, 0, 0);
-  for (let i = 0; i < 7; i++) B(P.pump, m.woodDark, .048, .03, .004, 0, -.002, -.06 + i * .02);
+  B(P.pump, W, .046, .042, .15, 0, 0, 0);
+  for (let i = 0; i < 7; i++) B(P.pump, WD, .048, .03, .004, 0, -.002, -.06 + i * .02);
   for (const sx of [-1, 1]) B(P.pump, m.steel, .003, .006, .15, sx * .014, .004, .14);
   P.shell = N(root, 0, -.012, -.05);
   P.shell.add(casing('shell')); P.shell.visible = false;
   P.rh = gripHand(root, 0, .012, .075, -.55);
   P.lh = cupHand(P.pump, 0, -.022, 0);
-  return { root, parts: P, muzzle: N(root, 0, .046, -.635), eject: N(root, .03, .042, -.045) };
+  return { root, parts: P, muzzle: N(root, 0, .046, -.135 - bl), eject: N(root, .03, .042, -.045) };
 }
 
-function buildSniper() {
-  const root = new T.Group(), P = { root };
-  B(root, m.olive, .042, .048, .5, 0, .004, -.1);                        // chassis / fore-end
-  B(root, m.olive, .034, .05, .1, 0, -.012, .1, -.45);                   // grip wrist
-  B(root, m.olive, .04, .1, .22, 0, -.02, .28);                          // butt
+export function buildSniper(o = {}) {
+  const root = new T.Group(), P = { root }, bl = o.barrel || .52, BD = o.body || m.olive, br = o.heavy ? 1.45 : 1;
+  B(root, BD, .042, .048, .5, 0, .004, -.1);                        // chassis / fore-end
+  B(root, BD, .034, .05, .1, 0, -.012, .1, -.45);                   // grip wrist
+  B(root, BD, .04, .1, .22, 0, -.02, .28);                          // butt
   B(root, m.black, .03, .022, .14, 0, .042, .26);                        // cheek riser
   B(root, m.black, .042, .11, .018, 0, -.02, .396);
   C(root, m.steel, .0175, .23, 0, .042, -.02);                           // receiver
-  C(root, m.steel, .012, .52, 0, .042, -.39, 'z', .0092);                // barrel
-  C(root, m.black, .014, .06, 0, .042, -.67);                            // brake
-  C(root, m.hole, .005, .002, 0, .042, -.7005);
+  C(root, m.steel, .012 * br, bl, 0, .042, -.13 - bl / 2, 'z', .0092 * br);                // barrel
+  if (o.heavy) { B(root, m.black, .05, .03, .07, 0, .042, -.165 - bl); B(root, m.hole, .052, .012, .014, 0, .042, -.15 - bl); B(root, m.hole, .052, .012, .014, 0, .042, -.18 - bl); }
+  else C(root, m.black, .014, .06, 0, .042, -.15 - bl);                            // brake
+  C(root, m.hole, .005 * br, .002, 0, .042, -.1805 - bl - (o.heavy ? .02 : 0));
+  if (o.bipod) for (const sx of [-1, 1]) B(root, m.black, .008, .008, .2, sx * .02, -.02, -.42, 0, sx * .06, 0);
   B(root, m.steel, .008, .005, .05, 0, -.024, .02);                      // trigger guard
   B(root, m.steel, .005, .016, .005, 0, -.014, .024, .25);
   // Scope.
@@ -248,12 +258,12 @@ function buildSniper() {
   const knob = new T.Mesh(new T.SphereGeometry(.0105, 10, 8), m.black); knob.position.set(.045, -.013, .03); P.bolt.add(knob);
   P.rh = gripHand(root, 0, .004, .075, -.5);
   P.lh = cupHand(root, 0, -.022, -.24);
-  return { root, parts: P, muzzle: N(root, 0, .042, -.705), eject: N(root, .03, .05, .0) };
+  return { root, parts: P, muzzle: N(root, 0, .042, -.185 - bl - (o.heavy ? .02 : 0)), eject: N(root, .03, .05, .0) };
 }
 
 // ───────────────────────────── clips ─────────────────────────────
 
-const drawClip = (dur, ev = []) => ({
+export const drawClip = (dur, ev = []) => ({
   dur,
   tracks: { root: {
     p: [[0, .04, -.34, .1], [dur * .62, 0, .014, -.012], [dur * .82, 0, -.003, .002], [dur, 0, 0, 0]],
@@ -266,9 +276,9 @@ const holsterClip = { dur: .22, tracks: { root: {
   r: [[0, 0, 0, 0], [.08, 3, 0, 0], [.22, -50, -12, 18]],
 } }, events: [[.02, 'cloth']] };
 
-const LH_AWAY = [-.06, -.32, .08];   // left hand parked off-screen
+export const LH_AWAY = [-.06, -.32, .08];   // left hand parked off-screen
 
-function pistolReload(empty) {
+export function pistolReload(empty) {
   const end = empty ? 1.9 : 1.65, hold = empty ? 1.56 : 1.3;
   const tr = {
     root: {
@@ -293,7 +303,7 @@ function pistolReload(empty) {
   return { dur: end, tracks: tr, events };
 }
 
-const pistolInspect = {
+export const pistolInspect = {
   dur: 3.5,
   tracks: {
     root: {
@@ -309,7 +319,7 @@ const pistolInspect = {
   events: [[.02, 'cloth'], [1.2, 'cloth'], [2.66, 'boltBack'], [2.95, 'slideRelease']],
 };
 
-const revolverReload = {
+export const revolverReload = {
   dur: 2.75,
   tracks: {
     root: {
@@ -327,7 +337,7 @@ const revolverReload = {
   events: [[.02, 'cloth'], [.18, 'cylOpen'], [.62, 'eject'], [1.05, 'loaderShow'], [1.6, 'ammo'], [1.6, 'shellIn'], [2.08, 'cylClose']],
 };
 
-const revolverInspect = {
+export const revolverInspect = {
   dur: 4.2,
   tracks: {
     root: {
@@ -342,7 +352,7 @@ const revolverInspect = {
   events: [[.02, 'cloth'], [.74, 'cylOpen'], [1.0, 'spin'], [2.38, 'cylClose'], [2.5, 'cloth'], [3.0, 'hammer'], [3.4, 'boltDown']],
 };
 
-function carbineReload(empty) {
+export function carbineReload(empty, dz = .2, dy = -.185) {
   const end = empty ? 2.6 : 2.2, hold = empty ? 2.25 : 1.85;
   const tr = {
     root: {
@@ -354,13 +364,13 @@ function carbineReload(empty) {
       r: [[.4, 0, 0, 0], [.72, -25, 0, 10], [1.0, 14, 0, 0], [1.36, 6, 0, 0], [1.5, 0, 0, 0]],
     },
     lh: {
-      p: [[.05, 0, 0, 0], [.36, 0, -.185, .2], [.48, 0, -.235, .2], [.72, .02, -.68, .24], [1.0, .02, -.68, .26], [1.36, 0, -.245, .212], [1.44, 0, -.215, .2], [1.5, 0, -.185, .2], [1.62, 0, -.19, .2]],
+      p: [[.05, 0, 0, 0], [.36, 0, dy, dz], [.48, 0, dy - .05, dz], [.72, .02, dy - .5, dz + .04], [1.0, .02, dy - .5, dz + .06], [1.36, 0, dy - .06, dz + .012], [1.44, 0, dy - .03, dz], [1.5, 0, dy, dz], [1.62, 0, dy - .005, dz]],
       r: [[.05, 0, 0, 0], [.36, 6, 0, 0], [.72, -20, 0, 10], [1.36, 6, 0, 0]],
     },
   };
   const events = [[.02, 'cloth'], [.42, 'magOut'], [1.48, 'magIn'], [1.5, 'ammo']];
   if (empty) {
-    tr.lh.p.push([1.9, -.03, -.09, .2], [1.97, -.012, -.09, .2], [2.06, -.03, -.1, .2], [2.6, 0, 0, 0]);
+    tr.lh.p.push([1.9, -.03, dy + .095, dz], [1.97, -.012, dy + .095, dz], [2.06, -.03, dy + .085, dz], [2.6, 0, 0, 0]);
     tr.lh.r.push([1.9, 0, 0, -60], [2.06, 0, 0, -60], [2.6, 0, 0, 0]);
     tr.root.p.splice(-2, 0, [1.97, -.02, .05, -.04], [2.03, -.012, .05, -.05]);
     tr.root.r.splice(-2, 0, [1.97, 22, 13, -37], [2.03, 20, 11, -33]);
@@ -371,7 +381,7 @@ function carbineReload(empty) {
   return { dur: end, tracks: tr, events };
 }
 
-const carbineInspect = {
+export const carbineInspect = (dz = .2, dy = -.185) => ({
   dur: 4.6,
   tracks: {
     root: {
@@ -380,17 +390,19 @@ const carbineInspect = {
     },
     mag: { p: [[3.05, 0, 0, 0], [3.3, 0, -.09, 0], [3.6, 0, -.09, 0], [3.76, 0, 0, 0]], r: [[3.05, 0, 0, 0], [3.3, -8, 0, 0], [3.6, -8, 0, 0], [3.76, 0, 0, 0]] },
     lh: {
-      p: [[2.65, 0, 0, 0], [3.0, 0, -.185, .2], [3.3, 0, -.275, .2], [3.6, 0, -.275, .2], [3.76, 0, -.185, .2], [3.95, 0, -.19, .2], [4.5, 0, 0, 0]],
+      p: [[2.65, 0, 0, 0], [3.0, 0, dy, dz], [3.3, 0, dy - .09, dz], [3.6, 0, dy - .09, dz], [3.76, 0, dy, dz], [3.95, 0, dy - .005, dz], [4.5, 0, 0, 0]],
       r: [[2.65, 0, 0, 0], [3.0, 6, 0, 0], [3.95, 6, 0, 0], [4.5, 0, 0, 0]],
     },
   },
   events: [[.02, 'cloth'], [1.35, 'cloth'], [2.65, 'cloth'], [3.08, 'magOut'], [3.74, 'magIn']],
-};
+});
 
-const SG_TILT_P = [-.03, .06, -.03], SG_TILT_R = [14, 12, -62];
+export const SG_TILT_P = [-.03, .06, -.03];
+export const SG_TILT_R = [14, 12, -62];
 const sgHold = (a, b) => ({ p: [[a, ...SG_TILT_P], [b, ...SG_TILT_P]], r: [[a, ...SG_TILT_R], [b, ...SG_TILT_R]] });
-const SG_LH_DOWN_P = [.0, -.3, .3], SG_LH_PORT = [0, -.042, .25];
-const shotgunClips = {
+export const SG_LH_DOWN_P = [.0, -.3, .3];
+export const SG_LH_PORT = [0, -.042, .25];
+export const shotgunClips = {
   pump: {
     dur: .5,
     tracks: {
@@ -445,8 +457,8 @@ const shotgunClips = {
 };
 
 // Bolt cycle. The right hand leaves the grip, so it has its own track.
-const RH_KNOB = [.04, .07, .03];
-const sniperBolt = {
+export const RH_KNOB = [.04, .07, .03];
+export const sniperBolt = {
   dur: 1.05,
   tracks: {
     root: {
@@ -464,7 +476,7 @@ const sniperBolt = {
   },
   events: [[.2, 'boltUp'], [.3, 'boltBack'], [.4, 'ejectShell'], [.52, 'boltFwd'], [.66, 'boltDown']],
 };
-const sniperReload = {
+export const sniperReload = {
   dur: 2.1,
   tracks: {
     root: {
@@ -482,7 +494,7 @@ const sniperReload = {
   },
   events: [[.02, 'cloth'], [.44, 'magOut'], [1.36, 'magIn'], [1.38, 'ammo']],
 };
-const sniperInspect = {
+export const sniperInspect = {
   dur: 4.4,
   tracks: {
     root: {
@@ -501,8 +513,8 @@ const sniperInspect = {
   events: [[.02, 'cloth'], [1.55, 'cloth'], [2.32, 'boltUp'], [2.46, 'boltBack'], [2.98, 'boltFwd'], [3.14, 'boltDown'], [3.5, 'cloth']],
 };
 
-const cc = o => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, compile(v)]));
-const holster = holsterClip;
+export const cc = o => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, compile(v)]));
+export const holster = holsterClip;
 
 // spread in degrees; kick = viewmodel recoil; cam = view punch (radians).
 export const GUNS = [
@@ -525,7 +537,7 @@ export const GUNS = [
     mag: 30, rpm: 720, auto: true, pellets: 1, type: 'mag', action: 'bolt',
     spread: [1.6, .1], bloom: .28, kick: { z: .8, pitch: 1.5, roll: .9 }, cam: .0085,
     hip: [.085, -.125, -.3], hipYaw: 2, sightY: .098, adsZ: -.28, adsFov: 50,
-    clips: cc({ draw: drawClip(.55, [[.38, 'cloth']]), holster, reload: carbineReload(false), reloadEmpty: carbineReload(true), inspect: carbineInspect }),
+    clips: cc({ draw: drawClip(.55, [[.38, 'cloth']]), holster, reload: carbineReload(false), reloadEmpty: carbineReload(true), inspect: carbineInspect() }),
   },
   {
     id: 'shotgun', name: 'BRAWLER 12', sub: '12-gauge pump', build: buildShotgun, sound: 'shotgun', casing: 'shell',
