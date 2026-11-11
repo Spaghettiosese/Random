@@ -64,3 +64,7 @@ Settings → **Eric's face** lets you load a photo from your computer and line t
 * `js/ball.js` and `js/boss.js`: basketball physics/shooting and the boss fight
 * `js/audio.js`: every sound (bell, drums, screeches, music box, ambience) is synthesized with the Web Audio API. Optional text-to-speech voice acting is in Settings
 * `vendor/three.module.min.js`: three.js r160 (MIT), vendored so the game works offline
+
+## Also in this repository
+
+`aegis-hearts/` holds a separate game: **AEGIS HEARTS**, an anime visual novel demo. Open `aegis-hearts/index.html`. See `aegis-hearts/README.md`.

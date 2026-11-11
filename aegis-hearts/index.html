@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>AEGIS HEARTS — Demo</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="stage">
+  <canvas id="cv" width="640" height="360"></canvas>
+  <div id="flash"></div>
+  <div id="cgtitle"></div>
+
+  <!-- day planner -->
+  <div id="hud" class="hidden">
+    <div class="hud-day"><span id="hudDayN">DAY 1</span><small id="hudDow">MON</small></div>
+    <div class="hud-time"><div class="seg" data-i="0"><i>☀</i>Morning</div><div class="seg" data-i="1"><i>⛅</i>Afternoon</div><div class="seg" data-i="2"><i>☾</i>Evening</div></div>
+    <div class="hud-bar"><label>ENERGY</label><div class="bar en"><b id="hudEn"></b></div><span id="hudEnN">100</span></div>
+    <div class="hud-bar"><label>RATING</label><div class="bar rp"><b id="hudRep"></b></div><span id="hudRank">E</span></div>
+    <div class="hud-funds"><i>◈</i><span id="hudFunds">0</span></div>
+    <button id="hudMenu" class="qbtn">MENU</button>
+  </div>
+  <div id="hub" class="hidden"></div>
+  <div id="sceneui" class="hidden"></div>
+
+  <!-- visual novel -->
+  <div id="choices"></div>
+  <div id="textbox" class="hidden">
+    <div id="name"></div>
+    <div id="text"></div>
+    <div id="next">▼</div>
+  </div>
+  <div id="quick" class="hidden">
+    <button data-q="auto">AUTO</button><button data-q="skip">SKIP</button><button data-q="log">LOG</button>
+    <button data-q="save">SAVE</button><button data-q="load">LOAD</button><button data-q="config">CONFIG</button><button data-q="hide">HIDE</button>
+  </div>
+
+  <div id="title" class="hidden">
+    <div class="logo"><div class="logo-sub">SUPERPOWER AGENCY ROMANCE</div><div class="logo-main"><span>AEGIS</span><em>HEARTS</em></div><div class="logo-tag">— Prologue &amp; Chapter 1 Demo —</div></div>
+    <div class="tmenu" id="tmenu"></div>
+    <div class="tfoot">Art, animation, music and sound are generated in code · Sprites by the Moonkai Pixel Engine</div>
+  </div>
+  <div id="start"><div class="start-in"><div class="logo-main small"><span>AEGIS</span><em>HEARTS</em></div><p>Click or press any key to start</p><small>This game has music and sound</small></div></div>
+
+  <div id="card" class="hidden"><div class="card-in"><small id="cardSub"></small><h1 id="cardTitle"></h1><div class="card-line"></div><p id="cardNote"></p></div></div>
+  <div id="modal" class="hidden"><div class="modal-in"><div class="modal-head"><h2 id="modalTitle"></h2><button id="modalClose" class="qbtn">✕ CLOSE</button></div><div id="modalBody"></div></div></div>
+  <div id="toasts"></div>
+  <div id="fade"></div>
+</div>
+<script src="js/moonkai-pixel.js"></script>
+<script src="js/art-char.js"></script>
+<script src="js/art-bg.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/sim.js"></script>
+<script src="js/story-prologue.js"></script>
+<script src="js/story-ch1.js"></script>
+<script src="js/story-bonds.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
