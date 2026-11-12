@@ -81,7 +81,7 @@ const Game = (() => {
   function prewarm(arr, i) {
     if (!settings.pixel || typeof PixelCast === 'undefined') return;
     for (let j = i + 1; j < Math.min(arr.length, i + 10); j++) {
-      const [op, a, b, d, e] = arr[j];
+      const [op, a0, b, d, e] = arr[j], a = pw(a0);
       if (op === 'show' || op === 'emo' || (op === 'say' && G.vis.chars[a] && d)) { const st = G.vis.chars[a] || {}, id = (WHO[a] && WHO[a].art) || a, emo = op === 'say' ? d : b, pose = (op === 'say' ? e : d) || st.pose || 'default'; if (id === 'bit') Art.char('bit', emo, '', false); else PixelCast.prewarm(id, emo, pose, st.of || G.vis.of || 'hero'); }
       else if (op === 'bg') PixelBG.prewarm(a);
       else if (op === 'cg') Art.cg(a);
@@ -92,12 +92,14 @@ const Game = (() => {
   function jump(label) { if (!R[label]) console.error('missing label', label); G.stack = [{ id: label, i: 0 }]; }
   function push(arr) { G.stack.push({ id: idOf(arr), i: 0 }); }
   const skipping = () => skip || ctrlSkip;
-  const T = s => String(s).replace(/\{name\}/g, G.name).replace(/\{grade\}/g, G.last ? G.last.grade : '').replace(/\{ok\}/g, G.last ? G.last.ok : '');
+  const T = s => String(s).replace(/\{name\}/g, G.name).replace(/\{grade\}/g, G.last ? G.last.grade : '').replace(/\{ok\}/g, G.last ? G.last.ok : '').replace(/\{(\w+)\}/g, (m, k) => { const v = STORY.token && STORY.token(G, k); return v == null ? m : v; });
 
+  // '@p' in a script means the partner of this playthrough (the DLC uses it in shared scenes)
+  const pw = a => a === '@p' ? (G.flags.route && G.flags.route !== 'squad' ? G.flags.route : 'tetsu') : a;
   function exec(c, f) {
-    const [op, a, b, d, e] = c;
+    const [op, a0, b, d, e] = c, a = pw(a0);
     switch (op) {
-      case 'bg': setBg(a, b); return NEXT;
+      case 'bg': if (STORY.onBg) STORY.onBg(G, api); setBg(a, b); return NEXT;
       case 'fx': setFx(a); return NEXT;
       case 'music': G.vis.music = a; a ? Sound.play(a) : Sound.stop(); return NEXT;
       case 'sfx': Sound.sfx(a); return NEXT;
@@ -110,7 +112,7 @@ const Game = (() => {
       case 'hide': hideChar(a); return NEXT;
       case 'hideall': Object.keys(G.vis.chars).forEach(hideChar); return NEXT;
       case 'know': G.known[a] = 1; if (!meta.met[a]) { meta.met[a] = 1; saveMeta(); } if (STORY.codex['c_' + a] && !G.replay) codexUnlock('c_' + a); return NEXT;
-      case 'say': mark(); if (b !== undefined && typeof b === 'string' && G.vis.chars[a] && d) showChar(a, d, e || G.vis.chars[a].pose); say(a, b); return WAIT;
+      case 'say': mark(); if (STORY.onSay) STORY.onSay(G, a, b, api); if (b !== undefined && typeof b === 'string' && G.vis.chars[a] && d) showChar(a, d, e || G.vis.chars[a].pose); say(a, b); return WAIT;
       case 'n': mark(); say(null, a); return WAIT;
       case 't': mark(); say('think', a); return WAIT;
       case 'me': mark(); say('me', a); return WAIT;
@@ -118,6 +120,9 @@ const Game = (() => {
       case 'eye': choice(a.opts, a); return WAIT;
       case 'jump': jump(a); return CONT;
       case 'call': f.i++; G.stack.push({ id: a, i: 0 }); return CONT;
+      case 'callf': { f.i++; const v = G.flags[b] || 'squad', id = R[a + v] ? a + v : R[a + 'any'] ? a + 'any' : null; if (id) G.stack.push({ id, i: 0 }); } return CONT;
+      case 'kidname': kidName(a, b); return WAIT;
+      case 'fam': famStat(a, b); return NEXT;
       case 'if': f.i++; { const br = a(G) ? b : d; if (br) push(br); } return CONT;
       case 'do': a(G, api); return NEXT;
       case 'aff': addAff(a, b); return NEXT;
@@ -351,7 +356,7 @@ const Game = (() => {
     const tb = $('#textbox'); tb.classList.remove('hide'); hideHub(true);
     const np = $('#nameplate'), info = who && who !== 'think' ? WHO[who] : null;
     let nm = '';
-    if (info) nm = who === 'me' ? G.name : (G.known[who] !== undefined || who === 'me' ? info.n : '???');
+    if (info) nm = who === 'me' ? G.name : info.dyn ? T(info.n) : (G.known[who] !== undefined || who === 'me' ? info.n : '???');
     np.textContent = nm; np.style.setProperty('--c', info ? info.c : '#8fd3ff'); np.classList.toggle('on', !!nm);
     tb.style.setProperty('--c', info ? info.c : who === 'think' ? '#8fd3ff' : '#c9b8ff');
     tb.classList.toggle('think', who === 'think'); tb.classList.toggle('narr', !who);
@@ -399,7 +404,7 @@ const Game = (() => {
       if (o.if && !o.if(G)) return;
       if (o.read && !(G.tells && G.tells[o.read])) return;
       const btn = document.createElement('button'); btn.className = 'choice'; btn.style.animationDelay = k * 80 + 'ms';
-      const hint = settings.hints && o.aff ? Object.entries(o.aff).filter(([, v]) => v > 0).map(([w]) => `<b style="color:${WHO[w].c}">♥</b>`).join('') : '';
+      const hint = settings.hints && o.aff ? Object.entries(o.aff).filter(([, v]) => v > 0).map(([w]) => `<b style="color:${WHO[pw(w)].c}">♥</b>`).join('') : '';
       btn.innerHTML = `<span class="k">${k + 1}</span>${o.read ? '<span class="rd">📓</span>' : ''}${T(o.t)}${hint ? `<span class="hint">${hint}</span>` : ''}`;
       btn.onmouseenter = () => Sound.sfx('hover');
       btn.onclick = () => pick(o, eyeCfg);
@@ -411,7 +416,7 @@ const Game = (() => {
     const box = $('#choices'); clearTimeout(box._t); box.className = ''; box.innerHTML = ''; $('#game').classList.remove('eyemode');
     Sound.sfx('confirm'); log.push({ n: '▶', c: '#8fd3ff', t: T(o.t) }); meta.stats.choices++;
     if (eyeCfg) { G.eyes++; if (o.ok) { G.eyesOk++; flash('#9feaff'); toast('◉ Sharp read!', 'Handler\'s Eye success'); } }
-    if (o.aff) Object.entries(o.aff).forEach(([w, v]) => addAff(w, v));
+    if (o.aff) Object.entries(o.aff).forEach(([w, v]) => addAff(pw(w), v));
     if (o.set) G.flags[o.set] = 1;
     wait = null;
     const f = top(); f.i++;
@@ -464,6 +469,19 @@ const Game = (() => {
     const inp = $('#nm'); inp.focus({ preventScroll: true }); inp.select();
     const ok = () => { G.name = (inp.value.trim() || 'Haru').replace(/[<>&"]/g, ''); meta.lastName = G.name; closeModal(); Sound.sfx('confirm'); advance(); };
     $('#nmok').onclick = ok; inp.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter') ok(); };
+  }
+
+  function kidName(key, prompt) {
+    wait = 'modal'; const sug = (STORY.kidNames && STORY.kidNames(G, key)) || [];
+    modal(`<h2>${T(prompt || 'A name')}</h2><p class="sub">Pick one, or write your own.</p><div class="row knames">${sug.map(s => `<button class="btn kns">${s}</button>`).join('')}</div><input id="nm" maxlength="12" value="${G.flags[key] || sug[0] || ''}" autocomplete="off"/><div class="row"><button class="btn primary" id="nmok">Confirm</button></div>`, { noclose: 1, small: 1 });
+    const inp = $('#nm'); inp.focus({ preventScroll: true }); inp.select();
+    $$('#modal .kns').forEach(b => b.onclick = () => { inp.value = b.textContent; Sound.sfx('click'); inp.focus(); });
+    const ok = () => { G.flags[key] = (inp.value.trim() || sug[0] || 'Hana').replace(/[<>&"{}*~^]/g, ''); closeModal(); Sound.sfx('confirm'); if (STORY.onKid) STORY.onKid(G); advance(); };
+    $('#nmok').onclick = ok; inp.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter') ok(); };
+  }
+  function famStat(k, n) {
+    G.fam = G.fam || {}; G.fam[k] = (G.fam[k] || 0) + n;
+    const L = (STORY.famLabels || {})[k]; if (L && n && !skipping()) toast(`${L[0]} ${L[1]} ${n > 0 ? '+' : ''}${n}`, T(L[2] || ''));
   }
 
   // ---------- modal ----------
@@ -1081,7 +1099,7 @@ const Game = (() => {
     const mc = meta.maxChap || 0, tbg = meta.cleared ? 'ascension' : mc >= 9 ? 'snow_city' : mc >= 6 ? 'festival' : 'city_night';
     G = newState(); setBg(tbg, 'cut'); setFx(tbg === 'snow_city' ? 'snow' : tbg === 'festival' ? 'fireworks' : tbg === 'ascension' ? 'glass' : 'stars'); G = null;
     const t = $('#title'); t.classList.add('on');
-    $('#tcont').classList.toggle('dis', !latestSave()); $('#tng').style.display = meta.cleared ? '' : 'none'; $('#tchap').classList.toggle('dis', !mc);
+    $('#tcont').classList.toggle('dis', !latestSave()); $('#tng').style.display = meta.cleared ? '' : 'none'; $('#tchap').classList.toggle('dis', !mc); $('#tdlc').classList.toggle('new', !!(meta.dlc && Object.keys(meta.dlc).some(k => !(meta.dlcDone || {})[k])));
     const trio = meta.cleared ? [['sora', 'wink', 'wave', 'formal'], ['rin', 'excited', 'cheer', 'hero'], ['kaede', 'smirk', 'hip', 'hero']] : mc >= 6 ? [['hikari', 'excited', 'cheer', 'yukata'], ['rei', 'blush', 'shy', 'yukata'], ['mira', 'tender', 'heart', 'yukata']] : [['hikari', 'happy', 'wave', 'hero'], ['rei', 'smug', 'cross', 'hero'], ['mira', 'smile', 'shy', 'hero']];
     $('#tchars').innerHTML = trio.map(([id, e, p, o], i) => `<div class="tch ${['h', 'r', 'm'][i]}">${Art.char(id, e, p, false, o)}</div>`).join('');
     $('#tbadge').textContent = meta.cleared ? `★ Story Cleared ×${meta.stats.clears || 1} — New Game+ unlocked` : mc ? `Chapter ${mc} / 12 reached` : '12 Chapters · 7 Endings';
@@ -1099,11 +1117,43 @@ const Game = (() => {
     if (ng && meta.ngCarry) { Object.entries(meta.ngCarry.heroes || {}).forEach(([k, h]) => { if (G.heroes[k]) Object.assign(G.heroes[k], { lvl: h.lvl, xp: h.xp, sp: h.sp, st: h.st, perks: h.perks || [] }); }); G.credits += 2000; G.ngp = (meta.ngCarry.ngp || 0) + 1; G.flags.ngp = 1; }
     $('#fade').classList.add('on'); setTimeout(() => { $('#fade').classList.remove('on'); restoreVis(); step(); }, 700);
   }
+  // ---------- DLC: Heartline: Home ----------
+  const DLC_P = ['hikari', 'rei', 'mira', 'sora', 'kaede', 'squad'];
+  function dlcMenu() {
+    if (!R.dlc_start) return toast('DLC not installed');
+    Sound.sfx('confirm'); const C = meta.dlc || {}, ks = DLC_P.filter(k => C[k]).sort((a, b) => C[b].t - C[a].t), done = meta.dlcDone || {};
+    const nm = k => k === 'squad' ? 'The Squad' : WHO[k].n, col = k => k === 'squad' ? '#ffd88a' : WHO[k].c, face = k => Art.char(k === 'squad' ? 'tetsu' : k, 'smile', 'default', true);
+    const card = (k, carry) => `<button class="pick dlcp" data-k="${k}" data-c="${carry ? 1 : ''}" style="--c:${col(k)}"><div class="pp">${face(k)}</div><b>${nm(k)}${done[k] ? ' ★' : ''}</b><small>${carry ? `${C[k].name} · cleared ${new Date(C[k].t).toLocaleDateString()}` : 'standard history'}</small></button>`;
+    modal(`<h2>Heartline: Home <span class="dlctag">DLC</span></h2><p class="sub">The years after the ending: a proposal, a wedding, a first home, a child, and everything after. Your partner, your name and the choices you made in the story come with you.</p>
+      ${ks.length ? `<h4>Continue from your ending</h4><div class="picks dense dlcrow">${ks.map(k => card(k, 1)).join('')}</div>` : `<p class="sub">No cleared ending carried over yet. Finish the story and your partner and choices come with you, or start now with standard history.</p>`}
+      <h4>${ks.length ? 'Or start fresh with' : 'Start with'}</h4><div class="picks dense dlcrow">${DLC_P.map(k => card(k, 0)).join('')}</div>`, { wide: 1 });
+    $$('#modal .dlcp').forEach(b => b.onclick = () => beginDlc(b.dataset.k, b.dataset.c ? C[b.dataset.k] : null));
+  }
+  function beginDlc(route, carry) {
+    Sound.sfx('confirm'); closeModal(); hideTitle(); run++; log = []; hist = [];
+    G = newState(); G.diff = (carry && carry.diff) || 'normal';
+    if (carry) {
+      G.name = carry.name || G.name; Object.assign(G.aff, carry.aff); G.flags = Object.assign({}, carry.flags); G.tells = Object.assign({}, carry.tells); Object.assign(G.known, carry.known || {});
+      Object.entries(carry.heroes || {}).forEach(([k, h]) => { if (G.heroes[k]) Object.assign(G.heroes[k], h); }); if (carry.roster) G.roster = carry.roster.slice(); G.ngp = carry.ngp || 0;
+    } else { G.flags.dlc_fresh = 1; G.name = meta.lastName || 'Haru'; }
+    G.flags.route = route; G.flags.dlc = 1; G.flags.dlc_from = route; G.chap = 13; G.chapT = 'Heartline: Home';
+    if (STORY.dlcInit) STORY.dlcInit(G, carry, meta);
+    G.stack = [{ id: 'dlc_start', i: 0 }];
+    $('#fade').classList.add('on'); setTimeout(() => { $('#fade').classList.remove('on'); restoreVis(); step(); }, 700);
+  }
   function theEnd() {
-    wait = 'card'; skip = ctrlSkip = false; if (!G.replay) { meta.cleared = true; meta.stats.clears = (meta.stats.clears || 0) + 1; meta.ngCarry = { heroes: JSON.parse(JSON.stringify(G.heroes)), ngp: G.ngp || 0 }; meta.lastName = G.name; } saveMeta(); unlock('finale');
+    const dlc = G.flags.dlc;
+    wait = 'card'; skip = ctrlSkip = false;
+    if (!G.replay && !dlc) {
+      meta.cleared = true; meta.stats.clears = (meta.stats.clears || 0) + 1; meta.ngCarry = { heroes: JSON.parse(JSON.stringify(G.heroes)), ngp: G.ngp || 0 }; meta.lastName = G.name;
+      const cp = o => JSON.parse(JSON.stringify(o || {}));
+      meta.dlc = meta.dlc || {}; meta.dlc[G.flags.route || 'squad'] = { name: G.name, aff: cp(G.aff), flags: cp(G.flags), tells: cp(G.tells), heroes: cp(G.heroes), known: cp(G.known), roster: G.roster.slice(), ngp: G.ngp || 0, diff: G.diff, t: Date.now() };
+    }
+    if (dlc && !G.replay) { meta.dlcDone = meta.dlcDone || {}; meta.dlcDone[G.flags.route || 'squad'] = 1; }
+    saveMeta(); unlock(dlc ? 'dlc_end' : 'finale');
     hideHub(); $('#textbox').classList.add('hide'); Object.keys(G.vis.chars).forEach(hideChar); Sound.play('title');
     const c = $('#card'); c.className = 'on credits';
-    c.innerHTML = `<div class="roll">${STORY.credits.map(l => l.startsWith('#') ? `<h3>${l.slice(1)}</h3>` : l === '' ? '<br>' : `<p>${T(l)}</p>`).join('')}</div><button class="btn skipc" id="skipc">Skip ▸</button>`;
+    c.innerHTML = `<div class="roll">${(dlc && STORY.dlcCredits ? STORY.dlcCredits : STORY.credits).map(l => l.startsWith('#') ? `<h3>${l.slice(1)}</h3>` : l === '' ? '<br>' : `<p>${T(l)}</p>`).join('')}</div><button class="btn skipc" id="skipc">Skip ▸</button>`;
     const end = () => { c.className = ''; c.innerHTML = ''; toTitle(); };
     $('#skipc').onclick = end; later(26000, end);
   }
@@ -1133,7 +1183,7 @@ const Game = (() => {
       if ((e.key === 'Backspace' || e.key === 'PageUp') && !Dispatch.active) { e.preventDefault(); rollback(); }
     });
     document.addEventListener('keyup', e => { if (e.key === 'Control') { ctrlSkip = false; updateQuick(); } });
-    $('#tnew').onclick = () => newGame(false); $('#tng').onclick = () => newGame(true); $('#tchap').onclick = chaptersModal; $('#textra').onclick = extrasModal;
+    $('#tnew').onclick = () => newGame(false); $('#tng').onclick = () => newGame(true); $('#tchap').onclick = chaptersModal; $('#textra').onclick = extrasModal; $('#tdlc').onclick = dlcMenu;
     $('#tcont').onclick = () => { const l = latestSave(); if (l) loadFrom(l[0]); };
     $('#tload').onclick = () => slotsModal('load'); $('#tset').onclick = settingsModal;
     setInterval(() => { if (G && !G.replay && document.visibilityState === 'visible') { meta.stats.playSec++; if (meta.stats.playSec % 30 === 0) saveMeta(); } }, 1000);
@@ -1147,12 +1197,12 @@ const Game = (() => {
   }
   function startSplash() { const s = $('#splash'); if (!s.classList.contains('on')) return; s.classList.remove('on'); Sound.init(); Sound.sfx('chime'); toTitle(); }
 
-  const api = { toast, unlock, addAff, flash, shake, setTint, giveXP, modal, closeModal, WHO, T, saveMeta, sfx: n => Sound.sfx(n), get G() { return G; }, get meta() { return meta; } };
+  const api = { toast, unlock, addAff, famStat, showChar, hideChar, flash, shake, setTint, giveXP, modal, closeModal, WHO, T, saveMeta, sfx: n => Sound.sfx(n), get G() { return G; }, get meta() { return meta; } };
   function codexUnlock(k, quiet) { if (meta.codex[k]) return; meta.codex[k] = 1; saveMeta(); const e = STORY.codex && STORY.codex[k]; if (!quiet) toast('📖 Codex updated', e ? e.t : k); }
   function boot() {
     Object.entries(STORY.scripts).forEach(([k, v]) => reg(v, k));
     Object.entries(STORY.events).forEach(([k, v]) => reg(v.s, k));
-    Object.assign(ACH, Sys.ACH, STORY.ach || {}); STORY.codex = Object.assign({}, STORY.codex || {}, Sys.CODEX); Sys.init(api);
+    Object.assign(ACH, Sys.ACH, STORY.ach || {}); Object.assign(ENDINGS, STORY.endings || {}); STORY.codex = Object.assign({}, STORY.codex || {}, Sys.CODEX); Sys.init(api);
     loadPrefs(); bind(); requestAnimationFrame(fxLoop);
     $('#bgA').innerHTML = Art.bg('city_night'); $('#bgA').classList.add('show'); Fx.type = 'stars';
   }

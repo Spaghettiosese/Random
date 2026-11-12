@@ -598,7 +598,7 @@ body.nomotion #stage .bg, body.nomotion #chars { transform: none !important; }
 .scenes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-height: 440px; overflow: auto; } .scn { text-align: left; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: rgba(255, 255, 255, .05); color: var(--ink); font-size: 13px; font-weight: 700; } .scn:hover:not(.locked) { border-color: var(--pink); } .scn.locked { opacity: .4; }
 .gimg .cgscene { animation: none; }
 .choice.padf { transform: scale(1.03); background: linear-gradient(90deg, #ff5d9e, #9a5dff); }
-.tmenu { top: 380px !important; } .tb { padding: 5px 18px !important; font-size: 18px !important; }
+.tmenu { top: 404px !important; } .tb { padding: 3px 18px !important; font-size: 17px !important; }
 
 /* ---------- v4: hub layout ---------- */
 .squad { overflow-y: auto; } .squad::-webkit-scrollbar { width: 6px; } .squad::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .15); border-radius: 6px; }
@@ -838,3 +838,13 @@ body.nomotion .bg.kb .bgpx > img { animation: none; }
 .fxp { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; } .fxp span { padding: 4px 12px; border-left: 4px solid var(--c); background: rgba(255, 255, 255, .06); font-size: 13px; } .fxp b { color: #6fffb0; }
 .fres p { color: #d9d4f2; margin: 10px 0 18px; } .frow { display: flex; gap: 12px; justify-content: center; }
 .fres.howto { text-align: left; max-width: 760px; } .fres.howto .pt { justify-content: center; } .fres.howto ul { margin: 0 0 18px; padding-left: 22px; line-height: 1.5; font-size: 15px; color: #d9d4f2; } .fres.howto li { margin-bottom: 8px; } .fres.howto b { color: #fff; } .fres.howto .frow { justify-content: center; }
+
+/* ---------- DLC: Heartline: Home ---------- */
+
+.tb.dlcb small { font-size: 11px; font-weight: 900; letter-spacing: .12em; color: #1a0f14; background: linear-gradient(90deg, #ffd88a, #ff9ab8); border-radius: 6px; padding: 1px 6px; margin-left: 6px; vertical-align: 3px; text-shadow: none; }
+.tb.dlcb.new::after { content: '●'; color: #ff9ab8; margin-left: 8px; font-size: 12px; vertical-align: 4px; animation: glowp 1s infinite alternate; }
+.dlctag { font-size: 13px; font-weight: 900; letter-spacing: .14em; color: #1a0f14; background: linear-gradient(90deg, #ffd88a, #ff9ab8); border-radius: 8px; padding: 2px 8px; vertical-align: 6px; }
+.dlcp small { text-align: center; }
+.picks.dlcrow { grid-template-columns: repeat(6, 1fr); gap: 10px; } .picks.dlcrow .pick { padding: 10px 6px; } .picks.dlcrow .pick .pp { width: 96px; height: 100px; } .picks.dlcrow .pick b { font-size: 16px; }
+#modal .panel h4 + .picks.dlcrow { margin-bottom: 6px; }
+.knames { flex-wrap: wrap; gap: 8px; margin: 6px 0 10px; } .knames .kns { padding: 6px 14px; font-size: 15px; }

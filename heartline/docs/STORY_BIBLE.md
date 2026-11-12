@@ -69,3 +69,14 @@ Flags read by systems/dispatch: `c1_spores c2_prism c2_concert c3_trap1 c3_serve
 - Reads exist only for tells the player has learned (`['tell', hero, key, text]`). If a fight should reward a tell, teach it in an earlier scene. Current Reads: hikari_count, rei_scarf, rei_still, mira_tidy, kaede_heel, sora_stage, tetsu_polite, rin_hum, shiori_cuffs (this one also works when Shiori is the foe: it ends her fight).
 
 Fights in the story: Certification Day (Leviathan, ch1), Mirror Mall (Glazier, ch2), Operation Heartline (Rift Heart, ch5), Aisle Four (Aegis, ch8), Floor 100 (Chairman, ch12). After a foe has been fought once it unlocks in the Sim Room (Train → Sim Room).
+
+## DLC: Heartline: Home (engine contract)
+Entry: title button `#tdlc` → `dlcMenu()` → `beginDlc(route, carry)`; the game starts at label `dlc_start` with `G.flags.dlc = 1`, `G.flags.route` = partner or `squad`. `theEnd()` stores a carry per route in `meta.dlc[route]` (name, aff, flags, tells, heroes, known, roster) when the main story ends, and rolls `STORY.dlcCredits` when a DLC run ends.
+
+New ops: `['callf', prefix, flag]` (call `prefix + G.flags[flag]`, falling back to `prefix + 'any'`, or nothing), `['kidname', 'kid'|'kid2', prompt]`, `['fam', 'home'|'brave'|'kind'|'curious', n]`. `'@p'` as a character id means the partner. Tokens (DLC only): `{kid} {kidS} {KidS} {kidO} {kidP} {KidP} {kidC} {kidK} {kidSib} {kid2} {kid2C} {kid2K} {Kid2S} {p} {mom} {best} {bestA} {bestB}`.
+
+Per-partner scenes are labels `dlc_<scene>_<route>`: `us late ring plan fav eve vow night homep cook date fight news labor hold early out spark a2_<aqua|fest|snow|beach|ferris> more anniv wait fin`. The Squad track replaces Parts 1, 2, 4, 5 with `dlc_sq_p1/p2/p4/p5`.
+
+Voice rules still apply. Extra rules for the DLC: the child speaks in short literal sentences and is never precocious for a joke; a partner's fear about the child is the same fear they had in the main story, turned around (Hikari: going back in; Rei: losing control; Mira: carrying it alone; Sora: being sold; Kaede: arriving first and watching); the Handler finally gets asked what waiting was like, once per route, in Part Eight; nobody says "happily ever after" except Rin, who looked it up.
+
+Art: `js/dlc_cast.js` draws the child from shape lists shared by the pixel painter and the SVG fallback. The look (gender, second child) is read from `window.HL_KID()` at paint time; the route is fixed per CG. New pixel CG specs go in `PixelCG.specs`, vector fallbacks in `Art._h.CG`, names in `Art.CG_NAMES`.

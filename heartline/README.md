@@ -52,6 +52,27 @@ Headphones recommended.
 
 **Endings**: romance endings for Hikari, Rei, Mira, Sora or Kaede, a Squad ending, and a **true ending** that brings everyone home (unlocked by the choices you make across Arc Two; easier on New Game+).
 
+## DLC — Heartline: Home
+
+**Title menu → Home (DLC).** The years after your ending: about twelve of them, in nine parts.
+
+1. **The Ring**: forty-one days with a box in your pocket, and a proposal that goes the way your partner would do it.
+2. **The Wedding**: pick the venue, the officiant and who stands next to you; solve the seating chart; karaoke the night before; vows; a dispatch shift in formalwear; the first dance.
+3. **Two Keys**: choose a home, move in, fix (or keep) the door, three weekends of your choosing, and the first real argument.
+4. **News**: how each partner tells you, the squad's reaction, one last shift before leave, and a 212-piece crib.
+5. **Small Hours**: the one night the Handler is let in instead of waiting outside. Name your child. Lullabies at 3 a.m. The squad babysits.
+6. **Sparks**: five years old, a Glass Hound in the sandbox (a Standoff), and your child's first Spark, different for every partner.
+7. **School Days**: Career Day with no powers, more weekends, and the question of a second child.
+8. **Ten Years**: where everyone ended up, and an anniversary conversation ten years overdue.
+9. **Home**: twelve years old, a Junior Corps exercise that turns real, and your own child on the radio.
+
+**What carries over.** Finishing the story stores your ending: partner, name, affection, learned Notebook tells, hero levels and the big choices (Kyouya, Squad One, Shiori). The DLC menu lists every ending you have cleared; you can also start with any partner on a standard history.
+- Your **partner** decides most scenes: Hikari (and a very loud mother-in-law), Rei (a cat, an old partner, shadows that learn to ask), Mira (the Solace Protocol comes home), Sora (the hoodie, not the poster), Kaede (at walking pace).
+- A **Squad ending** starts with whoever you were closest to saying it first. Say yes for a late romance, or keep the family as it is: then a child from the Board's files picks you, and the "wedding" is a court hearing with nine signatures.
+- **Notebook tells** you learned open 📓 choices throughout. The true ending and Kyouya's fate change who is in the front row.
+- **Family stats**: Home (household harmony) and your child's Brave / Kind / Curious, raised by small choices; the highest one decides what your child wants to become in the finale.
+- 8 endings, 10 achievements, 28 new CGs (a proposal, a wedding, a newborn, a first Spark and a family portrait for each partner), wedding outfits, and a child drawn in the same pixel style.
+
 ## Cast
 
 - **Hikari Amane (Thunder Goddess)**: electrokinetic, loud, brave, always hungry.
@@ -405,6 +426,11 @@ heartline/
   js/dispatch.js      real-time dispatch shifts
   js/fight.js         Standoffs: turn-based boss fights, hero kits, Notebook reads, Sim Room core
   js/engine.js        VN runner, UI, hub, saves, extras
+  js/dlc_home.js      DLC "Heartline: Home": tokens, family stats, the shared nine-part spine
+  js/dlc_cast.js      DLC art: the child (pixel + vector), props, wedding outfits, 28 CGs
+  js/dlc_routes.js    DLC partner scenes: Hikari, Rei
+  js/dlc_routes2.js   DLC partner scenes: Mira, Sora, Kaede
+  js/dlc_squad.js     DLC Squad-ending track (found family)
 ```
 
 Story bible and engine contract: [`docs/STORY_BIBLE.md`](docs/STORY_BIBLE.md).
