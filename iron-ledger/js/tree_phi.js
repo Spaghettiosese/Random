@@ -12,7 +12,7 @@ q_tenancy|Rice Share Tenancy Act|justice|ig rural 5, land -4; spirit land_reform
 q_wage|The Minimum Wage|justice|law regulated; ig union 6; rad -.05|One peso a day in the provinces.|
 q_capital|A New Capital|q_language|build urban 2, admin 1; vp Manila 3|A planned city named for the President.|
 q_institute|Institute of National Language|q_language|res 10; ig intel 6; build university 1|A grammar and a dictionary by the deadline.|
-q_estates|Buy the Friar Estates|q_tenancy|ig rural 8, devout -4; money -4; spirit Homesteads for Tenants: farm_out .08, rad -.05|The government buys haciendas and sells them to their tillers.|
+q_estates|Buy the Friar Estates|q_tenancy|ig rural 8, devout -4; money -4; spirit Homesteads for Tenants: farm_out .08, rad -.05 ?? Pay the full asking price => money -8; ig devout 5 // Expropriate at assessed value => ig devout -8, rural 5; rad -.03|The government buys haciendas and sells them to their tillers.|
 q_courts|Court of Industrial Relations|q_wage|ig union 5, ind -3; stab 3; spirit Compulsory Arbitration: rad -.05, output .03|Strikes go before a judge.|
 q_partyless|Partyless Democracy|q_suffrage,q_courts|pp 80; ideo aut 6; spirit Coalition Rule: pp .1|Opposition is a luxury a new nation cannot afford.|mx q_opposition
 q_opposition|A Loyal Opposition|q_suffrage,q_courts|ideo dem 6; stab 4; legit 5|Two parties, one constitution.|mx q_partyless
@@ -71,7 +71,7 @@ t_territory|Incorporated Territory|t_citizens,t_capital|auto -20; legit 6; spiri
 t_delegate|A Voice in Congress|t_territory|infl 60; rel USA 20; pp 60|Two resident commissioners become two senators-in-waiting.|
 t_star|The Forty-Ninth Star|t_delegate,t_guard|jointo USA; stab 10; spirit State of the Union: output .06, def .05, legit 8|The largest state by population after New York.|
 # Independence
-road|The Ten-Year Road||infl 20; bop 5|Independence is promised for the fourth of July, 1946.|ai 3
+road|The Ten-Year Road||infl 20; bop 5 ?? Campaign on the timetable => stab 3; rel USA 10; bop -5 // Campaign on impatience => ws 5; rel USA -5; bop 8|Independence is promised for the fourth of July, 1946.|ai 3
 ## the american connection
 permanent|The Special Relationship|road|rel USA 40; trade USA; bop -15; spirit American Protection: def .05, invest .2|Leaving the safest harbour in the Pacific, slowly.|mx now; ai 4
 i_mission|The Joint Preparatory Committee|permanent|rel USA 10; money 6; infl 20|Experts argue about sugar quotas until 1960.|
@@ -135,7 +135,7 @@ e_tourism|Summer Capital|e_roads|build urban 1; money 5; stab 2|The government m
 e_plan|The Economic Council|e_steel,e_power,e_agri|law interventionism; spirit Planned Industrialisation: build .1, output .05|A ten-year plan for a ten-year transition.|
 e_abaca|Break the Quotas|e_plan,e_ships|trade ENG, FRA; spirit New Markets: tradecap .1|Sugar for someone other than the Americans.|
 # The Army
-defence|National Defense Act||law limited; mp 80; spirit army_reform|The Assembly's first law.|ai 3
+defence|National Defense Act||law limited; mp 80; spirit army_reform ?? A large reserve of citizen soldiers => mp 80; spirit Many Reservists: manpower .05 // A small professional core => units inf 2; spirit Few and Good: org .04|The Assembly's first law.|ai 3
 adviser|The Military Adviser|defence|generals Vicente Lim/3/def, Basilio Valdes/2/log; spirit Field Marshal's Plan: org .06, train .1|A retired American general designs an army and a uniform.|
 citizen|Citizen Army|defence|units inf 4; spirit Reserve Divisions: manpower .1|Forty thousand trainees a year.|
 scouts|The Scouts|defence|units inf 2; equip arms 200; spirit Scout Regiments: atk .04|The best soldiers in the islands.|

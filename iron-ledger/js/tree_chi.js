@@ -3,7 +3,7 @@
 TREES.CHI = autoTree('c_', `
 # Politics
 tutelage|Political Tutelage||pp 50; stab 3|The party governs until the people are ready, says the party.|ai 5
-xian|The Xi'an Incident|tutelage|stab -5; pp 60; rel PRC 15|The Generalissimo is arrested in his nightshirt by his own deputy.|ai 5
+xian|The Xi'an Incident|tutelage|stab -5; pp 60; rel PRC 15 ?? Negotiate with the mutineers => rel PRC 20; stab 3; bop 5 // Send the bombers to Xi'an => ig army 6; rel PRC -20; stab -4; bop -8|The Generalissimo is arrested in his nightshirt by his own deputy.|ai 5
 ## the generalissimo
 chiang|The Generalissimo Returns|xian|pp 80; legit 8; stab 8; bop -15|He flies home on Christmas Day to firecrackers.|mx democracy,wang,left; ai 6
 g_whampoa|Whampoa Loyalists|chiang|ig army 6; generals Hu Zongnan/3/def, Tang Enbo/3/off|The Generalissimo's students command his best divisions.|
@@ -134,9 +134,9 @@ r_airraid|Air Raid Precautions|prepare|tech s_civildef; spirit Tunnel Shelters: 
 resist|War of Resistance|prepare|spirit war_of_resistance; ws 20; units mil 12; law requirement|The last critical moment has come.|req atwar JAP; ai 10
 r_shanghai|Three Months at Shanghai|resist|axp 30; ws 5; spirit Lost Battalion: def .06, org .04|Eight hundred men in a warehouse, watched by the world.|req atwar JAP
 space|Trade Space for Time|resist|spirit Space for Time: caplimit .15, supply .05|Give up the coast; keep the army.|
-capital|The Wartime Capital|resist|fn moveCapital|Beyond the gorges, beyond their reach.|req atwar JAP; ai 6
+capital|The Wartime Capital|resist|fn moveCapital ?? Take the universities and museums too => res 20; legit 4 // Machines first, everything else later => build arms 1, tools 1|Beyond the gorges, beyond their reach.|req atwar JAP; ai 6
 river|Hold the Yellow River|resist|fort Zhengzhou, Xi'an|The last line before the north-west.|
-r_dikes|Break the Dikes|river|fort Zhengzhou, Xuzhou; stab -5; rad .05; spirit Flooded Plain [540]: def .1|The river is turned loose on the enemy, and on the farmers.|req atwar JAP
+r_dikes|Break the Dikes|river|fort Zhengzhou, Xuzhou; stab -5; rad .05; spirit Flooded Plain [540]: def .1 ?? Warn the villages downstream => stab 3; legit 3; pp -20 // Tell no one => stab -4; rad .05; spirit Sudden Flood [240]: def .06|The river is turned loose on the enemy, and on the farmers.|req atwar JAP
 r_wuhan|Defend Wuhan|r_shanghai,space|units inf 6; spirit Battle for the Middle Yangtze [300]: def .1|A million men for four months.|req atwar JAP
 r_scorch|Scorched Earth|space|spirit Nothing Left Behind: supply .05, caplimit .05; stab -3|Factories on the move; what cannot move burns.|req atwar JAP
 r_changsha|Three Battles of Changsha|r_wuhan|generals Xue Yue/5/trick; spirit Heavenly Furnace: def .08; axp 30|Let them in, then close the door.|req atwar JAP
@@ -159,7 +159,7 @@ r_victory|Victory and Return|counter,cairo|stab 10; ws 10; spirit Victor Nation:
 r_occupy|A Share in the Occupation|r_victory|claim Fukuoka; infl 50; rel USA 10|A Chinese division is offered a prefecture.|
 # Economy
 reconstruction|National Reconstruction||build construction 1; infra 2|A decade of roads, schools and deficits.|ai 3
-fabi|Currency Reform|reconstruction|money 8; spirit Legal Tender: tax .1|Silver is nationalised; paper becomes money.|
+fabi|Currency Reform|reconstruction|money 8; spirit Legal Tender: tax .1 ?? Peg to sterling => rel ENG 15; trade ENG; spirit Sterling Link: tradecap .06 // Peg to the dollar => rel USA 15; trade USA; spirit Dollar Link: invest .15|Silver is nationalised; paper becomes money.|
 rural|Rural Reconstruction|reconstruction|build farm 4, textile 2; rad -.05|Model counties and mass education.|
 nrc|National Resources Commission|reconstruction|build steel 2, coalm 2, tools 1|State industry planned by engineers.|
 rail|The Canton–Hankow Line|reconstruction|infra 4|The last gap in the north-south railway is closed.|

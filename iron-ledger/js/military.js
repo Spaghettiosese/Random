@@ -166,7 +166,7 @@ function militaryWeekly(c) {
   if (reach) { c.stock.aircraft = Math.max(0, c.stock.aircraft - Math.min(c.stock.aircraft * 0.03, eAir * 0.01)); c.stock.ships = Math.max(0, c.stock.ships - Math.min(c.stock.ships * 0.015, eNav * 0.006)); }
   c.blockade = eNav > fNav * 1.5 && eNav > 20 ? 0.35 : 0;
   if (c.techs.m_air2 && fAir > 100) { const tg = foes.map(C).filter(e => !e.capitulated && airPower(e) * 1.2 < fAir); if (tg.length) { const e = pick(tg), ps = heldBy(e.tag).filter(p => p.dev >= 1 && p.dmg < 0.5);
-      if (ps.length) { const p = pick(ps); p.dmg = Math.min(0.6, p.dmg + 0.035 * (1 + M(c, 'bombing')) * (1 - M(e, 'civdef'))); e.warExh = Math.min(100, e.warExh + 0.15); } } }
+      if (ps.length) { const p = pick(ps); p.dmg = Math.min(0.4, p.dmg + 0.022 * (1 + M(c, 'bombing')) * (1 - M(e, 'civdef'))); e.warExh = Math.min(100, e.warExh + 0.15); } } }
 }
 function disbandArmy(a) { const c = C(a.owner); for (const d of a.divs) { c.manpower += UNITS[d.t].mp * d.str * 0.8; for (const g in UNITS[d.t].eq) c.stock[g] = (c.stock[g] || 0) + UNITS[d.t].eq[g] * d.str * 0.8; } removeArmy(a); }
 function mergeArmies(a, b) { if (a.owner !== b.owner || a.loc !== b.loc || a === b) return false; a.divs.push(...b.divs); b.divs = []; if (!a.gen && b.gen) { a.gen = b.gen; genOf(a).army = a.id; b.gen = null; } removeArmy(b); return true; }

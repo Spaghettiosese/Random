@@ -204,7 +204,8 @@ function fireEvent(id, tag, data) {
   data = data || (ev.data ? ev.data(c) : {}); const opts = ev.options.map(o => ({ o, eff: typeof o.eff === 'function' ? o.eff(c, data) : o.eff }));
   const run = x => { applyEff(c, x.eff); claimCache(); };
   if (c.ai || tag !== G.player) { let tot = 0; const ws = opts.map(x => { const w = typeof x.o.ai === 'function' ? x.o.ai(c) : x.o.ai === undefined ? 1 : x.o.ai; tot += w; return w; }); let r = Math.random() * tot; for (let i = 0; i < opts.length; i++) { r -= ws[i]; if (r <= 0) { run(opts[i]); break; } } return true; }
-  UIH.popup({ title: ev.title, icon: ev.icon, desc: typeof ev.desc === 'function' ? ev.desc(c, data) : ev.desc, options: opts.map(x => ({ name: x.o.name, tip: effText(x.eff, c), fn: () => run(x) })) }); return true;
+  { let bi = 0, bw = -1; opts.forEach((x, i) => { const w = typeof x.o.ai === 'function' ? x.o.ai(c) : x.o.ai === undefined ? 1 : x.o.ai; if (w > bw) { bw = w; bi = i; } }); var _def = bi; }
+  UIH.popup({ def: _def, days: ev.days || 30, title: ev.title, icon: ev.icon, desc: typeof ev.desc === 'function' ? ev.desc(c, data) : ev.desc, options: opts.map(x => ({ name: x.o.name, tip: effText(x.eff, c), fn: () => run(x) })) }); return true;
 }
 function eventsDaily() {
   if (G.timeline) { for (const t of G.timeline) if (t.d === G.day && ok(t.to)) fireEvent(t.ev, t.to); }

@@ -100,7 +100,7 @@ function mapDraw() {
   // movement path of the selection
   const sa = G.armies[SEL.army]; if (sa && sa.path.length) { ctx.strokeStyle = '#fff'; ctx.setLineDash([5, 4]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X(MAP.P[sa.loc].x), Y(MAP.P[sa.loc].y)); for (const id of sa.path) ctx.lineTo(X(MAP.P[id].x), Y(MAP.P[id].y)); ctx.stroke(); ctx.setLineDash([]); }
   // armies
-  MV.hits = []; const by = {}, pl = G.player, far = MV.s < 0.22;
+  MV.hits = []; const by = {}, pl = G.player, far = MV.s < 0.32;
   for (const id in G.armies) { const a = G.armies[id]; if (far && a.owner !== pl && !atWar(pl, a.owner)) continue; const b = PBOX[a.loc]; if (b[2] < vx0 || b[0] > vx1 || b[3] < vy0 || b[1] > vy1) continue; const k = a.loc + '|' + a.owner; (by[k] || (by[k] = [])).push(a); }
   const slot = {}; ctx.font = '600 11px Barlow, sans-serif';
   for (const k in by) { const list = by[k], a0 = list[0], m = MAP.P[a0.loc], n = slot[a0.loc] = (slot[a0.loc] || 0) + 1, w = far ? 18 : 30, h = far ? 11 : 16, x = X(m.x) - w / 2 + (n - 1) * (w + 2) - 0, y = Y(m.y) - h - 5;

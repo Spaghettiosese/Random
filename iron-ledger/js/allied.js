@@ -54,7 +54,7 @@ Object.assign(REQF, {
 });
 
 TREES.USA = parseTree('u_', `
-newdeal|Second New Deal|4|0||rmspirit great_depression; spirit recovery; stab 5|Relief, recovery and reform.|mx landon; ai 6; sec New Deal
+newdeal|Second New Deal|4|0||rmspirit great_depression; spirit recovery; stab 5 ?? Spend on public works => build construction 1; infra 2; money -8 // Spend on relief => stab 4; rad -.06; money -6|Relief, recovery and reform.|mx landon; ai 6; sec New Deal
 landon|Return to Normalcy|8|0||law laissez; ig ind 8, union -6; spirit Balanced Budget: tax .08, invest .25, rad .08|The Kansas governor promises to undo the alphabet agencies.|mx newdeal; ai 0
 wealth|Share Our Wealth|0|1|newdeal|law graduated, welfare_state; ig union 6 .2, ind -8|Every man a king, and no man a millionaire.|ai 0
 wpa|Works Progress Administration|2|1|newdeal|build construction 2, power 1; infra 3|Dams, roads and post offices in every county.|ai 3
@@ -190,7 +190,7 @@ areas|Special Areas Act|3|3|chamberlain|build construction 1, steel 1; rad -.04|
 holidays|Holidays with Pay|5|3|chamberlain|rad -.04; ig union 4|A week at the seaside by Act of Parliament.|
 buf|Mosley at Downing Street|9|3|mosley|setIdeo fas; stab -8|The lightning-flash flag over Whitehall.|
 unionsoc|Union of Britain|1|4|popular|setIdeo com; stab -8|The red flag flies over the Trades Union Congress.|
-appease|Peace for Our Time|4|4|areas|holidays|stab 8; pp 80|War is a fearful thing; we must be very clear before we embark on it.|mx steel; ai 6
+appease|Peace for Our Time|4|4|areas|holidays|stab 8; pp 80 ?? And rearm quietly behind it => build aircraftp 1; ws 2 // Mean every word => stab 4; money 8; ws -4|War is a fearful thing; we must be very clear before we embark on it.|mx steel; ai 6
 steel|Stand Up to the Dictators|6|4|areas|holidays|rmspirit appeasement; ws 10; tension 2; guarantee CZE|An appeaser feeds the crocodile hoping it eats them last.|mx appease; ai 0
 empirefirst|Empire First|8|4|regency|buf|spirit Imperial Autarky: tradecap -.1, output .05, ws 5|Let Europe look after itself.|
 understanding|Anglo-German Understanding|9|4|buf|regency|nap GER; rel GER 40, ITA 20; rmspirit appeasement|Two great Nordic empires need not quarrel.|
@@ -316,7 +316,7 @@ republic|The Third Republic|6|0||pp 50; stab 3|Ninety-odd governments in sixty-f
 front|The Popular Front|3|1|republic|fn leaderBlum; ig union 6 .2, ind -4; ideo com 4; stab 4|Bread, peace and liberty.|mx right,leagues; ai 6
 right|The National Bloc|8|1|republic|ig ind 5, army 5 .2; ideo aut 8; stab 3|Order before all else.|mx front,leagues; ai 0
 leagues|The Leagues March|12|1|republic|ideo fas 12; stab -6|February 1934 again, and this time the bridge is crossed.|mx front,right; ai 0
-matignon|Matignon Agreements|2|2|front|law protections; rad -.08; stab 5|Collective contracts and a twelve per cent rise, signed at one in the morning.|ai 4
+matignon|Matignon Agreements|2|2|front|law protections; rad -.08; stab 5 ?? Add the forty-hour week => ig union 8, ind -6; spirit Forty Hours: output -.03, rad -.06 // Wages only => ig union 3; money -4|Collective contracts and a twelve per cent rise, signed at one in the morning.|ai 4
 laval|Deflation Decrees|7|2|right|money 8; rad .05; spirit Franc Fort: tax .08, invest .1|Ten per cent off every state salary.|
 petain|The Marshal as Minister|9|2|right|ig army 6; stab 4; spirit Victor of Verdun: legit 6, def .03|The most trusted man in France, and the oldest.|
 doriot|The Great Party|12|2|leagues|setIdeo fas; stab -6|A former communist mayor leads the new right.|
@@ -387,7 +387,7 @@ cnrs|National Research Centre|31|3|planning|build university 2; res 30; spirit O
 heavywater|Heavy Water Mission|32|3|cnrs|proj 50; res 20|The world's entire stock, in twenty-six cans.|date 1939-9
 modernise|Modernise or Decline|31|4|cnrs|south|build tools 2, chem 1, steel 1; spirit Modernisation Plan: output .06|Six basic sectors, five years.|
 command|Reform the High Command|37|0||spirit army_reform; pp 30|Too many generals, too few decisions.|ai 2; sec Army
-maginot|Extend the Maginot Line|36|1|command|fort Metz, Lille, Lyon; spirit maginot_mentality|Concrete does not bleed.|mx mobile; ai 6
+maginot|Extend the Maginot Line|36|1|command|fort Metz, Lille, Lyon; spirit maginot_mentality ?? To the sea, whatever Brussels says => fort Lille; rel BEL -15; money -8 // Stop at the Ardennes => money 6; rel BEL 10|Concrete does not bleed.|mx mobile; ai 6
 mobile|The Professional Army|38|1|command|tech m_tank1, m_mot; units arm 2, mot 1; spirit manoeuvre_doctrine; rmspirit great_war_trauma, methodical_battle|A hundred thousand specialists in six armoured divisions.|mx maginot; ai 0
 ouvrages|New Fronts|35|2|maginot|fort Lille, Marseille; spirit Fortress Troops: def .06, entrench .1|They shall not pass, again.|
 alpine|The Alpine Line|36|2|maginot|fort Lyon, Marseille; units mtn 2|Forts cut into the cliffs above Menton.|

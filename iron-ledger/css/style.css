@@ -143,3 +143,29 @@ select { font: inherit; color: var(--paper); background: var(--slate2); border: 
 /* 1.5: game rules on the nation screen */
 .rules{border-top:1px solid rgba(255,255,255,.12);margin:10px 0;padding-top:8px;display:flex;flex-direction:column;gap:6px}
 .rules .row{flex-wrap:wrap;gap:4px;align-items:center}
+
+/* 1.6: dispatches */
+#ticker { position: absolute; left: 50%; top: 8px; transform: translateX(-50%); width: min(520px, 46%); background: #151d26f5; border: 1px solid var(--line); border-top: 2px solid #7fb0e0; border-radius: 3px; z-index: 6; box-shadow: 0 4px 14px #0008; }
+#ticker .thead { display: flex; gap: 8px; align-items: center; padding: 5px 8px; cursor: pointer; } #ticker .tt { flex: 1; min-width: 0; } #ticker .tt b { display: block; font: 600 17px/1.15 var(--display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#ticker.open .tt b { white-space: normal; } #ticker .ico { font-size: 22px; } #ticker .tbody { padding: 2px 10px 9px 38px; max-height: 46vh; overflow: auto; font-size: 14px; } #ticker .newsline { font-size: 11px; }
+#dispatch { position: absolute; left: 8px; top: 34px; width: min(340px, 70%); display: flex; flex-direction: column; gap: 4px; pointer-events: none; z-index: 5; } #dispatch #toasts { position: static; width: auto; }
+#tray { display: flex; flex-direction: column; gap: 3px; pointer-events: auto; }
+.tritem { display: flex; gap: 6px; align-items: center; text-align: left; background: #2a2413f2; border: 1px solid var(--brass2); border-left: 4px solid var(--brass); padding: 4px 8px; } .tritem .tt { flex: 1; font: 600 15px/1.1 var(--display); } .tritem .num { color: var(--dim); } .tritem.soon { border-left-color: var(--bad); } .tritem.soon .num { color: var(--bad); }
+.feedrow { display: flex; gap: 8px; padding: 4px 2px; border-bottom: 1px solid #ffffff10; cursor: pointer; } .feedrow:hover { background: #ffffff08; } .feedrow .ico { font-size: 18px; }
+.msggrid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 4px 0; } .msggrid button { text-align: left; }
+@media (max-width: 720px) { #ticker { width: 92%; top: 4px; } #dispatch { top: 62px; } .msggrid { grid-template-columns: 1fr; } }
+/* 1.6: focus tree */
+.fhead { display: flex; flex-direction: column; gap: 4px; } .ftools { flex-wrap: wrap; gap: 4px; } .fcard a { color: var(--brass); cursor: pointer; } .fcard h4 { margin: 0; } .fchoice { border-left: 3px solid var(--brass); padding-left: 8px; margin: 3px 0; }
+.flines { position: absolute; inset: 0; pointer-events: none; } .flines path { fill: none; stroke: #4a5866; stroke-width: 1.5; } .flines path.ld { stroke: #4f8f56; stroke-width: 2; } .flines path.lr { stroke: var(--brass); stroke-width: 2.5; } .flines path.lx { stroke: var(--bad); stroke-dasharray: 2 4; }
+.fn2 { position: absolute; width: 136px; height: 80px; box-sizing: border-box; padding: 4px 6px 3px 6px; background: #1b2530; border: 1px solid #2c3944; border-radius: 4px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center; overflow: hidden; color: #8794a0; user-select: none; }
+.fn2 .fi { position: absolute; left: 4px; top: 2px; font-size: 13px; opacity: .9; } .fn2 .fnm { font: 600 14px/1.08 var(--display); margin-top: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; } .fn2 .ff { font-size: 11px; white-space: nowrap; color: var(--dim); }
+.fn2.available { background: #26323f; border: 2px solid var(--brass); color: var(--paper); box-shadow: 0 0 0 2px #c9a24a22; } .fn2.available.poor { border-style: dashed; }
+.fn2.unmet { background: #2b2618; border: 1px dashed var(--warn); color: #c9bd9a; }
+.fn2.done { background: #1f3a25; border-color: #3f7a48; color: #a9d6ae; } .fn2.done .fi { color: var(--good); font-weight: 700; }
+.fn2.active { background: #4a3c17; border: 2px solid var(--brass); color: #fff; } .fn2 .fp { position: absolute; left: 0; bottom: 0; height: 4px; background: var(--brass); }
+.fn2.blocked { background: #1a1416; border-color: #4a2a2a; color: #6a5557; text-decoration: line-through; } .fn2.locked { opacity: .78; }
+.fn2.sel { outline: 2px solid #fff; outline-offset: 1px; } .fn2.route { border-color: var(--brass); box-shadow: 0 0 0 1px var(--brass); } .fn2.faded { opacity: .22; }
+.tree { cursor: grab; }
+/* 1.6: doctrine and battle reports */
+.docrow { display: flex; gap: 4px; margin-top: 4px; } .docstep { width: 26px; height: 22px; border: 1px solid var(--line); border-radius: 3px; display: grid; place-items: center; font-size: 12px; color: var(--dim); } .docstep.on { background: var(--brass2); border-color: var(--brass); color: #fff; }
+.fchip { display: inline-block; font-size: 12px; padding: 0 5px; margin: 1px 2px 1px 0; border: 1px solid currentColor; border-radius: 9px; white-space: nowrap; } .breport { font-size: 13px; } .battlerow { cursor: pointer; padding: 2px 0; }

@@ -8,6 +8,19 @@ Open `index.html` in a browser. No build step, no server.
 
 ## Updates
 
+### 1.6 "Reckoning"
+
+The game was reviewed harshly by an independent reviewer (overall 4/10, focus trees 3/10) and rebuilt where it scored worst.
+
+- **Focuses cost political power** (15 to 75) and take 21 to 63 days according to their weight. Switching returns half.
+- **The generated filler is deleted.** Trees show only authored focuses. Doctrine, which used to be filler rows, is now its own system bought with army experience.
+- **Requirements you play towards**, with live progress: divisions, fleet, world tension. Historical dates bind the AI; a human may move early only once world tension allows.
+- **Choice focuses**: 39 key focuses end in a decision with real trade-offs. Syntax: `effects ?? Label => effects // Label => effects`.
+- **New tree view**: icons, price, length, hover details, requirement checklists, the route to a focus, what it opens and closes, drag to pan, and a plan that starts queued focuses by itself.
+- **Dispatches**: news and reports are non-blocking headlines; decisions wait in a tray with a deadline; toasts are filtered by category. Measured as Britain over five years: forced interruptions 49 → 2, pop-up notes 8 a month → 0.3.
+- **Battle reports** list the factors on each side. **Wars end**: beaten coalitions ask for terms; frozen AI wars are settled.
+- Diminishing returns on stacked modifiers; map label, camera and counter fixes.
+
 ### 1.5 "Dragon and Sun"
 
 Asia done properly.

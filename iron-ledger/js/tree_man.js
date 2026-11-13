@@ -3,7 +3,7 @@
 TREES.MAN = autoTree('mc_', `
 # Court and Garrison
 kangde|The Kangde Emperor||pp 50; legit 4|The last emperor of China is, for the second time, an emperor.|ai 5
-audience|The Quarterly Audience|kangde|pp 30; bop -5|The Kwantung commander calls on His Majesty, and tells him what he has decided.|ai 5
+audience|The Quarterly Audience|kangde|pp 30; bop -5 ?? Nod, and sign => rel JAP 10; bop 8; pp 30 // Ask one awkward question => bop -8; legit 4; rel JAP -5|The Kwantung commander calls on His Majesty, and tells him what he has decided.|ai 5
 ## the kingly way
 loyal|Paradise of the Kingly Way|audience|rel JAP 30; bop 15; stab 4|Order, harmony and Japanese guidance.|mx restore,return,red; ai 6
 k_concordia|The Concordia Association|loyal|law oneparty; pp 60; spirit Concord of Five Races: stab 4, sway .1|Not a party, the handbook insists: a way of life.|
@@ -35,7 +35,7 @@ d_edict|Rule by Edict|d_premier|law autocracy; pp 80; legit 6; bop -10|An edict 
 d_princes|The Mongol Princes|d_guard|units cav 3; rel MON -10; spirit Banners of Xing'an: manpower .05, org .03|The dynasty's oldest allies ride in.|
 d_officers|Win the Manchukuo Army|d_guard,d_brother|ig army 10 .3; bop -10; spirit The Emperor's Soldiers: org .05, legit 4|An oath to the throne, not to the adviser.|
 d_confucius|The Kingly Way, Truly|d_edict|ig devout 8 .2; law religious; spirit Confucian Monarchy: stab 6, legit 6, research -.03|Sacrifices at the temple of Confucius, in person.|
-d_ministers|Dismiss the Vice-Ministers|d_edict,d_officers|bop -20; rel JAP -25; auto 20; stab -5|The deputies who sign find their desks in the corridor.|
+d_ministers|Dismiss the Vice-Ministers|d_edict,d_officers|bop -20; rel JAP -25; auto 20; stab -5 ?? All at once, in one edict => stab -4; pp 60; bop -8 // One a month, with pensions => money -6; stab 3|The deputies who sign find their desks in the corridor.|
 d_confront|Face Down the Kwantung Army|d_ministers|auto 25; rel JAP -20; ws 8|The commander is received standing.|
 d_indep|An Empire in Fact|d_confront|free -20; legit 12; nap JAP|The protocol of 1932 is declared lapsed.|req bopl 20
 d_recog|Recognition Without Tokyo|d_indep|infl 50; rel ENG 15, USA 10, SOV 10|If they will not recognise the state, they may recognise the dynasty.|
@@ -112,7 +112,7 @@ h_law|A Law Code of Our Own|h_capital,h_gentry|legit 6; spirit Codified Laws: st
 h_equal|Equal Rations|h_census,h_limit|ig rural 8; rad -.08; legit 6|Rice was for Japanese, sorghum for Chinese. No longer.|
 h_nation|A Manchurian Nationality|h_law,h_univ,h_film|stab 8; spirit Something Like a Nation: legit 8, stab 4, manpower .05|Nobody planned for the subjects to start believing it.|
 # Industry
-fiveyear|The Five-Year Industrial Plan||build steel 2, coalm 2; spirit five_year_plan|Two and a half billion yen, on a blank slate.|ai 4
+fiveyear|The Five-Year Industrial Plan||build steel 2, coalm 2; spirit five_year_plan ?? Steel and coal first => build steel 1, coalm 1 // Machines and vehicles first => build tools 1, engines 1 // Farms and railways first => build farm 2; infra 2|Two and a half billion yen, on a blank slate.|ai 4
 i_showa|The Showa Steelworks|fiveyear|build steel 3; dep Mukden iron 1|Low-grade ore, a new process, a million tons a year.|
 i_fushun|The Fushun Colliery|fiveyear|build coalm 3; dep Mukden coal 1|A seam a hundred metres thick, mined from the sky.|
 i_shale|Shale Oil at Fushun|i_fushun|build synth 2; tech p_synthetic|The oil shale lies on top of the coal; it has to be moved anyway.|
@@ -146,7 +146,7 @@ i_second|The Second Five-Year Plan|i_break,i_grid,i_develop|build steel 2, tools
 i_auto2|Self-Sufficiency in the North|i_second,i_oilmills|law autarky; spirit Yen-Bloc Autarky: output .05, tradecap -.05, needs -.03|Nothing imported that can be made.|
 i_final|The Ruhr of the East|i_second,i_marsh|i_second,i_north,i_tanks|spirit Arsenal of the Continent: mil_out .12, output .06|Built in ten years on the plan of a railway company's economists.|
 # The Army
-army|The Manchukuo Imperial Army||spirit army_reform; units inf 2|Ex-warlord troops with new cap badges and old habits.|ai 3
+army|The Manchukuo Imperial Army||spirit army_reform; units inf 2 ?? Loyalty first: promote the Emperor's men => bop -8; ig army 5 // Skill first: promote the academy men => bop 5; xp|Ex-warlord troops with new cap badges and old habits.|ai 3
 a_purge|Weed Out the Bandits|army|stab 3; rad -.05; spirit Smaller and Paid: org .05, upkeep -.08|Half the army is discharged; the other half is paid on time.|
 a_advisers|Japanese Advisers|army|rel JAP 10; xp; bop 8; spirit Adviser System: org .04, legit -2|An officer in every battalion who does not take orders.|mx a_own
 a_own|Officers of Our Own|army|bop -8; ig army 6; spirit Native Command: org .03, legit 3|Manchukuoans command; advisers advise.|mx a_advisers

@@ -1,13 +1,14 @@
 // National focus trees. Majors and several minors have unique political branches; everyone shares
 // the industry / army / air / navy branches. F(id, name, x, y, prerequisites, effects, description, extra)
 'use strict';
-const F = (id, name, x, y, pre, eff, desc, ex = {}) => Object.assign({ id, name, x, y, pre: pre || '', eff, desc, days: 70 }, ex);
+const F = (id, name, x, y, pre, eff, desc, ex = {}) => Object.assign({ id, name, x, y, pre: pre || '', eff, desc }, ex);
 const atWarWith = t => [c => G.C[t] && atWar(c.tag, t), `At war with ${COUNTRY_DEF[t] ? COUNTRY_DEF[t].n : t}`];
 const existsReq = t => [c => ok(t) && !atWar(c.tag, t), `${COUNTRY_DEF[t].n} exists and we are at peace with it`];
-const tensionReq = n => [() => G.tension >= n, `World tension at least ${n}`];
-// Historical timetable: binds the AI only. A human player may move as early as the other requirements allow.
-const dateReq = (y, m) => { const r = [c => !G.historical || (c && !c.ai) || G.day >= dayOf(y, m, 1), `The AI waits until ${MONTHS[m - 1]} ${y} (historical mode)`]; r.aiOnly = true; return r; };
-const both = (a, b) => [c => a[0](c) && b[0](c), a[1] + '; ' + b[1]];
+const tensionReq = n => { const r = [() => G.tension >= n, `World tension at least ${n}%`]; r.prog = () => `${Math.round(G.tension)}/${n}%`; return r; };
+// Historical timetable. The AI keeps to the date. A human may move early, but only once the world is tense enough to allow it.
+const dateReq = (y, m) => { const T = Math.round(clamp((y + (m - 1) / 12 - 1936) * 18, 5, 85)), d = dayOf(y, m, 1);
+  const r = [c => G.day >= d || (c && !c.ai ? G.tension >= T : !G.historical), `${MONTHS[m - 1]} ${y} — or world tension ${T}%`]; r.prog = () => G.day >= d ? '' : `tension ${Math.round(G.tension)}/${T}%`; r.aiOnly = true; return r; };
+const both = (a, b) => { const r = [c => a[0](c) && b[0](c), a[1] + '; ' + b[1]]; r.parts = (a.parts || [a]).concat(b.parts || [b]); return r; };
 const warReq = [c => isAtWar(c.tag), 'At war'];
 const peaceReq = [c => !isAtWar(c.tag), 'At peace'];
 const bestRes = c => { const cnt = { coalm: 0, ironm: 0, oilr: 0 }; for (const p of heldBy(c.tag)) for (const t in cnt) if (canBuild(c, t, p)) cnt[t] += p.res[RES_OF[t]]; const o = Object.keys(cnt).filter(t => cnt[t]).sort((a, b) => cnt[b] - cnt[a]); o.slice(0, 2).forEach(t => freeBuild(c, t, 2)); if (!o.length) freeBuild(c, 'chem', 1); };
@@ -253,14 +254,44 @@ function focusState(c, f) {
   if (f.req && !f.req[0](c)) return 'unmet';
   return 'available';
 }
-function startFocus(c, id) { const f = focusById(c, id); if (!f || focusState(c, f) !== 'available') return false; c.focus.cur = id; c.focus.prog = 0; return true; }
+// ----- focus 2.0: every focus has a kind, a price in political power and a length that fits its weight -----
+const FOCUS_KIND = { crisis: ['⚔️', 'Crisis'], map: ['🗺️', 'Territory'], politics: ['🏛️', 'Politics'], diplo: ['🤝', 'Diplomacy'], industry: ['🏭', 'Industry'], army: ['🪖', 'Armed forces'], science: ['🔬', 'Science'], spirit: ['✦', 'National spirit'], minor: ['•', 'Measure'] };
+const FOCUS_DAYS = [21, 28, 42, 63], FOCUS_COST = [15, 25, 45, 75];
+function focusMeta(f) {
+  const e = f.eff && typeof f.eff === 'object' ? f.eff : {}, tip = String(e.tip || ''), has = (...k) => k.some(x => e[x] !== undefined);
+  const big = has('war', 'annex', 'puppet', 'play', 'civilwar', 'setIdeo', 'take', 'transfer', 'independence') || /\bwar\b|[Aa]nnex|[Dd]emand|ltimatum|ndependen|collaboration government|absorbed|border conflict|separate peace|become our subject/.test(tip);
+  const mid = has('claim', 'core', 'ally', 'guarantee', 'faction', 'join', 'invite', 'law', 'tech', 'event', 'eventFor', 'general', 'fn') || !!f.choices || typeof f.eff === 'function';
+  const small = ['build', 'units', 'equip', 'spirit', 'fort', 'infra', 'nap', 'rmspirit'].filter(k => e[k] !== undefined).length;
+  const tier = big ? 3 : mid || small >= 3 ? 2 : small ? 1 : 0;
+  const kind = has('war', 'play', 'civilwar') || /\bwar\b|[Dd]emand|ltimatum|border conflict/.test(tip) ? 'crisis' : has('claim', 'core', 'annex', 'puppet', 'take', 'transfer', 'independence') ? 'map' : has('setIdeo', 'ideo', 'law', 'ig', 'legit') || /takes power|[Aa]utonomy|Balance of power/.test(tip) ? 'politics'
+    : has('ally', 'nap', 'guarantee', 'faction', 'join', 'invite') ? 'diplo' : has('build', 'infra') ? 'industry' : has('units', 'equip', 'general', 'fort') ? 'army' : has('tech', 'research') ? 'science' : has('spirit') ? 'spirit' : has('rel') ? 'diplo' : has('money') ? 'industry' : 'minor';
+  return { tier, kind };
+}
+function finalizeTree(tree) { if (tree._fin) return tree; tree._fin = true; for (const f of tree) { const m = focusMeta(f); f.tier = m.tier; f.kind = f.kind || m.kind; if (!f.days) f.days = FOCUS_DAYS[m.tier]; if (f.cost === undefined) f.cost = FOCUS_COST[m.tier]; } return tree; }
+{ const _ft = focusTree; focusTree = function (c) { return finalizeTree(_ft(c)); }; }
+const focusCost = (c, f) => Math.round(f.cost * (c.ai ? 0.5 : 1));
+function focusBlock(c, f) { const st = focusState(c, f); if (st !== 'available') return { done: 'Already completed', active: 'In progress', blocked: 'Closed by a mutually exclusive focus', locked: 'Earlier focuses are required', unmet: 'Requirements are not met' }[st]; if (c.pp < focusCost(c, f)) return `Needs ${focusCost(c, f)} political power`; return ''; }
+function focusWhy(c, f) { const st = focusState(c, f); if (st === 'unmet') { const bad = (f.req ? (f.req.parts || [f.req]) : []).find(r => !r[0](c)); if (bad) return bad[1] + (bad.prog && bad.prog(c) ? ` (${bad.prog(c)})` : ''); if (f.ideo && c.ideology !== f.ideo) return 'needs a different form of government'; } return focusBlock(c, f); }
+function startFocus(c, id) {
+  const f = focusById(c, id); if (!f) return false; const cur = c.focus.cur ? focusById(c, c.focus.cur) : null; if (cur && cur.id === id) return false;
+  const refund = cur ? Math.round((c.focus.paid || 0) * 0.5) : 0; if (focusState(c, f) !== 'available' || c.pp + refund < focusCost(c, f)) return false;
+  c.pp += refund - focusCost(c, f); c.focus.paid = focusCost(c, f); c.focus.cur = id; c.focus.prog = 0; if (c.focus.queue) c.focus.queue = c.focus.queue.filter(q => q !== id); return true;
+}
 function focusEff(c, f) { return f.eff; }
+function focusChoose(c, f, i) { const ch = f.choices[i]; if (!ch) return; applyEff(c, ch.eff); claimCache(); (c.focus.pick = c.focus.pick || {})[f.id] = i; G.log.push({ d: G.day, text: `${c.name}: ${f.name} — ${ch.label}.`, kind: 'info' }); }
 function focusDaily(c) {
-  if (!c.focus.cur) return; const f = focusById(c, c.focus.cur); if (!f) { c.focus.cur = null; return; }
-  if (++c.focus.prog < f.days) return; c.focus.cur = null; c.focus.done[f.id] = G.day;
+  if (!c.focus.cur) { // a queued focus starts by itself as soon as it can
+    if (c.focus.queue && c.focus.queue.length && !c.ai) { const id = c.focus.queue.find(q => { const f = focusById(c, q); return f && !focusBlock(c, f); }); if (id && startFocus(c, id)) { c.focus.stall = null; if (c.tag === G.player) UIH.notify(`National focus: ${focusById(c, id).name} (from your plan).`, 'focus'); }
+      else if (!id && c.tag === G.player) { const q = focusById(c, c.focus.queue[0]); if (q && c.focus.stall !== q.id + focusState(c, q)) { c.focus.stall = q.id + focusState(c, q); UIH.notify(`Your plan is waiting — ${q.name}: ${focusWhy(c, q)}.`, 'focus'); } } }
+    return; }
+  const f = focusById(c, c.focus.cur); if (!f) { c.focus.cur = null; return; }
+  if (++c.focus.prog < f.days) return; c.focus.cur = null; c.focus.done[f.id] = G.day; c.focus.paid = 0;
   if (f.fnGen) hireFree(c);
   applyEff(c, focusEff(c, f)); claimCache();
   G.log.push({ d: G.day, text: `${c.name} completes the focus “${f.name}”.`, kind: 'info' });
-  if (c.tag === G.player) UIH.notify(`Focus complete: ${f.name}. Choose a new national focus.`, 'focus');
+  const mine = c.tag === G.player && !c.ai;
+  if (f.choices) { if (mine) UIH.popup({ modal: true, title: f.name, icon: '⚖️', desc: `<i class="dim">${f.desc}</i><div>${effText(f.eff, c)}</div><div class="newsline">The cabinet awaits your decision</div>`, options: f.choices.map((ch, i) => ({ name: ch.label, tip: effText(ch.eff, c), fn: () => focusChoose(c, f, i) })) }); else focusChoose(c, f, Math.random() < 0.65 ? 0 : Math.floor(Math.random() * f.choices.length)); }
+  else if (mine) UIH.popup({ title: `Focus complete: ${f.name}`, icon: FOCUS_KIND[f.kind] ? FOCUS_KIND[f.kind][0] : '🎯', desc: `<i class="dim">${f.desc}</i><div>${effText(f.eff, c)}</div>`, options: [{ name: 'Good.' }] });
+  if (mine) UIH.notify(`Focus complete: ${f.name}.${c.focus.queue && c.focus.queue.length ? '' : ' Choose a new national focus.'}`, 'focus');
 }
 function hireFree(c) { c.pp += 40; hireGeneral(c); }

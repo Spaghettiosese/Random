@@ -3,7 +3,7 @@
 TREES.JAP = autoTree('j_', `
 # Politics
 feb26|The February Incident||stab -3; pp 60|Fourteen hundred soldiers occupy central Tokyo in the snow.|ai 6
-aftermath|Martial Law in Tokyo|feb26|stab 4; pp 30|The capital is quiet. The question is who gained.|ai 6
+aftermath|Martial Law in Tokyo|feb26|stab 4; pp 30 ?? Shoot the ringleaders => stab 4; ig army -5; bop 5 // Quiet transfers to Manchuria => ig army 5; stab -2; bop -8|The capital is quiet. The question is who gained.|ai 6
 ## the imperial way
 kodo|The Imperial Way|aftermath|spirit spiritual_mobilisation; ws 8; ig army 5 .2; bop -20|The rebels lost; their ideas need not.|mx tosei,purge,front; ai 0
 k_araki|Recall General Araki|kodo|generals Sadao Araki/3/politic, Jinzaburo Mazaki/2/old; pp 40|The prophet of the spiritual army returns to office.|
@@ -100,11 +100,11 @@ f_pacific|Pacific Revolution|f_liberate|spirit Red Sun [720]: atk .08, sway .2|F
 # Asia Policy
 hakko|Eight Corners, One Roof||infl 30; ws 3|A slogan from the first emperor, repurposed.|ai 6
 ## china
-china|The China Incident|hakko|claim Peiping, Tianjin, Shanghai, Nanjing, Kalgan, Jinan, Qingdao; fn chinaWar; units inf 8; spirit Continental Offensive [540]: atk .1, supply .1|Shots at the Marco Polo Bridge.|req chinaTime; ai 8; ideo fas
+china|The China Incident|hakko|claim Peiping, Tianjin, Shanghai, Nanjing, Kalgan, Jinan, Qingdao; fn chinaWar; units inf 8; spirit Continental Offensive [540]: atk .1, supply .1|Shots at the Marco Polo Bridge.|req chinaTime & divs 50; ai 8; ideo fas
 c_hebei|East Hebei Autonomy|hakko|rel CHI -15; infl 20; claim Peiping, Tianjin|A smugglers' republic outside the Wall.|
 mengjiang|The Mongol Borderlands|c_hebei|claim Kalgan, Hohhot; units cav 2|A prince, a flag and a Japanese adviser.|
 c_shanghai|The Shanghai Landing|china|units inf 8, hvy 1; equip ships 10; spirit Yangtze Expedition [365]: atk .06, navy .04|Three months for a city the plan gave three days.|req atwar CHI; ai 7
-c_nanjing|Drive on the Capital|c_shanghai|ws 5; axp 30; spirit Pursuit Up the River [240]: atk .08|No one ordered the advance; no one stopped it.|req atwar CHI; ai 6
+c_nanjing|Drive on the Capital|c_shanghai|ws 5; axp 30; spirit Pursuit Up the River [240]: atk .08 ?? Offer terms through the German ambassador => rel CHI 10; stab 3; tension -2 // No dealings with the Nationalists => ws 8; pp 40; tension 2|No one ordered the advance; no one stopped it.|req atwar CHI; ai 6
 wang|The Reorganised Government|c_nanjing|fn collabCHI|A former premier agrees to head a rival China.|req holdNanjing
 c_xuzhou|The Xuzhou Pincers|c_nanjing|axp 25; equip artillery 150; units inf 4; spirit Railway Offensive [365]: atk .08|North and central armies link along the railway.|req atwar CHI; ai 5
 c_wuhan|Up to Wuhan|c_xuzhou|spirit River Campaign [300]: atk .06, supply .08|A thousand kilometres from the sea.|req atwar CHI
@@ -119,7 +119,7 @@ warlords|Buy the Warlords|mengjiang,wang|fn bribeWarlord|Silver bullets are chea
 c_second|A Second Envelope of Silver|warlords|fn bribeWarlord|Another general discovers his province's neutrality.|
 chinapeace|Peace Through Nanjing|c_treaty,ichigo|fn chinaPeace|An end to a war nobody planned.|
 ## north
-north|Strike North|hakko|claim Vladivostok, Khabarovsk, Chita, Okha, Ulan Bator; bop -25|The Army's war: Siberia and the Bolsheviks.|mx south; ai 0; ideo fas
+north|Strike North|hakko|claim Vladivostok, Khabarovsk, Chita, Okha, Ulan Bator; bop -25|The Army's war: Siberia and the Bolsheviks.|mx south; ai 0; ideo fas; req divs 70
 kantoku|Kwantung Special Manoeuvres|north|units inf 6, arm 1; bop -8|Seven hundred thousand men for an exercise.|
 n_lake|The Hill by the Lake|north|clash SOV; tension 2|A hilltop where three borders meet.|req ex SOV
 n_river|The River in the Steppe|n_lake|clash MON; axp 20|A border nobody surveyed.|req ex MON
@@ -132,14 +132,14 @@ n_amur|Across the Amur|northwar|spirit River Crossing Battalions: atk .05; axp 2
 siberia|A Far Eastern Republic|n_amur|fn collabSOV|A buffer state, as in 1920.|req holdVlad
 n_baikal|The Baikal Line|siberia,n_sakhalin|fort Hailar, Harbin; spirit Siberian Frontier: def .06, res_out .05|Dig in where the railway meets the lake.|
 ## south
-south|Strike South|hakko|claim Saigon, Hanoi, Hue, Batavia, Surabaya, Palembang, Balikpapan, Medan, Singapore, Kuala Lumpur, Manila, Rangoon, Hong Kong, Kuching, Brunei; build shipyard 2; bop 25|The Navy's war: oil, rubber and the southern resource area.|mx north; ai 6; ideo fas; date 1939-9
+south|Strike South|hakko|claim Saigon, Hanoi, Hue, Batavia, Surabaya, Palembang, Balikpapan, Medan, Singapore, Kuala Lumpur, Manila, Rangoon, Hong Kong, Kuching, Brunei; build shipyard 2; bop 25|The Navy's war: oil, rubber and the southern resource area.|mx north; ai 6; ideo fas; date 1939-9; req navy 220
 s_hainan|The Hainan Operation|south|units inf 2; equip ships 10; spirit Southern Springboard: navy .04|An island that points at Indochina.|ai 5; date 1939-10
-nonagg|Neutrality Pact with Moscow|south|nap SOV|Secure the north before turning south.|req ex SOV; ai 4; date 1941-4
-indo|Occupy Indochina|s_hainan|fn indochina|Close the roads into China; open the road south.|req ex FRA; ai 5; ideo fas; date 1940-7
+nonagg|Neutrality Pact with Moscow|south|nap SOV ?? Sell Moscow the northern concessions => money 12; rel SOV 15 // Keep the Kwantung Army at full strength => units inf 3; rel SOV -5|Secure the north before turning south.|req ex SOV; ai 4; date 1941-4
+indo|Occupy Indochina|s_hainan|fn indochina ?? The north only, by agreement => rel USA -5; rel FRA -10 // The whole colony, airfields and all => rel USA -25, ENG -15; build port 1; tension 3|Close the roads into China; open the road south.|req ex FRA; ai 5; ideo fas; date 1940-7
 thai|The Thai Alliance|s_hainan|rel SIA 30; fn inviteSIA|The only independent state in the region picks a side.|date 1941-6
 s_plans|The Southern Plan|indo,nonagg|axp 30; units inf 4; equip ships 20|Malaya, the Philippines and the Indies in a hundred and fifty days.|
-pearl|The Decisive Strike|indo|fn pearl; spirit rising_sun [240]|Climb Mount Niitaka.|req pearlTime; ai 7; ideo fas
-sphere|Co-Prosperity Sphere|thai,indo|fn sphere; spirit asia_for_asians|Asia for the Asians, under Tokyo.|
+pearl|The Decisive Strike|indo|fn pearl; spirit rising_sun [240] ?? Hit the fleet at anchor => spirit Battleship Row [300]: navy .12 // Hit the oil tanks and dry docks => spirit Crippled Base [540]: navy .07, tradecap .05|Climb Mount Niitaka.|req pearlTime & navy 250; ai 7; ideo fas
+sphere|Co-Prosperity Sphere|thai,indo|fn sphere; spirit asia_for_asians ?? Real independence for the liberated => infl 60; calm; legit 5 // Military administration everywhere => money 15; spirit Southern Requisitions: res_out .1, stab -2|Asia for the Asians, under Tokyo.|
 southern|The Southern Operation|pearl|units inf 6; spirit Centrifugal Offensive [365]: atk .1, navy .1|A hundred days to take an empire.|req war
 s_malaya|Down the Peninsula|southern|units inf 3; spirit Bicycle Blitz [240]: atk .08, supply .08|Seventy days to the causeway.|req atwar ENG
 s_hong|The Fragrant Harbour|southern|axp 15; equip ships 10|Eighteen days.|req atwar ENG
@@ -162,7 +162,7 @@ d_noseparate|No Separate Peace|axis|rel GER 20; spirit Tripartite Solidarity: ws
 d_yanagi|The Submarine Exchange|axis|tech m_radar; proj 30; res 20|Blueprints, quinine and gold cross two oceans under water.|
 d_embargo|Defy the Embargo|d_anticom|embargo USA; trade GER; spirit Autarky Drive: output .03, tradecap -.05|If they will not sell, we will not buy.|ai 0
 # Economy
-zaibatsu|Zaibatsu Partnership||build steel 2, engines 1, autos 1; ig ind 4|Four family combines own most of what matters.|ai 3
+zaibatsu|Zaibatsu Partnership||build steel 2, engines 1, autos 1; ig ind 4 ?? Leave the combines their freedom => ig ind 6; spirit Private Initiative: invest .2 // Direct them from the ministry => ig ind -6; spirit Guided Combines: mil_out .06, build .04|Four family combines own most of what matters.|ai 3
 manind|Manchurian Industrial Plan|zaibatsu|fn manBuild; trade MAN|A planned economy on a blank slate.|
 yawata|The Great Steelworks|zaibatsu|build steel 3|Half the nation's steel from one town.|
 synfuel|Synthetic Fuel|zaibatsu|tech p_synthetic; build synth 2|A drop of oil is a drop of blood.|

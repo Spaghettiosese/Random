@@ -50,7 +50,7 @@ Object.assign(REQF, {
 TREES.SOV = parseTree('s_', `
 stalin|Socialism in One Country|5|0||pp 60; stab 3|The revolution will be built here first, whatever it costs.|sec Party
 const|The Stalin Constitution|3|1|stalin|legit 8; stab 4; ideo com 4|The most democratic constitution in the world, on paper.|
-purge|The Great Purge|6|1|stalin|stab 8; pp 120; rmspirit paranoia; spirit officer_purge [1200]; fn shootTukh|Enemies of the people are everywhere, even on the General Staff.|mx trust,left; ai 5
+purge|The Great Purge|6|1|stalin|stab 8; pp 120; rmspirit paranoia; spirit officer_purge [1200]; fn shootTukh ?? Spare the best commanders => generals Konstantin Rokossovsky/5/panzer; stab -2 // Let the organs do their work => pp 60; rad -.08|Enemies of the people are everywhere, even on the General Staff.|mx trust,left; ai 5
 trust|Trust the Marshals|9|1|stalin|rmspirit paranoia; spirit red_army_prestige; stab -8; ig army 5 .3|The Red Army is loyal. Let it prepare for the real enemy.|mx purge,left; ai 0
 left|The Left Opposition|12|1|stalin|stab -8; pp 60; spirit Permanent Revolution: ws 8, infl .2, drift_com .05|The exiles return and the bureaucrats tremble.|mx purge,trust; ai 0
 stakhanov|Stakhanovite Movement|2|2|const|rad .02; spirit Shock Workers: output .05|A hundred and two tons of coal in a single shift.|

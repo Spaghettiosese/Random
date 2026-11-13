@@ -56,8 +56,7 @@ function extendTree(tag, tree) {
     add('pr_' + pid + '_u', `${r[0]} Institute`, x + i, 2, 'pr_' + pid, { fn: c => { const p = P(pid); if (p.owner === c.tag) p.b.university = (p.b.university || 0) + 1; else c.pp += 20; }, tip: `${r[0]} gains a University`, research: 10 }, `A technical college for ${r[0]}.`); });
   return tree;
 }
-for (const k in TREES) extendTree(k, TREES[k]);
-{ const _gen = genericTree; genericTree = c => extendTree(c.tag, _gen(c)); }
+// 1.6: the generated filler sections are gone. Doctrine is its own system (js/v16.js); trees show only authored focuses.
 
 // ---------- Cabinet ----------
 const MINISTERS = {
@@ -146,7 +145,7 @@ function worldNews(title, text, icon, skip = []) {
 // a major power presses a demand: other great powers (the player) may step in even without a treaty
 function crisisPrompt(pl) {
   const k = C(G.player); if (!k || k.ai || !k.exists || !k.major || k.overlord || pl.a === k.tag || pl.b === k.tag || !C(pl.a).major) return; if (friendly(k.tag, pl.a) || friendly(k.tag, pl.b) || hasPact('guar', k.tag, pl.b) || hasPact('ally', k.tag, pl.b) || hasPact('ally', k.tag, pl.a) || atWar(k.tag, pl.a)) return;
-  UIH.popup({ title: `Crisis: ${cname(pl.a)} and ${cname(pl.b)}`, icon: '⚖️', desc: `<div class="newsline">World News · ${dateStr()}</div>${cname(pl.a)} demands that ${cname(pl.b)} ${GOAL_TXT(pl.goal)}. We have no treaty with ${cname(pl.b)}, but our word would carry weight. In ${pl.dur} days they must yield or fight.`, options: [
+  UIH.popup({ def: 0, days: Math.max(3, Math.min(8, pl.dur - 2)), title: `Crisis: ${cname(pl.a)} and ${cname(pl.b)}`, icon: '⚖️', desc: `<div class="newsline">World News · ${dateStr()}</div>${cname(pl.a)} demands that ${cname(pl.b)} ${GOAL_TXT(pl.goal)}. We have no treaty with ${cname(pl.b)}, but our word would carry weight. In ${pl.dur} days they must yield or fight.`, options: [
     { name: 'This is not our quarrel.', tip: 'Stability +1' , fn: () => { k.stab = Math.min(100, k.stab + 1); } },
     { name: `Stand behind ${cname(pl.b)}.`, tip: `We join their side of the crisis. If ${cname(pl.a)} does not back down, we are at war. Relations with ${cname(pl.b)} +30.`, fn: () => { if (G.plays.includes(pl) && !pl.B.includes(k.tag)) { pl.B.push(k.tag); addRel(k.tag, pl.b, 30); addRel(k.tag, pl.a, -30); removeSpirit(k, 'appeasement'); logMsg(`${k.name} backs ${cname(pl.b)} in the crisis.`, 'world'); } } }] });
 }

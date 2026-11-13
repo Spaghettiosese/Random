@@ -1,7 +1,7 @@
 // Special Projects (Götterdämmerung update): secret weapons and breakthrough programmes.
 // One project runs at a time. Progress comes from universities and from focuses that boost project work.
 'use strict';
-const VERSION = '1.5 “Dragon and Sun”';
+const VERSION = '1.6 “Reckoning”';
 // id: [name, icon, required techs, cost, description, effects, earliest year]
 const PROJECTS = {
   radar_net: ['Radar Network', '📡', ['m_radio'], 120, 'A chain of stations that sees raiders long before they arrive.', { tech: 'm_radar', spirit: 'p_radar_net' }, 1937],

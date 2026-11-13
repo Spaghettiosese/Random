@@ -76,11 +76,15 @@ function autoTree(prefix, text) {
   const parents = it => it.pre ? it.pre.split(/[|,]/).map(s => s.trim()).filter(Boolean) : [];
   const depth = it => { if (it.y !== undefined) return it.y; it.y = 0; let d = 0; for (const p of parents(it)) { if (!byId[p]) throw new Error(`Focus ${prefix + it.id} refers to unknown ${p}`); d = Math.max(d, depth(byId[p]) + 1); } return it.y = d; };
   items.forEach(depth);
+  // tidy layout: inside a lane every leaf gets its own column and each parent sits centred over its children
   let x0 = 0, lastSec = 0; const lanes = [...new Set(items.map(i => i.lane))];
-  for (const L of lanes) { const li = items.filter(i => i.lane === L); if (li[0].secNo !== lastSec) { x0 += 1; lastSec = li[0].secNo; } let maxX = x0;
-    const ys = [...new Set(li.map(i => i.y))].sort((a, b) => a - b);
-    for (const y of ys) { const row = li.filter(i => i.y === y); row.forEach((it, k) => { const ps = parents(it).map(p => byId[p]).filter(p => p.lane === L && p.x !== undefined); it.want = ps.length ? sum(ps, p => p.x) / ps.length : x0 + k; });
-      row.sort((a, b) => a.want - b.want); let last = x0 - 1; for (const it of row) { it.x = Math.max(Math.round(it.want), last + 1); last = it.x; maxX = Math.max(maxX, it.x); } }
-    x0 = maxX + 2; }
+  for (const L of lanes) { const li = items.filter(i => i.lane === L); if (li[0].secNo !== lastSec) { x0 += 1; lastSec = li[0].secNo; }
+    const kids = new Map(), roots = []; for (const it of li) { const ps = parents(it).map(p => byId[p]).filter(p => p.lane === L); if (!ps.length) { roots.push(it); continue; } const pp = ps.reduce((a, b) => b.y > a.y ? b : a); if (!kids.has(pp)) kids.set(pp, []); kids.get(pp).push(it); }
+    let next = x0; const place = it => { const ks = kids.get(it); if (!ks) { it.x = next++; return; } ks.forEach(place); it.x = (ks[0].x + ks[ks.length - 1].x) / 2; };
+    roots.forEach(place); x0 = next + 1; }
+  // a section's opening chain sits centred over the roads that branch from it
+  for (const sn of new Set(items.map(i => i.secNo))) { const si = items.filter(i => i.secNo === sn), L0 = si[0].lane, head = si.filter(i => i.lane === L0); if (new Set(head.map(i => i.x)).size !== 1) continue;
+    const ids = new Set(head.map(i => i.id)), kids = si.filter(i => i.lane !== L0 && parents(i).some(p => ids.has(p))); if (kids.length < 2) continue; const nx = (Math.min(...kids.map(k => k.x)) + Math.max(...kids.map(k => k.x))) / 2;
+    if (si.some(o => !ids.has(o.id) && head.some(h => h.y === o.y) && Math.abs(o.x - nx) < 1)) continue; head.forEach(h => { h.x = nx; }); }
   return parseTree(prefix, items.map(it => [it.id, it.name, it.x, it.y, it.pre, it.eff, it.desc, it.opts + (it.sec ? (it.opts ? '; ' : '') + 'sec ' + it.sec : '')].join('|')).join('\n'));
 }

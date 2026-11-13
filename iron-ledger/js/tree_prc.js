@@ -11,7 +11,7 @@ y_massline|The Mass Line|mao|ig rural 8 .2; mp 150|From the masses, to the masse
 y_selfrely|Self-Reliance|mao|build farm 2, textile 1, arms 1; spirit Wasteland Reclaimed: farm_out .15, output .05|A brigade turns a barren valley into farmland.|
 y_protracted|On Protracted War|y_lectures|spirit Three Stages: def .06, caplimit .1; axp 20|Neither quick victory nor national doom.|
 y_school|The Central Party School|y_lectures|build university 1; res 20; pp 30|Every cadre is a student again.|
-y_rectify|Rectification|y_school,y_massline|pp 80; rad -.1; bop -15; stab -3|Cure the sickness to save the patient.|
+y_rectify|Rectification|y_school,y_massline|pp 80; rad -.1; bop -15; stab -3 ?? Study sessions and self-criticism => stab 3; legit 4 // Struggle sessions => rad -.08; stab -4; pp 40|Cure the sickness to save the patient.|
 y_rescue|The Rescue Campaign|y_rectify|law secret_police; stab -5; rad -.1; fn intelBoost|Confessions come faster than anyone can check them.|mx y_apology
 y_apology|The Chairman's Apology|y_rectify|stab 6; legit 6; ig intel 6|He bows to the hall and takes off his cap.|mx y_rescue
 y_forum|The Forum on Literature|y_rectify|spirit Art Serves Politics: sway .15, ws 4|Writers learn whom they write for.|
@@ -53,7 +53,7 @@ z_deal|An Understanding with Nanjing|z_purge|nap CHI; rel CHI 40; money 8|He alw
 z_auto|The Special Region|z_deal,z_staff|stab 8; legit 8; spirit Recognised Autonomy: tax .1, build .08|A legal government with a legal army.|
 z_third|A Third Force|z_auto|ideo aut 10; infl 60; spirit Between Two Parties: pp .1, stab 4|Neither Chongqing's China nor Moscow's.|
 # The Revolution
-enemy|Which Enemy First?||pp 30|Chiang, or the Japanese?|ai 5
+enemy|Which Enemy First?||pp 30 ?? Tell the cadres plainly => legit 4; stab 3 // Keep both options open => pp 40; fn intelBoost|Chiang, or the Japanese?|ai 5
 ## the united front
 front|The United Front|enemy|nap CHI; ws 10; fn joinChinaWar; rel CHI 30|Resist Japan and save the nation.|mx overthrow; ai 6
 u_xian|Mediate at Xi'an|front|rel CHI 20; legit 6; infl 30|The party's negotiator saves the life of the man who hunted him.|
@@ -80,7 +80,7 @@ o_south|Back to the Old Soviet|o_soviets,o_defect|claim Nanchang, Changsha, Fuzh
 ## liberation
 liberation|War of Liberation|u_talks|o_south|war CHI; spirit Liberation War [720]: atk .1, manpower .1|Millet plus rifles.|req japDone; ai 4
 l_northeast|Race to the Northeast|liberation|claim Mukden, Harbin, Hsinking; units inf 4; rel SOV 10|Whoever holds Manchuria's factories wins.|
-l_abandon|Abandon Yan'an|liberation|spirit Keep Men Lose Land: caplimit .2, def .05; axp 20|An empty city is not a defeat.|req atwar CHI
+l_abandon|Abandon Yan'an|liberation|spirit Keep Men Lose Land: caplimit .2, def .05; axp 20 ?? Evacuate everyone in good order => stab 4; mp 60 // Leave a rearguard to bleed them => axp 25; ws 5; stab -3|An empty city is not a defeat.|req atwar CHI
 l_plains|Leap to the Central Plains|l_abandon|spirit Strike into Their Rear [365]: atk .1; units inf 3|Across the Yellow River into the enemy's heartland.|req atwar CHI
 l_outline|Outline Land Law|liberation|spirit land_reform; mp 400; ig rural 10 .3|A hundred million peasants now have a reason to win.|
 campaigns|Three Decisive Campaigns|l_northeast,l_plains|spirit Three Campaigns [540]: atk .12|A million and a half enemy soldiers in five months.|req atwar CHI

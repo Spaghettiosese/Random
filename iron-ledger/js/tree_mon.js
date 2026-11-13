@@ -3,13 +3,13 @@
 TREES.MON = autoTree('m_', `
 # Party and Throne
 khural|The Little Khural||pp 50|A parliament of herdsmen, watched by advisers.|ai 5
-summons|A Summons to Moscow|khural|rel SOV 10; stab -3; pp 30|The premier is invited to explain himself.|ai 5
+summons|A Summons to Moscow|khural|rel SOV 10; stab -3; pp 30 ?? Go, and be agreeable => rel SOV 15; bop -8; pp 30 // Plead illness and stay home => rel SOV -10; bop 8; stab 3|The premier is invited to explain himself.|ai 5
 ## the marshal
 choibalsan|The Marshal's Ascent|summons|pp 80; rel SOV 20; bop -20|Moscow has chosen its man.|mx genden,bogd,amar; ai 6
 c_interior|The Interior Ministry|choibalsan|law secret_police; fn intelBoost; stab -3|The green-capped service answers to one man.|
 c_plot|The Counter-Revolutionary Centre|c_interior|stab -6; rad -.1; pp 60; ig army -6|A conspiracy is discovered, with exactly the right members.|
 c_troika|The Extraordinary Commission|c_plot|rad -.1; legit -4; pp 60; bop -10|Three men, a rubber stamp and a list.|
-c_monasteries|Close the Monasteries|c_troika|ig devout -10 -.5; mp 80; rad .05; bop -15|Seven hundred of them, emptied in two years.|
+c_monasteries|Close the Monasteries|c_troika|ig devout -10 -.5; mp 80; rad .05; bop -15 ?? Spare the great libraries => res 15; ig devout 3 // Leave nothing standing => money 10; rad .04; ig devout -5|Seven hundred of them, emptied in two years.|
 c_treasure|Monastery Treasure|c_monasteries|money 15; build admin 1|Bronze Buddhas become ball bearings in Chelyabinsk.|
 c_lamas|Lamas to the Workshops|c_monasteries|mp 100; build tools 1, textile 1; ig devout -5|Eighty thousand monks need new trades.|
 c_collectives|Herding Collectives|c_troika|law command; build ranch 2; rad .04|The first attempt ended in revolt.|mx c_gradual
@@ -110,7 +110,7 @@ seat|A Seat Among Nations|plebiscite,f_legation|infl 60; legit 8|The veto delays
 f_bloc|A Fraternal Bloc|seat,f_china|fn joinComintern; trade SOV|A member of something, at last.|mx f_non
 f_non|Friend to All Neighbours|seat,f_china|spirit Good Neighbour of Two Giants: infl .2, tradecap .08, stab 4|We will not be anyone's corridor.|mx f_bloc
 # Economy
-herds|Twenty-Five Million Head||build ranch 3|Thirty animals for every person.|ai 3
+herds|Twenty-Five Million Head||build ranch 3 ?? Herders keep what they breed => ig rural 6; spirit Herders' Incentive: farm_out .06 // The state sets delivery targets => money 8; ig rural -4; spirit Delivery Targets: tax .06|Thirty animals for every person.|ai 3
 vets|Veterinary Service|herds|spirit Healthy Herds: farm_out .15|Inoculation against the cattle plague.|
 wool|Wool for the Red Army|herds|build textile 2; trade SOV; money 5|Greatcoats, felt boots and half a million horses.|
 coal|The First Mine|herds|build coalm 2; fn monCoal|Heat for the capital's first power station.|

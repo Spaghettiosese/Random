@@ -77,11 +77,28 @@ const REQF = {
   majorwar: [c => enemiesOf(c.tag).some(t => C(t).major), 'At war with a major power'],
   sovereign: [c => !c.overlord, 'Not a subject']
 };
+// requirements you can play towards: each shows live progress in the focus card
+const ndivs = c => sum(armiesOf(c.tag), a => a.divs.length);
+const REQX = {
+  divs: v => { const r = [c => ndivs(c) >= +v, `At least ${v} divisions`]; r.prog = c => `${ndivs(c)}/${v}`; return r; },
+  stab: v => { const r = [c => c.stab >= +v, `Stability ${v}% or more`]; r.prog = c => `${Math.round(c.stab)}/${v}%`; return r; },
+  ws: v => { const r = [c => c.ws >= +v, `War support ${v}% or more`]; r.prog = c => `${Math.round(c.ws)}/${v}%`; return r; },
+  year: v => [() => year() >= +v, 'Year ' + v + ' or later'],
+  hold: v => { const l = csv(v); return [c => l.every(n => PN(n).ctrl === c.tag), 'We control ' + l.join(', ')]; },
+  notwar: v => [c => !ok(v) || !atWar(c.tag, v), `Not at war with ${COUNTRY_DEF[v].n}`],
+  gone: v => [() => !ok(v) || C(v).capitulated, `${COUNTRY_DEF[v].n} is defeated or gone`],
+  rel: v => { const [t, n] = v.split(' '); const r = [c => !ok(t) || opinion(t, c.tag) >= +n, `${COUNTRY_DEF[t].n}'s opinion of us at least ${n}`]; r.prog = c => ok(t) ? `${Math.round(opinion(t, c.tag))}/${n}` : ''; return r; },
+  sup: v => { const [i, n] = v.split(' '); const r = [c => c.sup[i] >= +n, `${IDEO[i][0]} support ${n}% or more`]; r.prog = c => `${Math.round(c.sup[i])}/${n}%`; return r; },
+  air: v => { const r = [c => airPower(c) >= +v, `Air power ${v} or more`]; r.prog = c => `${Math.round(airPower(c))}/${v}`; return r; },
+  navy: v => { const r = [c => navalPower(c) >= +v, `Naval power ${v} or more`]; r.prog = c => `${Math.round(navalPower(c))}/${v}`; return r; },
+  tech: v => [c => !!c.techs[v], `${TECHS[v][0]} researched`],
+  bld: v => { const [t, n] = v.split(' '); const r = [c => ((c.bt[t] || {}).lv || 0) >= +n, `At least ${n} ${BLD[t].name}`]; r.prog = c => `${(c.bt[t] || {}).lv || 0}/${n}`; return r; }
+};
 function parseReq(str) {
   const parts = str.split('&').map(s => s.trim()).filter(Boolean).map(tok => { const i = tok.indexOf(' '), k = i < 0 ? tok : tok.slice(0, i), v = i < 0 ? '' : tok.slice(i + 1).trim();
     if (k === 'war') return warReq; if (k === 'peace') return peaceReq; if (k === 'ex') return existsReq(v); if (k === 'atwar') return atWarWith(v); if (k === 'tension') return tensionReq(+v);
     if (k === 'own') { const l = csv(v); return [c => l.every(n => PN(n).owner === c.tag), 'We own ' + l.join(', ')]; }
-    if (k === 'flag') return [() => !!G.flags[v], 'Flag: ' + v]; if (REQF[k]) return REQF[k]; throw new Error('Unknown requirement ' + tok); });
+    if (k === 'flag') return [() => !!G.flags[v], 'Flag: ' + v]; if (REQX[k]) return REQX[k](v); if (REQF[k]) return REQF[k]; throw new Error('Unknown requirement ' + tok); });
   return parts.reduce((a, b) => both(a, b));
 }
 function fx(str, desc) {
@@ -113,9 +130,11 @@ function parseTree(prefix, text) {
     // prerequisites may themselves contain '|', so the fixed columns are taken from both ends
     const n = f.length, id = prefix + f[0], name = f[1], x = +f[2], y = +f[3], opts = f[n - 1], desc = f[n - 2], eff = f[n - 3], pre = f.slice(4, n - 3).join('|');
     if (n < 8 || isNaN(x) || isNaN(y)) throw new Error('Bad focus line: ' + line); if (seen[id]) throw new Error('Duplicate focus ' + id); seen[id] = 1; if (pos[x + ',' + y]) throw new Error(`Focus ${id} overlaps ${pos[x + ',' + y]}`); pos[x + ',' + y] = id;
-    const o = { id, name, x, y, pre: pre ? pf(pre) : '', eff: fx(eff, desc), desc, days: 42 };
+    const cp = eff.split('??'), o = { id, name, x, y, pre: pre ? pf(pre) : '', eff: fx(cp[0], desc), desc };
+    // "base effects ?? Label => effects // Label => effects": the player chooses when the focus completes
+    if (cp[1]) o.choices = cp.slice(1).join('??').split('//').map(t => { const k = t.indexOf('=>'); if (k < 0) throw new Error('Bad choice in ' + id + ': ' + t); return { label: t.slice(0, k).trim(), eff: fx(t.slice(k + 2), desc) }; });
     for (let t of opts.split(';')) { t = t.trim(); if (!t) continue; const i = t.indexOf(' '), k = i < 0 ? t : t.slice(0, i), v = i < 0 ? '' : t.slice(i + 1).trim();
-      if (k === 'mx') o.mutex = pf(v); else if (k === 'ai') o.ai = +v; else if (k === 'days') o.days = +v; else if (k === 'ideo') o.ideo = v; else if (k === 'sec') o.sec = v; else if (k === 'aiIdeo') o.aiIdeo = v;
+      if (k === 'mx') o.mutex = pf(v); else if (k === 'ai') o.ai = +v; else if (k === 'days') o.days = +v; else if (k === 'cost') o.cost = +v; else if (k === 'kind') o.kind = v; else if (k === 'ideo') o.ideo = v; else if (k === 'sec') o.sec = v; else if (k === 'aiIdeo') o.aiIdeo = v;
       else if (k === 'date') { const [yy, mm] = v.split('-').map(Number); o.req = o.req ? both(o.req, dateReq(yy, mm)) : dateReq(yy, mm); }
       else if (k === 'req') { const r = parseReq(v); o.req = o.req ? both(o.req, r) : r; } else throw new Error('Unknown focus option ' + t); }
     out.push(o); }
@@ -124,7 +143,7 @@ function parseTree(prefix, text) {
 }
 
 TREES.GER = parseTree('g_', `
-rhine|Remilitarise the Rhineland|6|0||ws 5; stab 5; tension 4; fort Essen, Frankfurt; news German troops march into the demilitarised Rhineland.|Tear up Locarno and station troops on the Rhine.|mx oppose; ai 9; sec Foreign Policy
+rhine|Remilitarise the Rhineland|6|0||ws 5; stab 5; tension 4; fort Essen, Frankfurt; news German troops march into the demilitarised Rhineland. ?? Send three battalions and bluff => pp 30; stab 3 // March in with nineteen divisions => ws 6; tension 3; rel FRA -15, ENG -10|Tear up Locarno and station troops on the Rhine.|mx oppose; ai 9; sec Foreign Policy; req divs 40
 axis|Rome–Berlin Axis|2|1|rhine|faction Axis; rel ITA 40; fn inviteItaly|A vertical line around which Europe may revolve.|date 1936-10; ai 3; ideo fas
 hung|Court Hungary|0|2|axis|rel HUN 40; trade HUN|Budapest shares our dislike of the peace treaties.|ideo fas
 anti|Anti-Comintern Pact|2|2|axis|rel JAP 40, HUN 20, ROM 10; infl 30|A common front against Bolshevism.|ai 3; ideo fas
@@ -136,18 +155,18 @@ tri|Tripartite Pact|1|4|japan|fn tripartite|Three empires divide the world betwe
 stahl|Pact of Steel|2|4|axis|rel ITA 30; spirit Steel Pact: mil_out .05, atk .02|Bound to Rome in blood and iron.|ideo fas
 vienna|Vienna Awards|0|5|bulg|fn viennaAward|Berlin redraws the Danube basin and collects the gratitude.|ideo fas
 balkan|Balkan Economic Hegemony|0|6|vienna|trade YUG, GRE, TUR; infl 40; spirit Balkan Trade Bloc: tradecap .1|The whole south-east sells to us and buys from us.|
-anschluss|Anschluss|6|1|rhine|fn anschluss; tension 5|One people, one Reich.|req ex AUT; date 1938-2; ai 6; ideo fas
+anschluss|Anschluss|6|1|rhine|fn anschluss; tension 5 ?? Hold a plebiscite afterwards => legit 8; stab 4 // Annex by decree => pp 60; tension 3; stab -2|One people, one Reich.|req ex AUT & divs 50; date 1938-2; ai 6; ideo fas
 ostmark|Integrate the Ostmark|7|2|anschluss|fn coreAustria; build steel 1, arms 1|Austrian gold, iron and divisions join the Reich's ledger.|req own Vienna
-sudeten|Demand the Sudetenland|6|2|anschluss|fn sudeten|Three million Germans live under Czech rule.|req ex CZE; date 1938-8; ai 6; ideo fas
-czech|Fate of Czechoslovakia|6|3|sudeten|fn germanCzech|The rump state cannot be allowed to survive.|req ex CZE; date 1939-2; ai 6; ideo fas
+sudeten|Demand the Sudetenland|6|2|anschluss|fn sudeten ?? Offer a four-power conference => rel ENG 10, FRA 10; tension -3; pp 30 // Mobilise openly => ws 6; tension 4; units inf 4|Three million Germans live under Czech rule.|req ex CZE & divs 58; date 1938-8; ai 6; ideo fas
+czech|Fate of Czechoslovakia|6|3|sudeten|fn germanCzech ?? A protectorate run from Prague castle => build arms 2; stab -2 // Share the spoils with Hungary and Poland => rel HUN 30, POL 20; infl 40|The rump state cannot be allowed to survive.|req ex CZE; date 1939-2; ai 6; ideo fas
 skoda|Seize the Škoda Works|7|3|czech|build arms 2, artyf 2, tankp 1; equip tanks 120, artillery 150|One of Europe's great arsenals changes hands intact.|req own Prague
 memel|Memel Ultimatum|4|4|czech|fn memel|The Memelland returns home.|req ex LIT; ai 5; ideo fas
 slovak|Slovak Client State|5|4|czech|pp 40; mp 60; units inf 2|Bratislava governs itself, as long as it asks Berlin first.|
-pact|Molotov–Ribbentrop Pact|8|4|czech|nap SOV; flag mr_pact; fn mrEvent|A pact with the old enemy buys a free hand in the west.|req ex SOV; date 1939-6; ai 6; ideo fas
+pact|Molotov–Ribbentrop Pact|8|4|czech|nap SOV; flag mr_pact; fn mrEvent ?? Offer Moscow the Baltic and Bessarabia => rel SOV 25; trade SOV; money 10 // Offer eastern Poland and no more => rel SOV 5; tension 2; pp 40|A pact with the old enemy buys a free hand in the west.|req ex SOV; date 1939-6; ai 6; ideo fas
 credit|German–Soviet Credit Agreement|9|5|pact|trade SOV; spirit Soviet Raw Materials [720]: output .04, mil_out .04|Grain, oil and manganese roll west across the demarcation line.|
-danzig|Danzig or War|6|5|memel|pact|claim Danzig, Poznań, Katowice, Łódź; fn danzig|The Free City and the Corridor, or else.|req ex POL; date 1939-6; ai 8; ideo fas
+danzig|Danzig or War|6|5|memel|pact|claim Danzig, Poznań, Katowice, Łódź; fn danzig|The Free City and the Corridor, or else.|req ex POL & divs 72; date 1939-6; ai 8; ideo fas
 weser|Operation in the North|4|6|danzig|fn weser|Secure the ore route and the Atlantic flank before the British do.|req polandDown; date 1940-3; ai 4; ideo fas
-west|Strike in the West|6|6|danzig|spirit blitzkrieg [420]; claim Metz; fn west|Through the Ardennes, to the sea.|req polandDown; ai 8; ideo fas
+west|Strike in the West|6|6|danzig|spirit blitzkrieg [420]; claim Metz; fn west ?? The sickle cut through the Ardennes => spirit Sickle Cut [200]: atk .15, supply -.06 // The broad right wing => spirit Broad Front Advance [300]: atk .06, def .04|Through the Ardennes, to the sea.|req polandDown & divs 85; ai 8; ideo fas
 marita|Balkan Campaign|8|6|danzig|fn marita|The southern flank must be cleared before any march east.|req franceDown; date 1941-3; ai 3; ideo fas
 finland|Brothers in Arms|11|6|danzig|rel FIN 40; fn inviteFIN|Helsinki has its own account to settle with Moscow.|ideo fas
 ore|Secure Swedish Ore|3|7|weser|rel SWE 20; trade SWE; spirit Swedish Iron Ore: mil_out .04|Ten million tons a year through Narvik and Luleå.|
@@ -175,7 +194,7 @@ india|Free India Legion|12|3|turkey|units inf 1; fn rajUnrest|The enemy of my en
 iran|Persian Friendship|13|3|iraq|rel PER 40; trade PER|Engineers and locomotives for the Shah.|
 party|Party Congress|16|0||pp 60; stab 3; ideo fas 4|A cathedral of light over Nuremberg.|sec Party and State; ideo fas
 propaganda|Ministry of Propaganda|15|1|party|spirit People's Receiver: stab 4, ws 4|A radio in every parlour, tuned to one station.|
-gleich|Gleichschaltung|16|1|party|pp 50; spirit Coordinated State: pp .15, rad -.05|Every club, union and choir is brought into line.|
+gleich|Gleichschaltung|16|1|party|pp 50; spirit Coordinated State: pp .15, rad -.05 ?? Break the veterans' leagues => ig army -8; pp 60 // Co-opt them into the Party => ig army 8; stab 3|Every club, union and choir is brought into line.|
 youth|State Youth|17|1|party|spirit Youth Service: manpower .05, train .05|Membership is no longer voluntary.|
 olympia|Olympic Showcase|14|2|propaganda|infl 40; stab 2|The world comes to Berlin and is shown what it wishes to see.|
 film|Newsreel Empire|15|2|propaganda|infl 20; ws 3|Every cinema programme opens with the weekly review.|
@@ -259,9 +278,9 @@ luxem|Luxemburg's Path|36|6|plan|expro|law protected; spirit Council Democracy: 
 rotfront|Red Front Fighters|35|7|moscow|luxem|units mil 8, inf 2; spirit Proletarian Hundreds: manpower .08|The clenched fist returns to the streets, this time in government.|
 rhinesov|Revolution to the Rhine|36|7|moscow|luxem|claim Metz, Brussels, Amsterdam; fn exportRev|The Rhine has never stopped an idea.|
 intern|Congress of the International|35|8|rotfront|rhinesov|infl 60; fn internat|Delegates from forty countries meet in Berlin.|
-four|Four Year Plan|41|0||spirit four_year_plan; tech p_synthetic; build arms 2|The economy must be fit for war within four years.|ai 3; sec Economy
+four|Four Year Plan|41|0||spirit four_year_plan; tech p_synthetic; build arms 2 ?? Guns before butter => build arms 2; rad .04; spirit Guns Before Butter: mil_out .08, needs -.05 // Keep the shops full => stab 4; build textile 2, furniture 1|The economy must be fit for war within four years.|ai 3; sec Economy
 autobahn|Reichsautobahn|39|1|four|infra 4; build construction 1|Ribbons of concrete across the country.|
-mefo|MEFO Bills|41|1|four|money 14; spirit Hidden Deficit [1095]: tax -.05, mil_out .08|Rearmament on a credit card nobody is meant to see.|
+mefo|MEFO Bills|41|1|four|money 14; spirit Hidden Deficit [1095]: tax -.05, mil_out .08 ?? Redeem them on schedule => money -8; legit 4 // Roll them over and print more => money 12; rad .03; stab -2|Rearmament on a credit card nobody is meant to see.|
 reichswerke|State Steel Works|43|1|four|build steel 3, ironm 2|If private industry will not smelt low-grade ore, the state will.|
 autarky|Autarky Programme|45|1|four|build synth 2, coalm 2|Rubber and fuel from coal: independence from the world market.|
 erzeug|Battle for Production|37|2|autobahn|build farm 4; tech p_fert, p_tractors|Every hectare under the plough.|
@@ -300,7 +319,7 @@ preserve|Preserve the Nation's Substance|41|8|board|pp 50; stab 3|What is left m
 heer|Wehrmacht Expansion|51|0||spirit army_reform; units inf 4; mp 200|Thirty-six divisions is only the beginning.|ai 2; sec Heer
 staff|General Staff Reborn|49|1|heer|generals Franz Halder/3/log; spirit War Academy: org .04|The Truppenamt drops its disguise.|
 conscript|Reintroduce Conscription|51|1|heer|law extensive; mp 300|Every class of young men will serve.|
-panzer|Panzerwaffe|53|1|heer|tech m_tank1, m_mot; build tankp 1; units arm 1|A mailed fist for the army.|
+panzer|Panzerwaffe|53|1|heer|tech m_tank1, m_mot; build tankp 1; units arm 1 ?? Concentrate the tanks in their own divisions => units arm 2; spirit Armoured Divisions: tank .08 // Parcel them out to the infantry => units inf 3; spirit Infantry Tanks: def .04|A mailed fist for the army.|req bld tankp 1
 auftrag|Auftragstaktik|48|2|staff|spirit Mission Command: org .08, atk .03|Tell a subordinate what to achieve, never how.|
 academy|Staff Rides|49|2|staff|generals Walther von Reichenau/3/off|Every campaign is fought on the map before it is fought on the ground.|
 mg|Universal Machine Gun|50|2|conscript|equip arms 400; spirit Belt-Fed Squads: def .04|One weapon as light gun and heavy gun alike.|
