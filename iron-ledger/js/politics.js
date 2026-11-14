@@ -31,7 +31,7 @@ function politicsDaily(c) {
 }
 function igApproval(c, g) {
   const o = c.ig[g]; let a = 0;
-  for (const cat in LAWS) { const l = LAWS[cat].laws[c.laws[cat]]; a += (l[2][g] || 0) * 1.6; }
+  for (const cat in LAWS) { const l = LAWS[cat].laws[c.laws[cat]]; if (l) a += (l[2][g] || 0) * 1.6; }
   a += o.gov ? 3 : -1; a += (c.sol - 11) * 0.35; o.mods = o.mods.filter(m => m.until > G.day); for (const m of o.mods) a += m.v;
   if (g === 'army') a += c.ws > 60 ? 2 : 0; if (g === 'union' || g === 'rural') a -= c.rad * 8;
   return clamp(a, -20, 20);
@@ -95,7 +95,7 @@ function lawAllowed(c, cat, law) {
   return '';
 }
 function lawChance(c, cat, law) {
-  const cur = LAWS[cat].laws[c.laws[cat]][2], nw = LAWS[cat].laws[law][2]; let ch = 28 + c.legit * 0.25;
+  const cur = (LAWS[cat].laws[c.laws[cat]] || [0, 0, {}])[2], nw = LAWS[cat].laws[law][2]; let ch = 28 + c.legit * 0.25;
   for (const g of IG_IDS) { const o = c.ig[g], d = (nw[g] || 0) - (cur[g] || 0); ch += d * (o.share || o.clout) * (o.gov ? 0.75 : 0.22); }
   return clamp(ch + (c.enact && c.enact.law === law ? c.enact.bonus : 0), 3, 97);
 }
