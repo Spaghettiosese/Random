@@ -86,6 +86,7 @@ function mapDraw() {
   for (const [a, b, pts] of MAP.borders) { if (G.P[a].owner === G.P[b].owner && G.P[a].ctrl === G.P[b].ctrl) continue; ctx.moveTo(pts[0], pts[1]); for (let k = 2; k < pts.length; k += 2) ctx.lineTo(pts[k], pts[k + 1]); }
   for (const [a, b, sg] of INNER) { if (G.P[a].owner === G.P[b].owner && G.P[a].ctrl === G.P[b].ctrl) continue; for (let k = 0; k < sg.length; k += 4) { ctx.moveTo(sg[k], sg[k + 1]); ctx.lineTo(sg[k + 2], sg[k + 3]); } }
   ctx.stroke();
+  if (typeof mapWorldOverlay === 'function') mapWorldOverlay(ctx);
   if (SEL.prov !== null) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5 / MV.s; ctx.stroke(PPATH[SEL.prov]); }
   // screen-space overlays
   ctx.setTransform(MV.dpr, 0, 0, MV.dpr, 0, 0); const X = wx => (wx - MV.x) * MV.s, Y = wy => (wy - MV.y) * MV.s;

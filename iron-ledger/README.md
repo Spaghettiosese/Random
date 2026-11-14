@@ -8,6 +8,14 @@ Open `index.html` in a browser. No build step, no server.
 
 ## Updates
 
+### 1.7 "Iron and Fire"
+
+The war layer, rebuilt.
+
+- **The Air War**: 64 air regions. Air wings fly one mission each (superiority, ground support, interdiction, strategic bombing) over one region; superiority, losses, battle bonuses and bombing are all regional. New Air map mode; an automatic air staff until you take over.
+- **Fronts**: give armies a front against a nation; they spread out by threat, dig in, and advance on their own when the odds suit their stance. Works before a war for deployment. The front line is drawn on the map.
+- **Battles end**: an assault is decided after three weeks by who has been winning the exchange, instead of lasting until an entire stack runs dry (a siege of Prague had lasted 439 days).
+
 ### 1.6 "Reckoning"
 
 The game was reviewed harshly by an independent reviewer (overall 4/10, focus trees 3/10) and rebuilt where it scored worst.

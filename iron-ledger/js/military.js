@@ -163,9 +163,9 @@ function militaryWeekly(c) {
   for (const t of foes) { eAir += airPower(C(t)); eNav += navalPower(C(t)); }
   for (const o of alive()) if (o.tag !== c.tag && friendly(c.tag, o.tag) && foes.some(f => atWar(o.tag, f))) fNav += navalPower(o);
   const reach = foes.some(t => C(t).exists && !C(t).capitulated);
-  if (reach) { c.stock.aircraft = Math.max(0, c.stock.aircraft - Math.min(c.stock.aircraft * 0.03, eAir * 0.01)); c.stock.ships = Math.max(0, c.stock.ships - Math.min(c.stock.ships * 0.015, eNav * 0.006)); }
+  if (reach) { c.stock.ships = Math.max(0, c.stock.ships - Math.min(c.stock.ships * 0.015, eNav * 0.006)); }
   c.blockade = eNav > fNav * 1.5 && eNav > 20 ? 0.35 : 0;
-  if (c.techs.m_air2 && fAir > 100) { const tg = foes.map(C).filter(e => !e.capitulated && airPower(e) * 1.2 < fAir); if (tg.length) { const e = pick(tg), ps = heldBy(e.tag).filter(p => p.dev >= 1 && p.dmg < 0.5);
+  if (false) { const tg = foes.map(C).filter(e => !e.capitulated && airPower(e) * 1.2 < fAir); if (tg.length) { const e = pick(tg), ps = heldBy(e.tag).filter(p => p.dev >= 1 && p.dmg < 0.5);
       if (ps.length) { const p = pick(ps); p.dmg = Math.min(0.4, p.dmg + 0.022 * (1 + M(c, 'bombing')) * (1 - M(e, 'civdef'))); e.warExh = Math.min(100, e.warExh + 0.15); } } }
 }
 function disbandArmy(a) { const c = C(a.owner); for (const d of a.divs) { c.manpower += UNITS[d.t].mp * d.str * 0.8; for (const g in UNITS[d.t].eq) c.stock[g] = (c.stock[g] || 0) + UNITS[d.t].eq[g] * d.str * 0.8; } removeArmy(a); }

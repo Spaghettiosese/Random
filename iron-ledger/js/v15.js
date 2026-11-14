@@ -60,7 +60,7 @@ function supportWeekly(c) {
   c.axp = Math.min(500, (c.axp || 0) + 0.4 + fight * 1.5 + M(c, 'train') * 2);
   if (c.ai && c.axp >= SUP_COST + 10) { const a = arm.filter(x => !x.garrison && (x.sup || []).length < SUP_MAX && x.divs.length >= 3).sort((x, y) => y.divs.length - x.divs.length)[0]; if (a) { const k = ['art', 'eng', 'hosp', 'rec', 'sig'].find(s => !(a.sup || []).includes(s)); if (k) addSupport(a, k); } }
 }
-{ const _sp = sidePower; sidePower = function (armies, attacking, p, eo) { const r = _sp(armies, attacking, p, eo); let n = 0, b = 0; for (const a of armies) { n += a.divs.length; if (!a.sup) continue; let f = 0; if (a.sup.includes('art')) f += attacking ? 0.08 : 0.04; if (!attacking && a.sup.includes('eng')) f += 0.1; b += f * a.divs.length; } if (n && b) r.atk *= 1 + b / n; if (attacking && armies.length) { const cs = M(C(armies[0].owner), 'cas'); if (cs > 0) r.atk *= 1 + cs * 0.3; } return r; };
+{ const _sp = sidePower; sidePower = function (armies, attacking, p, eo) { const r = _sp(armies, attacking, p, eo); let n = 0, b = 0; for (const a of armies) { n += a.divs.length; if (!a.sup) continue; let f = 0; if (a.sup.includes('art')) f += attacking ? 0.08 : 0.04; if (!attacking && a.sup.includes('eng')) f += 0.1; b += f * a.divs.length; } if (n && b) r.atk *= 1 + b / n; return r; };
   const _md = moveDays; moveDays = function (a, from, to, sea) { const d = _md(a, from, to, sea); return !sea && a.sup && a.sup.includes('rec') ? d * 0.88 : d; }; }
 
 // ---------- air missions ----------
