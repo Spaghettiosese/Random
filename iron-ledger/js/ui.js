@@ -202,12 +202,12 @@ function armyCard(c, a) {
     <div class="dim">Right-click a province to march there, or select a province and press “Move here”.</div></div>`;
 }
 function renderProv() {
-  const el = $('provinfo'); if (SEL.prov === null) { el.hidden = true; return; } el.hidden = false; const p = P(SEL.prov), c = me(), own = C(p.owner), arm = armiesAt(p.id), sa = G.armies[SEL.army];
+  const el = $('provinfo'); if (SEL.prov === null) { el.hidden = true; return; } el.hidden = false; const p = P(SEL.prov), c = me(), own = C(p.owner), arm = armiesAt(p.id).filter(a => typeof armySeen !== 'function' || armySeen(a)), sa = G.armies[SEL.army];
   const res = Object.keys(p.res).filter(r => p.res[r]).map(r => `${GOOD_ICON[r]}${p.res[r]}`).join(' '), lv = provLevels(p), b = Object.keys(p.b).map(t => `${BLD[t].name} ${p.b[t]}`).join(' · ');
   el.innerHTML = `<div class="row sp"><h4>${p.name}</h4>${btn('✕', 'provClose', '', 'sm')}</div><div data-a="diploSel" data-t="${p.owner}" style="cursor:pointer">${cn(p.owner)}${p.ctrl !== p.owner ? ` <span class="neg">occupied by ${cname(p.ctrl)}</span>` : ''}</div>
     <div class="kv"><span>Terrain</span><span>${TERRAIN[p.ter][0]}${p.fort ? ` · Fort ${p.fort}` : ''}</span><span>Population</span><span>${fmt(p.pop * 1000)}</span><span>Victory points</span><span>${p.vp}</span><span${tip('Building levels versus infrastructure. Overloaded provinces lose output; build railways.')}>Industry / infrastructure</span><span class="${lv > infraCap(p, own) ? 'neg' : ''}">${lv} / ${infraCap(p, own).toFixed(0)}</span>${res ? `<span>Deposits</span><span>${res}</span>` : ''}${p.dmg > 0.02 ? `<span>Devastation</span><span class="neg">${(p.dmg * 100).toFixed(0)}%</span>` : ''}</div>
     ${p.cores.length || p.claims.length ? `<div class="dim">Cores: ${p.cores.map(cname).join(', ') || '—'}${p.claims.length ? ' · Claims: ' + p.claims.map(cname).join(', ') : ''}</div>` : ''}<div class="dim">${b || 'No buildings'}</div>
-    ${arm.length ? '<div>' + arm.map(a => `<div class="row sp"><span>${flag(a.owner, 1)} ${a.name} <span class="dim">${a.divs.length} div</span></span>${a.owner === c.tag ? btn('Select', 'armySel', `data-i="${a.id}"`, 'sm' + (a.id === SEL.army ? ' on' : '')) : ''}</div>`).join('') + '</div>' : ''}
+    ${typeof provSeen === 'function' && !provSeen(p.id) ? '<div class="dim">🌫 No line of sight: any troops here are unknown to us.</div>' : ''}${arm.length ? '<div>' + arm.map(a => `<div class="row sp"><span>${flag(a.owner, 1)} ${a.name} <span class="dim">${a.divs.length} div</span></span>${a.owner === c.tag ? btn('Select', 'armySel', `data-i="${a.id}"`, 'sm' + (a.id === SEL.army ? ' on' : '')) : ''}</div>`).join('') + '</div>' : ''}
     <div class="row">${sa && sa.owner === c.tag && sa.loc !== p.id ? btn(`Move ${sa.name} here`, 'moveHere', '', 'pri sm') : ''}${p.owner === c.tag ? btn('Build here', 'tab', 'data-t="build" data-keep="1"', 'sm') : ''}</div>`;
 }
 // ---------- selection hooks used by the map ----------
