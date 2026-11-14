@@ -8,6 +8,20 @@ Open `index.html` in a browser. No build step, no server.
 
 ## Updates
 
+### 2.1 "The Balkans and the Bomb"
+
+- **Balkan focus trees**: Romania (235), Yugoslavia (233), Bulgaria (232), Greece (232) and Turkey (234), hand-written with choices, requirements and sections.
+- **A system for each**: Romanian oil contracts; Yugoslavia's five peoples and Croatian secession; Bulgaria's lost provinces and great-power patrons; the Greek merchant fleet and the National Schism; Turkish neutrality leverage, aid packages and control of the Straits. Regional ententes (Balkan, Little, Baltic) with cohesion.
+- **Resistance**: movements in occupied countries with strength, a communist wing, sabotage, liberated provinces, partisan armies and post-war civil wars; sweep, reprisal, amnesty, supply and rise actions.
+- **Occupation 2.0**: per-country occupation laws (administration, economy, labour, policing, recruitment), compliance, garrison coverage, plunder, foreign labour and volunteer legions.
+- **Colonies**: territories with nationalism, development and administration; investment, colonial troops, reforms, repression, self-government as a dominion; independence revolts; enemies stir colonies.
+- **Nuclear weapons**: production reactors, a bomb stockpile from 1944, range and interception, blast, fallout, nuclear shock and surrender, world reaction, deterrence-aware AI.
+- **Crisis screen** for diplomatic plays: phases, mobilisation, courting other powers, raising or moderating demands, compromise offers, mediation, live odds.
+- **Fog of war** (an Open map rule turns it off) and read-only viewing of any nation's focus tree.
+- **Factions** card; Communist China joins China's **United Front**.
+- **Events 2.0**: 65 new national and situational events, some in chains.
+- **Map**: 754 provinces. **Balance**: in historical games the war opens in September 1939, the Soviet border wars stay local, landings on a great power's coast wait for 1943, armies return to fight invaders, great powers rebuild divisions, and nations in trouble fight as they did in history.
+
 ### 2.0 "Empires"
 
 The second edition. Highlights:

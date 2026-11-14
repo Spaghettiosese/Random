@@ -33,7 +33,7 @@ const UPDATES = [
     ['New main menu', 'A title screen, a country selection screen with details for every nation, and these update notes.'],
     ['Focus tree navigation', 'Large trees have section buttons that jump straight to a branch.']]],
   ['1.0', 'Release', 'The original game.', [
-    ['World of 1936', '477 provinces, 73 countries, a market economy, interest-group politics, focus trees, armies and generals, diplomatic plays, events and decisions.']]]
+    ['World of 1936', '754 provinces, 73 countries, a market economy, interest-group politics, focus trees, armies and generals, diplomatic plays, events and decisions.']]]
 ];
 function menuBackdrop() {
   const cv = document.getElementById('menubg'); if (!cv) return; const w = cv.width = Math.min(1800, innerWidth * 1.2), h = cv.height = Math.min(1100, innerHeight * 1.2), ctx = cv.getContext('2d');
