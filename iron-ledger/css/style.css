@@ -198,3 +198,4 @@ select { font: inherit; color: var(--paper); background: var(--slate2); border: 
 .podds { display: flex; flex-shrink: 0; height: 14px; border-radius: 3px; overflow: hidden; background: #0004; margin: 4px 0; } .podds .pseg { display: block; height: 100%; flex: none; }
 .plog { max-height: 160px; min-height: 40px; flex-shrink: 0; overflow: auto; font-size: 13px; } .plog div { padding: 2px 0; border-bottom: 1px solid #ffffff0a; }
 .wb.pb.far { opacity: .7; }
+.occlaws { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px 8px; margin-top: 4px; } .occlaws label { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
