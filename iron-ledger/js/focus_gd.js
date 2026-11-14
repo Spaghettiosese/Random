@@ -410,16 +410,16 @@ zuse|Program-Controlled Computer|73|4|nightsight|spirit Relay Calculators: resea
 
 TREES.HUN = parseTree('h_', `
 regency|The Regency Question|9|0||pp 60; stab 4|A kingdom without a king, ruled by an admiral without a fleet.|sec Politics
-horthy|Strengthen the Regent|2|1|regency|pp 60; legit 8; ideo aut 6|The Regent's powers are widened; parliament may no longer impeach him.|mx habs,demo,arrow,kun; aiIdeo aut; ai 4
+horthy|Strengthen the Regent|2|1|regency|pp 60; legit 8; ideo aut 6 ?? Lean on Rome => rel ITA 20 // Lean on Berlin => rel GER 20|The Regent's powers are widened; parliament may no longer impeach him.|mx habs,demo,arrow,kun; aiIdeo aut; ai 4
 gombos|Gömbös's Legacy|1|2|horthy|rel GER 20, ITA 20; ideo fas 4|The late premier coined the word "axis". His friends remember.|
 bethlen|Bethlen's Counsel|3|2|horthy|rel ENG 20; stab 4; ideo dem 3|The old count advises caution and an open door to London.|
 rome|Rome Protocols|1|3|gombos|trade ITA, AUT; rel ITA 20, AUT 20|Wheat for Italian arms, with Vienna as go-between.|
 dynasty|A Horthy Dynasty|3|3|bethlen|legit 10; pp 40|The Regent's son is named Vice-Regent.|
 berlin|Berlin Alignment|0|4|rome|fn joinAxis|Revision runs through Berlin.|mx teleki; req ex GER; ai 4
-teleki|Teleki's Balancing Act|2|4|rome|bethlen|rel ENG 15; spirit Guarded Sovereignty: def .08, stab 4|Take what Germany offers and promise as little as possible.|mx berlin; ai 1
+teleki|Teleki's Balancing Act|2|4|rome|bethlen|rel ENG 15; spirit Guarded Sovereignty: def .08, stab 4 ?? Armed neutrality => spirit armed_neutrality // Tie ourselves to the Axis => rel GER 20; ws 4|Take what Germany offers and promise as little as possible.|mx berlin; ai 1
 vienna1|First Vienna Award|0|5|berlin|claim Košice, Uzhhorod; fn playHUN_CZE|Upper Hungary and Ruthenia come back by arbitration.|
 tripart|Sign the Tripartite Pact|1|5|berlin|equip arms 300; rel GER 30; spirit Axis Arms Deliveries: mil_out .06|A signature in Vienna, and German rifles in return.|
-kallay|Feelers to the West|2|5|teleki|rel ENG 20, USA 20; infl 30|Discreet meetings in Istanbul and Lisbon.|
+kallay|Feelers to the West|2|5|teleki|rel ENG 20, USA 20; infl 30 ?? Secret talks with London => rel ENG 20; rel GER -15 // Keep faith with Berlin => rel GER 15; stab 2|Discreet meetings in Istanbul and Lisbon.|
 stcrown|Lands of the Holy Crown|3|5|dynasty|claim Bratislava, Košice, Uzhhorod, Cluj, Timișoara, Zagreb; ws 8|Everything, back.|
 vienna2|Second Vienna Award|0|6|vienna1|fn playCluj|Northern Transylvania and the Szekler land.|
 crusade|March East|1|6|tripart|units inf 4, mot 1; ws 8|The Second Army entrains for the Don.|req gerSovWar
@@ -502,16 +502,16 @@ turant|Domestic Medium Tank|31|4|toldi|tech m_tank2; equip tanks 100|Named for t
 `);
 
 TREES.AUT = parseTree('a_', `
-state|The Corporate State|8|0||pp 60; stab 4|A republic that has abolished its parties and is not sure what it has become.|sec Politics
+state|The Corporate State|8|0||pp 60; stab 4 ?? The Fatherland Front alone => pp 40; ideo aut 4 // Talk to the Socialists => ig union 6; stab 2|A republic that has abolished its parties and is not sure what it has become.|sec Politics
 front|Fatherland Front Supreme|2|1|state|pp 60; ideo aut 8; legit 6|One movement for all loyal Austrians.|mx ostmark,habs,red; aiIdeo aut; ai 3
 heim|Absorb the Heimwehr|1|2|front|units mil 4, inf 1; ig army 4|The private armies are folded into the state.|
 church|Catholic Austria|3|2|front|ig devout 6; stab 4|The encyclicals as a constitution.|
 july|The July Agreement|0|3|heim|rel GER 25; stab -2; pp 40|Berlin recognises our sovereignty; we admit to being a German state.|mx defy; ai 3
-defy|Red-White-Red Until Death|2|3|heim|church|ws 15; cflag resist; spirit Will to Independence: ws 10, caplimit .15, def .05|There will be no surrender by telephone.|mx july; ai 0
+defy|Red-White-Red Until Death|2|3|heim|church|ws 15; cflag resist; spirit Will to Independence: ws 10, caplimit .15, def .05 ?? Mobilise on the Brenner => units mtn 2; ws 6 // Appeal to Mussolini => rel ITA 25|There will be no surrender by telephone.|mx july; ai 0
 rome|Rome Protocols|3|3|church|rel ITA 30, HUN 20; trade ITA, HUN|Italy has divisions on the Brenner. They face north, for now.|
 seyss|A Nationalist in Cabinet|0|4|july|ideo fas 10; rel GER 20|The interior ministry is the price of quiet.|
 westa|Appeal to London and Paris|1|4|defy|rel ENG 25, FRA 25; fn guarFromWest|Austria's independence was written into their treaties.|
-pleb|The Plebiscite|2|4|defy|legit 12; stab 6; ideo aut 6; cflag resist|For a free and German, independent and social, Christian and united Austria.|
+pleb|The Plebiscite|2|4|defy|legit 12; stab 6; ideo aut 6; cflag resist ?? Hold it this Sunday => legit 6; tension 2 // Postpone it => stab 2; pp 30|For a free and German, independent and social, Christian and united Austria.|
 stresa|Italian Guarantee|3|4|rome|fn guarFromITA|The Duce once moved troops for us. Perhaps again.|ai 0
 mobil|General Mobilisation|1|5|westa|pleb|law extensive; mp 100; units inf 3|The classes of 1915 are called to the colours.|req tension 15
 little|Understanding with Prague|2|5|pleb|stresa|rel CZE 30, YUG 20; ally CZE|Two small states with the same neighbour.|mx neutral

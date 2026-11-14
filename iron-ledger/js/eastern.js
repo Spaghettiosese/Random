@@ -53,11 +53,11 @@ const|The Stalin Constitution|3|1|stalin|legit 8; stab 4; ideo com 4|The most de
 purge|The Great Purge|6|1|stalin|stab 8; pp 120; rmspirit paranoia; spirit officer_purge [1200]; fn shootTukh ?? Spare the best commanders => generals Konstantin Rokossovsky/5/panzer; stab -2 // Let the organs do their work => pp 60; rad -.08|Enemies of the people are everywhere, even on the General Staff.|mx trust,left; ai 5
 trust|Trust the Marshals|9|1|stalin|rmspirit paranoia; spirit red_army_prestige; stab -8; ig army 5 .3|The Red Army is loyal. Let it prepare for the real enemy.|mx purge,left; ai 0
 left|The Left Opposition|12|1|stalin|stab -8; pp 60; spirit Permanent Revolution: ws 8, infl .2, drift_com .05|The exiles return and the bureaucrats tremble.|mx purge,trust; ai 0
-stakhanov|Stakhanovite Movement|2|2|const|rad .02; spirit Shock Workers: output .05|A hundred and two tons of coal in a single shift.|
+stakhanov|Stakhanovite Movement|2|2|const|rad .02; spirit Shock Workers: output .05 ?? Bonuses for the heroes => money -4; stab 3 // Norms raised for everyone => rad .03|A hundred and two tons of coal in a single shift.|
 cult|Cult of Personality|3|2|const|spirit Father of Nations: stab 6, legit 8, drift_com .05|His portrait hangs in every schoolroom.|
-nkvd|The Commissariat of Internal Affairs|5|2|purge|law secret_police; rad -.08; spirit Organs of Security: rad -.1, research -.03|Quotas for arrests, by region.|
-trials|The Moscow Trials|6|2|purge|pp 80; ideo com 5; legit -3|Old Bolsheviks confess to the impossible.|
-tukh|Tukhachevsky's Reforms|9|2|trust|tech m_doc1, m_doc2; spirit Deep Battle Reborn: atk .06, tank .1|Mechanised corps and airborne brigades, as the Marshal always wanted.|
+nkvd|The Commissariat of Internal Affairs|5|2|purge|law secret_police; rad -.08; spirit Organs of Security: rad -.1, research -.03 ?? Yezhov's lists => rad -.08; stab -4 // Beria's reforms => rad -.04; fn intelBoost|Quotas for arrests, by region.|
+trials|The Moscow Trials|6|2|purge|pp 80; ideo com 5; legit -3 ?? Show trials for the old Bolsheviks => pp 80; stab -3 // Quiet executions => pp 40; rad -.04|Old Bolsheviks confess to the impossible.|
+tukh|Tukhachevsky's Reforms|9|2|trust|tech m_doc1, m_doc2; spirit Deep Battle Reborn: atk .06, tank .1 ?? Promote him to command the armour => generals Mikhail Tukhachevsky/5/panzer // Keep him at the Commissariat => tech m_doc1; res 15|Mechanised corps and airborne brigades, as the Marshal always wanted.|
 young|Promote the Young Commanders|10|2|trust|generals Ivan Chernyakhovsky/4/panzer; fn xpAll|Talent rises without a denunciation attached.|
 fourth|World Revolution|12|2|left|fn exportRev; infl 50; tension 4|Socialism in one country was always a contradiction.|
 nation|Friendship of Peoples|2|3|stakhanov|cult|stab 4; mp 200; spirit Union of Nationalities: manpower .06|A hundred nations, one Union.|
@@ -74,9 +74,9 @@ directorate|The Military Directorate|10|4|bonaparte|rel GER -10; spirit Rule of 
 sobor|Call the Zemsky Sobor|11|4|bonaparte|law monarchy; fn leaderTsar; legit 10|An assembly of the land chooses a tsar.|ai 0
 patriot|The Great Patriotic War|5|5|beria|rehab|church|spirit great_patriotic_war; ws 20; mp 600; law requirement; rmspirit officer_purge, rigid_command|Brothers and sisters, I am speaking to you, my friends.|req attacked; ai 10
 nostep|Not One Step Back|4|6|patriot|spirit Order 227: def .08, org .05, rad .03|There is no land beyond the Volga.|
-evac|Evacuate Industry East|5|6|patriot|fn evacuate; spirit Evacuated Plants: civdef .3|Fifteen hundred factories on a million and a half railway wagons.|
+evac|Evacuate Industry East|5|6|patriot|fn evacuate; spirit Evacuated Plants: civdef .3 ?? Evacuate the factories east => spirit Factories on Wheels [365]: output -.05 // Defend them where they stand => units inf 4; stab -3|Fifteen hundred factories on a million and a half railway wagons.|
 guards|Guards Armies|6|6|patriot|units inf 6, arm 2; spirit Guards Units: atk .05|A title earned in battle, with double pay.|
-stavka|Stavka Reserve|5|7|nostep|evac|guards|units inf 8, hvy 2; mp 400|Fresh armies appear where the enemy thought there were none.|
+stavka|Stavka Reserve|5|7|nostep|evac|guards|units inf 8, hvy 2; mp 400 ?? The generals command => spirit Stavka: atk .05, org .03 // The commissars command => spirit Dual Command: org -.02, ws 6|Fresh armies appear where the enemy thought there were none.|
 victory|Banner over the Reichstag|5|8|stavka|pp 150; stab 10; spirit Victors: legit 12, ws 10|Raised on the roof by two sergeants.|req own Berlin
 narkom|Commissariat for Foreign Affairs|19|0||infl 40|Diplomacy in the service of survival.|sec Foreign Policy
 comintern|Comintern Congress|14|1|narkom|spirit export_revolution; infl 30|Delegates from sixty-five parties.|
@@ -89,14 +89,14 @@ prague|Stand by Prague|16|2|collsec|guarantee CZE; rel CZE 30|If France moves, w
 league|Champion of the League|17|2|collsec|infl 50; tension -3|The outcast of 1919 becomes Geneva's loudest voice.|
 japnap|Neutrality Pact with Japan|18|2|fareast|nap JAP|One front at a time.|req ex JAP; ai 3
 chinaaid|Aid to China|19|2|fareast|fn aidChina|Keep Japan bogged down.|req chiJapWar; ai 4
-pact|Pact with Berlin|21|2|revision|nap GER; flag mr_pact; core Lwów, Równe, Brest-Litovsk, Baranowicze|A toast to the Führer's health.|req ex GER; date 1939-6; ai 6
+pact|Pact with Berlin|21|2|revision|nap GER; flag mr_pact; core Lwów, Równe, Brest-Litovsk, Baranowicze ?? Share Poland and the Baltic => claim Riga, Tallinn, Kaunas // Buy time only => spirit Time Bought: build .05|A toast to the Führer's health.|req ex GER; date 1939-6; ai 6
 gold|Spanish Gold|24|2|spain|money 10|Five hundred tons, for safekeeping.|
 popfront|Popular Front Line|15|3|francopact|fn popFronts|Communists everywhere are told to embrace the socialists they denounced last year.|
 antifascist|Anti-Fascist Coalition|16|3|prague|league|rel ENG 30, FRA 20; fn allyWest|An alliance of convenience against a common enemy.|
 mongolia|Mongolian Protectorate|18|3|japnap|chinaaid|rel MON 30; fn monDivs; fort Ulan Bator|A buffer on the steppe.|
 sinkiang|Sinkiang Protectorate|19|3|chinaaid|rel SIK 20; fn playSIK|The governor already takes Moscow's advice.|
 baltic|Baltic Ultimatums|20|3|revision|fn balticUlt|Mutual assistance, at gunpoint.|req pactOrTension; ai 5
-finland|Demands on Finland|21|3|revision|fn finDemand|Leningrad is within artillery range of the border.|req ex FIN & pactOrTension; ai 5
+finland|Demands on Finland|21|3|revision|fn finDemand|Leningrad is within artillery range of the border.|req ex FIN & pactOrTension & divs 110; ai 5
 bessarabia|Reclaim Bessarabia|22|3|revision|fn bessDemand|Romania took it in 1918.|req ex ROM & pactOrTension; ai 5
 second|Demand a Second Front|16|4|antifascist|rel USA 20, ENG 20; fn lendFromWest|We pay in blood; they may pay in trucks.|req majorwar
 august|Far Eastern Offensive|18|4|mongolia|claim Toyohara, Dairen; war JAP|Three fronts strike across the Gobi, the mountains and the Amur.|req ex JAP; date 1944-1; ai 1
@@ -182,7 +182,7 @@ bomb|The Bomb|56|3|lightning|espionage|tech p_bomb|A copy first; our own design 
 
 TREES.CZE = parseTree('cz_', `
 castle|The Castle|4|0||pp 50; stab 4|The President's circle steers the only democracy left east of the Rhine.|sec Politics
-benes|Humanist Democracy|2|1|castle|ideo dem 8; legit 6|Truth prevails.|mx agrarian,gottwald,unity; ai 5
+benes|Humanist Democracy|2|1|castle|ideo dem 8; legit 6 ?? Trust Paris => rel FRA 20 // Trust Moscow => rel SOV 20|Truth prevails.|mx agrarian,gottwald,unity; ai 5
 agrarian|Authoritarian Democracy|5|1|castle|ideo aut 10; pp 60|The strongest party wants a firmer hand.|mx benes,gottwald,unity; ai 0
 gottwald|The Party of Gottwald|8|1|castle|ideo com 12|We go to Moscow to learn how to wring your necks.|mx benes,agrarian,unity; ai 0
 unity|National Unity Front|10|1|castle|ideo fas 12; stab -4|One nation, one party, one will.|mx benes,agrarian,gottwald; ai 0
@@ -196,7 +196,7 @@ popular|Popular Front|8|2|gottwald|setIdeo com; stab -5|The streets of Prague fi
 party|Party of National Unity|10|2|unity|setIdeo fas; stab -5|The old parties dissolve themselves.|
 activists|German Activists|1|3|minor|stab 3; rel GER 5; ideo dem 4|German parties that sit in the Czechoslovak government.|
 social|Social Insurance|2|3|slovak|minor|law pensions; rad -.06|The Ghent system, extended.|
-readiness|Defence of the Republic Act|3|3|ban|law extensive; spirit State of Readiness: ws 10, def .04|Every citizen has a wartime post.|
+readiness|Defence of the Republic Act|3|3|ban|law extensive; spirit State of Readiness: ws 10, def .04 ?? Mobilise the reserves => units inf 6; money -8 // Fortify, do not mobilise => fort Prague, Brno|Every citizen has a wartime post.|
 accommodate|Accommodation with Berlin|5|3|decrees|nap GER; rel GER 30|A small state must live with its large neighbour.|mx defiant
 defiant|Defiant Nationalism|6|3|decrees|between|ws 15; cflag resist; rel POL 20|Not a metre.|mx accommodate
 moscow|Treaty with Moscow|7|3|popular|fn joinComintern|With the Soviet Union for all time.|mx ownroad
@@ -224,7 +224,7 @@ austria|Defend Austria|14|3|danube|guarantee AUT; rel AUT 30|If Vienna falls, we
 guarantees|Western Guarantees|15|3|runciman|fn guarFromWest|Paper, unless they mean it.|
 passage|Passage for the Red Army|17|3|airbridge|fn accessSOV|The question nobody in Warsaw or Bucharest will answer.|
 allies|Join the Allies|15|4|guarantees|austria|fn joinAllies|A small democracy among large ones.|req tension 30
-skoda|The Pilsen Works|22|0||build arms 2, artyf 2|One of the three great arsenals of Europe.|ai 3; sec Industry
+skoda|The Pilsen Works|22|0||build arms 2, artyf 2 ?? Arms for export => money 10; build arms 1 // Arms for ourselves => equip arms 400, artillery 100|One of the three great arsenals of Europe.|ai 3; sec Industry
 bata|The Zlín System|20|1|skoda|build textile 3, urban 2; spirit Rational Management: output .05|Shoes for the whole world, from a company town.|
 brno|Brno Small Arms|21|1|skoda|build arms 2; equip arms 400; spirit Brno Small Arms: def .03|A light machine gun half the world copies.|
 ckd|Prague Tank Works|22|1|skoda|tech m_tank1; build tankp 2; equip tanks 150|Light tanks good enough for anyone's army.|
@@ -263,14 +263,14 @@ ikl|People's Patriotic Movement|6|2|lapua|setIdeo fas; stab -5|Black shirts and 
 crown|Offer the Crown|7|2|lapua|setIdeo aut; law monarchy; fn leaderHesse; rel GER 20|The throne voted in 1918 is filled after all.|mx ikl; ai 0
 redfin|Finnish Democratic Republic|8|2|kuusinen|setIdeo com; stab -8|A government that this time is not in exile.|
 agrarian|Agrarian Presidency|1|3|heal|pp 60; ig rural 5|A farmer in the presidential palace.|
-winterwar|Spirit of the Winter War|2|3|heal|maternity|language|spirit Spirit of the Winter War: def .1, ws 15, caplimit .2|A nation of four million that will not be told what to do.|req war; ai 10
+winterwar|Spirit of the Winter War|2|3|heal|maternity|language|spirit Spirit of the Winter War: def .1, ws 15, caplimit .2|A nation of four million that will not be told what to do.|req war & divs 12; ai 10
 olympics|Helsinki Games|3|3|language|infl 40; build urban 2|A stadium with a seventy-two-metre tower.|req peace
 greater|Greater Finland|5|3|ikl|claim Petrozavodsk, Murmansk, Tallinn; ws 10|From the Gulf of Bothnia to the White Sea.|
 kindred|Kindred Nations|6|3|ikl|rel EST 30, HUN 15; spirit Kinship Movement: ws 6, manpower .05|Students dream of the Finnic peoples united.|
 northaxis|Northern Axis|7|3|ikl|fn joinAxis|Berlin's northernmost ally.|
 regent|Mannerheim as Regent|8|3|crown|fn leaderMannerheim; legit 10; ig army 6|The Marshal has done it before.|
 friendship|Treaty of Friendship|9|3|redfin|fn joinComintern|Signed in Moscow, as these things are.|
-isthmus|Three-Isthmus Border|5|4|greater|claim Arkhangelsk; spirit Kindred Wars [540]: atk .08|The shortest defensible line in the north.|req atwar SOV
+isthmus|Three-Isthmus Border|5|4|greater|claim Arkhangelsk; spirit Kindred Wars [540]: atk .08 ?? The Mannerheim Line in concrete => fort Viipuri; money -6 // Logs and granite, and many of them => fort Viipuri; units mil 4|The shortest defensible line in the north.|req atwar SOV
 exchange|Karelia Exchange|9|4|friendship|fn kareliaGift|Forest for friendship.|
 danger|Years of Danger Overcome|2|5|winterwar|stab 8; law welfare_state|The debt is paid and the country is still its own.|req peace
 neutral|Path of Neutrality|13|0||infl 30; stab 2|Friends with everyone, allied to no one.|ai 2; sec Foreign Policy
@@ -319,7 +319,7 @@ coast|Coastal Artillery|29|3|squadron|fort Helsinki; equip ships 6; spirit Coast
 marshal|Marshal of Finland|27|4|gunnery|ski|fn promoteMannerheim; spirit Marshal's Headquarters: org .08, def .04|A title created for one man.|
 `);
 TREES.ROM = parseTree('ro_', `
-carol|The King's Game|5|0||pp 60|Carol plays the parties against each other and wins every hand, so far.|sec Politics
+carol|The King's Game|5|0||pp 60 ?? Rule through the parties => legit 4; stab 2 // Rule through the palace => pp 60; legit -3|Carol plays the parties against each other and wins every hand, so far.|sec Politics
 camarilla|The Royal Camarilla|3|1|carol|pp 60; ig land 4; legit -3|The court favourites govern from the palace.|mx liberal,guard,front; ai 4
 liberal|Liberal-Peasant Pact|6|1|carol|ideo dem 12|The old parties combine against the King.|mx camarilla,guard,front; ai 0
 guard|The Archangel's Legion|9|1|carol|ideo fas 12; stab -5|Green shirts, white horses and death squads.|mx camarilla,liberal,front; ai 0
@@ -360,7 +360,7 @@ neutral|Neutrality Declared|16|3|protocol|furrow|spirit armed_neutrality|We sell
 diktat|Avoid the Diktat|18|3|germanguar|fn dropHunClaim; rel HUN -10|Berlin arbitrates in our favour, this time.|
 greater|Greater Romania Secured|17|4|bridgehead|furrow|core Chișinău, Czernowitz, Cluj; stab 5; spirit România Mare: legit 6, ws 5|All Romanians in one state.|
 transnistria|Beyond the Dniester|18|4|diktat|claim Odessa|Compensation in the east for losses in the west.|req atwar SOV
-oil|Black Gold|23|0||build oilr 3, chem 1; tech p_deepdrill|The largest oilfield in Europe outside the Caucasus.|ai 3; sec Economy
+oil|Black Gold|23|0||build oilr 3, chem 1; tech p_deepdrill ?? Sell to all comers => money 12; trade GER, ENG // Sell to Germany first => rel GER 25; money 8|The largest oilfield in Europe outside the Caucasus.|ai 3; sec Economy
 grain|Granary of Europe|21|1|oil|build farm 4; tech p_fert; trade GER, ENG|Maize and wheat down the Danube.|
 refineries|Refineries|22|1|oil|build chem 2; tech p_petro; spirit Refining Centre: tradecap .08|A ring of stacks around one small city.|
 works|Bucharest Works|23|1|oil|build steel 2, arms 2, engines 1|Locomotives, tubes and artillery under one roof.|

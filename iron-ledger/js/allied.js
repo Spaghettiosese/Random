@@ -57,9 +57,9 @@ TREES.USA = parseTree('u_', `
 newdeal|Second New Deal|4|0||rmspirit great_depression; spirit recovery; stab 5 ?? Spend on public works => build construction 1; infra 2; money -8 // Spend on relief => stab 4; rad -.06; money -6|Relief, recovery and reform.|mx landon; ai 6; sec New Deal
 landon|Return to Normalcy|8|0||law laissez; ig ind 8, union -6; spirit Balanced Budget: tax .08, invest .25, rad .08|The Kansas governor promises to undo the alphabet agencies.|mx newdeal; ai 0
 wealth|Share Our Wealth|0|1|newdeal|law graduated, welfare_state; ig union 6 .2, ind -8|Every man a king, and no man a millionaire.|ai 0
-wpa|Works Progress Administration|2|1|newdeal|build construction 2, power 1; infra 3|Dams, roads and post offices in every county.|ai 3
+wpa|Works Progress Administration|2|1|newdeal|build construction 2, power 1; infra 3 ?? Dams and roads => build construction 1; infra 3 // Artists and writers too => stab 4; ig intel 6|Dams, roads and post offices in every county.|ai 3
 ssa|Social Security Act|4|1|newdeal|law pensions, regulated; ig union 5, ind -3|Freedom from want in old age.|ai 3
-wagner|Wagner Act|6|1|newdeal|ig union 6 .15; rad -.05|Labour's Magna Carta.|
+wagner|Wagner Act|6|1|newdeal|ig union 6 .15; rad -.05 ?? Back the CIO's sit-down strikes => ig union 10; rad -.04 // Let the courts restrain them => ig ind 6; stab 2|Labour's Magna Carta.|
 gold|Sound Dollar|8|1|landon|money 10; spirit Gold Standard Restored: invest .2|A dollar as good as gold.|
 openshop|Open Shop|9|1|landon|law no_rights; ig union -8, ind 6; spirit Right to Work: output .04|The sit-down strikes are broken.|
 everyman|Every Man a King|0|2|wealth|rad -.1; stab 4; money -6|A homestead and a radio for every family.|
@@ -67,7 +67,7 @@ tva|Tennessee Valley Authority|1|2|wpa|build power 3; tech p_hydro|A river tamed
 ccc|Civilian Conservation Corps|2|2|wpa|mp 150; build logging 2; rad -.03|Three million young men in forest camps.|
 rural|Rural Electrification|3|2|wpa|tech p_electrification; build power 1, farm 2|Light for the farmhouse.|
 flsa|Fair Labor Standards|5|2|ssa|wagner|law protections; ig union 4|A floor under wages, a ceiling over hours.|
-court|Court-Packing Plan|6|2|wagner|pp 100; stab -4; legit -3|Six new justices for nine old men.|mx respect
+court|Court-Packing Plan|6|2|wagner|pp 100; stab -4; legit -3 ?? Pack the Court => pp 80; legit -6 // Retreat with grace => legit 4; stab 3|Six new justices for nine old men.|mx respect
 respect|Respect the Court|7|2|wagner|stab 4; legit 5|The Constitution is what the judges say it is.|mx court
 macarthur|The General Steps In|8|2|gold|openshop|setIdeo aut; stab -5; fn leaderMac|Order will be restored, by the man who cleared the Bonus Army.|ai 0
 silver|Silver Shirts March|9|2|openshop|ideo fas 12; stab -5|A legion in silver shirts parades through Asheville.|ai 0
@@ -82,14 +82,14 @@ opa|Office of Price Administration|5|5|third|spirit Price Controls: needs -.08, 
 fepc|Fair Employment|3|6|bonds|opa|mp 200; spirit Open Shop Floor: output .03|Defence jobs for everyone who can do them.|
 gibill|GI Bill|4|6|fourfree|spirit Educated Veterans: research .06, rad -.05|College and a mortgage for every veteran.|req war
 rosie|Rosie the Riveter|5|6|opa|mp 300; spirit Women in Industry: output .05|We can do it.|req war
-neutral|Neutrality Acts|12|0||stab 5; pp 50|No more foreign wars.|mx quarantine; ai 1; sec Foreign Policy
+neutral|Neutrality Acts|12|0||stab 5; pp 50 ?? Mandatory arms embargo => tension -2; rel GER 5 // Cash and carry for all => money 8; rel ENG 10|No more foreign wars.|mx quarantine; ai 1; sec Foreign Policy
 monroe|Reaffirm the Monroe Doctrine|14|0||guarantee MEX, CUB, PAN, VEN, COL, BRA|This hemisphere is closed to conquest.|ai 2
-quarantine|Quarantine the Aggressors|16|0||ws 8; rmspirit isolationism; spirit great_debate|War is a contagion, whether declared or not.|mx neutral; req tension 30; ai 5
+quarantine|Quarantine the Aggressors|16|0||ws 8; rmspirit isolationism; spirit great_debate ?? Speak, and wait => infl 30 // Speak, and send the fleet to Singapore => equip ships 20; rel JAP -20|War is a contagion, whether declared or not.|mx neutral; req tension 30; ai 5
 first|America First|11|1|neutral|ideo aut 6; stab 5; spirit fortress_america|The oceans are our walls.|
 cash|Cash and Carry|13|1|neutral|money 8; trade ENG, FRA|Pay in dollars and take it away in your own ships.|
 good|Good Neighbor Policy|14|1|monroe|rel MEX 30, BRA 30, ARG 20, CHL 20, COL 20, VEN 20, PRU 20, CUB 20; infl 40|Trade, not marines.|
 lend|Lend-Lease|16|1|quarantine|flag lendlease; rmspirit great_debate; spirit arsenal_of_democracy; rel ENG 30, SOV 10, CHI 20|Lend a neighbour your garden hose when his house is on fire.|req tension 50; ai 5
-destroyers|Destroyers for Bases|18|1|quarantine|rel ENG 30; fn destroyers|Fifty old ships for eight new bases.|req engAtWar
+destroyers|Destroyers for Bases|18|1|quarantine|rel ENG 30; fn destroyers ?? Fifty old destroyers for bases => rel ENG 25 // Fifty destroyers, no bargain => rel ENG 40; stab -2|Fifty old ships for eight new bases.|req engAtWar
 hemis|Hemisphere Defense|12|2|first|cash|guarantee MEX, BRA, ARG, CHL|From Alaska to Cape Horn.|
 revise|Repeal Neutrality|13|2|cash|rmspirit isolationism; spirit great_debate; ws 5|The arms embargo helps only the aggressor.|req tension 50
 exim|Export-Import Bank|14|2|good|trade BRA, MEX, ARG, CHL; spirit Dollar Diplomacy: tradecap .1, infl .1|Credit follows the flag.|
@@ -104,11 +104,11 @@ patrol|Neutrality Patrol|16|3|charter|ws 4; spirit Shoot on Sight: navy .08|Thre
 tigers|Flying Tigers|17|3|china|fn tigers; spirit Volunteer Airmen [900]: air .05|Shark teeth painted on borrowed fighters.|
 freeze|Freeze Japanese Assets|18|3|embargo|rel JAP -20; tension 3; ws 5|Every yen in an American bank is locked.|
 allies|Join the Allies|17|4|freeze|patrol|fn joinAllies; law war_econ; ws 15|The great arsenal goes to war.|req crisis; ai 6
-infamy|A Date Which Will Live in Infamy|18|4|freeze|ws 30; mp 500; law war_econ, extensive; spirit Righteous Might [1095]: atk .08, ws 15|The American people in their righteous might will win through.|req majorwar; ai 10
+infamy|A Date Which Will Live in Infamy|18|4|freeze|ws 30; mp 500; law war_econ, extensive; spirit Righteous Might [1095]: atk .08, ws 15|The American people in their righteous might will win through.|req majorwar & tension 70; ai 10
 europe|Germany First|16|5|allies|spirit Europe First [1095]: atk .05, supply .05|Beat the strongest enemy first.|mx pacific
 un|Declaration of the United Nations|17|5|allies|infamy|infl 80; spirit United Nations: infl .3, legit 5|Twenty-six governments sign in a Washington study.|
 pacific|Pacific First|18|5|infamy|spirit Pacific Priority [1095]: navy .15|The fleet that struck us must be sunk.|mx europe
-torch|Second Front|16|6|europe|units inf 6, arm 2|Across the Atlantic with an army.|req majorwar
+torch|Second Front|16|6|europe|units inf 6, arm 2 ?? Africa first => spirit Mediterranean Strategy [540]: atk .05 // Straight across the Channel => spirit Second Front Now [540]: atk .04, supply -.04|Across the Atlantic with an army.|req majorwar
 marshall|European Recovery Program|17|6|un|rel FRA 40, ENG 30, ITA 20, GER 20; trade FRA, ITA; infl 60|Thirteen billion dollars against hunger, poverty and chaos.|req peace
 island|Island Hopping|18|6|pacific|units inf 4; spirit Amphibious Doctrine: navy .1, atk .03|Take the airfields, bypass the garrisons.|
 nato|Atlantic Alliance|17|7|marshall|fn atlanticAlliance|An attack on one is an attack on all.|
@@ -182,7 +182,7 @@ abdic|The King Must Go|4|1|baldwin|stab 3; pp 30; ig devout 3|The Cabinet, the C
 kingsparty|The King's Party|8|1|baldwin|ideo aut 10; stab -8; fn leaderEdward|A monarch who means to rule as well as reign.|mx abdic,labour; ai 0
 nationalise|Commanding Heights|0|2|labour|law interventionism; ig ind -6; money 8; build coalm 2|Coal, rail and steel in public hands.|
 nhs|National Health Service|1|2|labour|law welfare_state; rad -.1|Free at the point of use.|
-chamberlain|Chamberlain's Cabinet|4|2|abdic|pp 60; money 6; spirit Treasury Orthodoxy: tax .06, mil_out -.05|A businesslike government.|ai 3
+chamberlain|Chamberlain's Cabinet|4|2|abdic|pp 60; money 6; spirit Treasury Orthodoxy: tax .06, mil_out -.05 ?? Rearm the RAF first => build aircraftp 1 // Balance the budget first => money 10; stab 2|A businesslike government.|ai 3
 regency|A Royal Government|8|2|kingsparty|setIdeo aut; stab -4|Ministers chosen by the Palace.|mx mosley
 mosley|Blackshirt Surge|9|2|kingsparty|ideo fas 14|Rallies at Olympia, marches in the East End.|mx regency
 popular|Popular Front Britain|1|3|nhs|nationalise|ideo com 10; rel SOV 30|Unity of the left against fascism.|ai 0
@@ -200,7 +200,7 @@ londonaxis|London–Berlin Axis|9|5|understanding|fn joinAxis|An alliance nobody
 guar|Guarantee Poland|5|6|lesson|steel|rmspirit appeasement, peace_dividend; guarantee POL, ROM, GRE; ws 8|Thus far and no further.|ai 9
 service|National Service|4|7|guar|law limited; mp 300|Conscription in peacetime, for the first time.|ai 4
 coalition|War Coalition|5|7|guar|stab 6; legit 8; ig union 4|All parties, one government.|req majorwar; ai 6
-churchill|Their Finest Hour|5|8|coalition|service|fn leaderChurchill; spirit finest_hour; law war_econ; ws 20|We shall never surrender.|req majorwar; ai 10
+churchill|Their Finest Hour|5|8|coalition|service|fn leaderChurchill; spirit finest_hour; law war_econ; ws 20 ?? A coalition of all parties => stab 6; legit 4 // A war cabinet of five => pp 60; spirit Small War Cabinet: pp .08|We shall never surrender.|req majorwar; ai 10
 homeguard|Home Guard|4|9|churchill|units mil 10; fort London|Look, duck, vanish — and then fight.|
 blitz|Britain Can Take It|5|9|churchill|spirit Blitz Spirit: civdef .3, ws 8, stab 4|Business as usual, among the rubble.|
 soe|Set Europe Ablaze|6|9|churchill|fn intelBoost; infl 30; spirit Special Operations: infl .15|A ministry of ungentlemanly warfare.|
@@ -215,10 +215,10 @@ grip|Tighten the Raj|15|2|goi|mp 300; fn rajGrip|The jewel stays in the crown.|m
 airplan|Empire Air Training Scheme|16|2|statute|fed|equip aircraft 150; spirit Commonwealth Air Training: air .12|Aircrew trained under Canadian skies.|
 pref|Imperial Preference|17|2|statute|fed|trade CAN, AST, NZL, SAF, RAJ; spirit Sterling Area: tradecap .12|The Empire buys from the Empire.|
 canada|Canadian Arsenal|18|2|statute|fed|fn canBuild; rel CAN 20|Lorries and Bren guns from Ontario.|
-singapore|Singapore Strategy|19|2|conf|fort Singapore, Hong Kong; equip ships 10|Main fleet to Singapore, when it can be spared.|
+singapore|Singapore Strategy|19|2|conf|fort Singapore, Hong Kong; equip ships 10 ?? Dock for capital ships => build port 1; equip ships 15 // Landward defences too => fort Singapore; units inf 2|Main fleet to Singapore, when it can be spared.|
 malta|Fortress Malta|20|2|mideast|fort Valletta; spirit Unsinkable Carrier: navy .04|A rock in the middle of somebody else's sea.|
 egypt|Anglo-Egyptian Treaty|21|2|mideast|rel EGY 30; fn egyDivs|Twenty years' lease on the Canal Zone.|
-indind|Indian War Industry|13|3|dominion|fn rajBuild|Jamshedpur steel, Cawnpore boots.|
+indind|Indian War Industry|13|3|dominion|fn rajBuild ?? Dominion status by 1950 => rel RAJ 20; stab -2 // Crush Quit India => stab 4; rad .04; ig intel -6|Jamshedpur steel, Cawnpore boots.|
 indarmy|Expand the Indian Army|14|3|dominion|grip|fn rajDivs|The largest volunteer army in history.|
 quit|Answer Quit India|15|3|grip|mp 150; fn rajGrip|The Congress leadership is interned.|
 anzac|ANZAC Pact|16|3|airplan|fn anzDivs|The diggers sail again.|
@@ -235,11 +235,11 @@ allies|The Grand Alliance|27|1|league|faction Allies; fn inviteFranceAllies|Our 
 stresa|Stresa Front|29|1|league|rel ITA 30; nap ITA|Keep the Duce out of the Führer's arms.|mx sanction; ai 0
 sanction|Sanction Italy|30|1|league|rel ITA -30; tension -2; fn sanctionITA|Fifty nations led by one.|mx stresa
 staff|Anglo-French Staff Talks|25|2|entente|rel FRA 20; spirit Joint Staff: org .04|Where exactly do we put our four divisions?|
-bef|Expeditionary Force|26|2|allies|entente|units inf 5, mot 1; tech m_mot|A continental commitment after all.|ai 3
+bef|Expeditionary Force|26|2|allies|entente|units inf 5, mot 1; tech m_mot|A continental commitment after all.|ai 3; req divs 30
 benelux|Low Countries Guarantee|27|2|allies|guarantee BEL, HOL; rel BEL 20, HOL 20|Britain's frontier is on the Rhine.|
 balkans|Balkan Guarantees|28|2|allies|guarantee GRE, YUG; rel TUR 20|Promises easier to give than to keep.|ai 0
 ethiopia|Restore the Emperor|30|2|sanction|fn restoreEth|The Lion of Judah waits in Bath.|req atwar ITA
-norway|Northern Barrage|25|3|staff|rel NOR 30; guarantee NOR; units mtn 2|Mine the Leads and watch Narvik.|
+norway|Northern Barrage|25|3|staff|rel NOR 30; guarantee NOR; units mtn 2 ?? Mine the Leads => equip ships 5 // Land at Narvik => units inf 2; fn xpAll|Mine the Leads and watch Narvik.|
 usa|The Special Relationship|26|3|bef|benelux|rel USA 40; trade USA|In the west, the land is bright.|ai 3
 turkey|Turkish Treaty|28|3|balkans|rel TUR 40; nap TUR; trade TUR|Chrome, and a neutral Straits.|
 moscow|Mission to Moscow|29|3|balkans|rel SOV 30; nap SOV|A slow boat to Leningrad.|mx contain
@@ -313,14 +313,14 @@ mould|Oxford Penicillin|57|3|mission|tech s_medicine|Grown in bedpans, purified 
 
 TREES.FRA = parseTree('f_', `
 republic|The Third Republic|6|0||pp 50; stab 3|Ninety-odd governments in sixty-five years, and still standing.|sec Politics
-front|The Popular Front|3|1|republic|fn leaderBlum; ig union 6 .2, ind -4; ideo com 4; stab 4|Bread, peace and liberty.|mx right,leagues; ai 6
+front|The Popular Front|3|1|republic|fn leaderBlum; ig union 6 .2, ind -4; ideo com 4; stab 4 ?? Bread first => stab 4; money -6 // Guns first => build arms 1; ig union -4|Bread, peace and liberty.|mx right,leagues; ai 6
 right|The National Bloc|8|1|republic|ig ind 5, army 5 .2; ideo aut 8; stab 3|Order before all else.|mx front,leagues; ai 0
 leagues|The Leagues March|12|1|republic|ideo fas 12; stab -6|February 1934 again, and this time the bridge is crossed.|mx front,right; ai 0
 matignon|Matignon Agreements|2|2|front|law protections; rad -.08; stab 5 ?? Add the forty-hour week => ig union 8, ind -6; spirit Forty Hours: output -.03, rad -.06 // Wages only => ig union 3; money -4|Collective contracts and a twelve per cent rise, signed at one in the morning.|ai 4
-laval|Deflation Decrees|7|2|right|money 8; rad .05; spirit Franc Fort: tax .08, invest .1|Ten per cent off every state salary.|
+laval|Deflation Decrees|7|2|right|money 8; rad .05; spirit Franc Fort: tax .08, invest .1 ?? Rome before Berlin => rel ITA 30; rel ENG -10 // The British connection first => rel ENG 20; rel ITA -10|Ten per cent off every state salary.|
 petain|The Marshal as Minister|9|2|right|ig army 6; stab 4; spirit Victor of Verdun: legit 6, def .03|The most trusted man in France, and the oldest.|
 doriot|The Great Party|12|2|leagues|setIdeo fas; stab -6|A former communist mayor leads the new right.|
-forty|Forty-Hour Week|1|3|matignon|ig union 5; spirit Forty Hours: output -.05, rad -.08, stab 4|Two days of rest and two weeks by the sea.|
+forty|Forty-Hour Week|1|3|matignon|ig union 5; spirit Forty Hours: output -.05, rad -.08, stab 4 ?? The forty-hour week for all => ig union 8 // Exempt the arms factories => ig union 3; build arms 1|Two days of rest and two weeks by the sea.|
 wheat|Wheat Office|2|3|matignon|build farm 3; ig rural 5|A guaranteed price for the peasant.|
 banque|Reform the Bank of France|3|3|matignon|money 8; ig ind -4; spirit Regents Dismissed: tax .08|The two hundred families lose their vote.|
 natarms|Nationalise the Arms Industry|4|3|matignon|build arms 2, aircraftp 2, artyf 1|The merchants of death answer to the Republic.|ai 3
@@ -328,7 +328,7 @@ etat|L'État Français|8|3|laval|petain|setIdeo aut; rmspirit political_paralysi
 pretender|Call the Pretender|10|3|petain|law monarchy; legit 8; fn leaderOrleans|The forty kings who made France have an heir.|ai 0
 cross|The Fiery Cross|11|3|doriot|units mil 6; ig army 4|Veterans in berets and armbands.|
 entente|Paris–Berlin Entente|12|3|doriot|nap GER; rel GER 40|The hereditary enemy becomes a partner.|mx rhine
-rhine|The Rhine Frontier|13|3|doriot|claim Luxembourg, Brussels; ws 8|France's natural borders.|mx entente
+rhine|The Rhine Frontier|13|3|doriot|claim Luxembourg, Brussels; ws 8 ?? Mobilise => ws 8; units inf 4; money -6 // Protest at Geneva => infl 20; stab 2|France's natural borders.|mx entente
 commune|The Second Commune|0|4|forty|setIdeo com; rmspirit political_paralysis; rel SOV 40|The Wall of the Communards is avenged.|ai 0
 pause|The Pause|2|4|forty|wheat|banque|money 6; ig ind 4, union -3; rmspirit f_forty_hours|Reform must catch its breath.|
 spain|Arms for Spain|4|4|natarms|fn aidSpainRep|Aircraft slip over the Pyrenees by night.|mx nonint; req spainCW
@@ -354,17 +354,17 @@ soviet|Franco-Soviet Pact|17|2|britain|petite|rel SOV 30; nap SOV|An eastern cou
 belgium|Belgian Staff Accord|18|2|britain|rel BEL 30; guarantee BEL; fort Lille|Where the Maginot Line ends, Belgium begins.|
 council|Supreme War Council|19|2|britain|spirit Allied War Council: org .04, atk .02|Two prime ministers and two commanders-in-chief.|req war
 frontier|Hold the Frontier|17|3|belgium|soviet|fort Lille, Metz; spirit Frontier Positions: def .05|Let them come to us.|mx dyle
-dyle|The Dyle Plan|18|3|belgium|units mot 1; spirit Advance into Belgium [540]: atk .04|Meet them on someone else's soil.|mx frontier
+dyle|The Dyle Plan|18|3|belgium|units mot 1; spirit Advance into Belgium [540]: atk .04 ?? The Dyle Plan => fort Lille; spirit Forward Defence: def .04 // The Breda variant => spirit Rush to Holland [365]: atk .04, def -.03|Meet them on someone else's soil.|mx frontier
 orders|American Orders|19|3|council|belgium|fn buyAmerican; rel USA 20|Gold shipped to Canada, fighters shipped back.|
 sacree|Union Sacrée|18|4|dyle|frontier|orders|rmspirit great_war_trauma, maginot_mentality, peace_dividend; ws 20; law war_econ|Once more, the nation in arms.|req majorwar; ai 10
 union|Franco-British Union|18|5|sacree|rel ENG 50; spirit Indissoluble Union: caplimit .2, ws 10|No longer two nations, but one.|req majorwar
 algiers|Fight On from Algiers|19|5|sacree|fort Algiers; spirit Empire at War: caplimit .25|The government and the fleet cross the sea.|req enemyOnSoil
-appeal|The Appeal of 18 June|19|6|algiers|fn leaderDeGaulle; units inf 4; ws 15|France has lost a battle. France has not lost the war.|
+appeal|The Appeal of 18 June|19|6|algiers|fn leaderDeGaulle; units inf 4; ws 15 ?? From London, on the radio => rel ENG 20; ws 6 // From Algiers, in uniform => units inf 3; stab 3|France has lost a battle. France has not lost the war.|
 liberation|Liberation|18|7|appeal|union|stab 10; pp 100; rmspirit political_paralysis|Paris outraged, Paris broken, Paris martyred — but Paris liberated.|req own Paris
 fourth|The Fourth Republic|18|8|liberation|law universal, pensions; legit 10|A new constitution, by referendum.|req peace
 schuman|The Schuman Declaration|18|9|fourth|trade GER, BEL, HOL, LUX, ITA; spirit Coal and Steel Community: output .05, tradecap .1|War between France and Germany becomes materially impossible.|
 empire|Greater France|25|0||mp 150; infl 20|A hundred million Frenchmen, on paper.|ai 2; sec Empire
-mobilise|Mobilise the Empire|24|1|empire|mp 300; units inf 5|Senegal, Morocco and Tonkin send their sons.|
+mobilise|Mobilise the Empire|24|1|empire|mp 300; units inf 5|Senegal, Morocco and Tonkin send their sons.|req tension 45
 sahara|Trans-Saharan Railway|25|1|empire|infra 3|A line on the map since 1879.|
 citizens|Citizenship Reform|26|1|empire|stab 2; fn coreAlgiers; ig land -3|The vote for an Algerian elite.|mx settlers
 settlers|Settler Ascendancy|27|1|empire|ig land 4; mp 100|Algeria is France, say the colons.|mx citizens
