@@ -191,3 +191,10 @@ select { font: inherit; color: var(--paper); background: var(--slate2); border: 
 /* 2.1 nested cards */
 .card.sub { margin: 6px 0; padding: 6px 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); }
 .row.wrap { flex-wrap: wrap; gap: 4px; }
+/* 2.1 crisis screen */
+#playwrap { position: fixed; inset: 0; background: #0009; z-index: 31; display: grid; place-items: center; } #playwrap[hidden] { display: none; }
+.pphase { display: flex; gap: 6px; align-items: center; margin: 8px 0 4px; flex-wrap: wrap; } .pphase span { padding: 3px 8px; border: 1px solid #fff2; border-radius: 3px; color: #aab; } .pphase span.on { border-color: var(--brass); color: #fff; background: #fff1; } .pphase span.past { opacity: .5; } .pphase .num { margin-left: auto; border: 0; }
+.pcol { padding: 6px 8px; background: #ffffff08; border-radius: 3px; } .pip { display: inline-block; width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--brass); margin-right: 3px; vertical-align: middle; } .pip.on { background: var(--brass); }
+.podds { display: flex; flex-shrink: 0; height: 14px; border-radius: 3px; overflow: hidden; background: #0004; margin: 4px 0; } .podds .pseg { display: block; height: 100%; flex: none; }
+.plog { max-height: 160px; min-height: 40px; flex-shrink: 0; overflow: auto; font-size: 13px; } .plog div { padding: 2px 0; border-bottom: 1px solid #ffffff0a; }
+.wb.pb.far { opacity: .7; }
