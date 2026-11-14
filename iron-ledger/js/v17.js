@@ -109,7 +109,7 @@ if (typeof dayTick === 'function') installWarLayer(); else document.addEventList
 // A battle used to last until a whole stack ran out of organisation, so a large garrison could hold out for a year against
 // waves of fresh attackers. Now an assault is decided after three weeks by who has been winning the exchange.
 { const _rb = resolveBattle; resolveBattle = function (b) {
-  _rb(b); if (!G.battles.includes(b)) return; b.mbal = b.mbal === undefined ? b.bal : b.mbal * 0.93 + b.bal * 0.07; if (b.days < 21) return;
+  _rb(b); if (!G.battles.includes(b)) return; b.mbal = b.mbal === undefined ? b.bal : b.mbal * 0.93 + b.bal * 0.07; if (b.days < 14) return;
   const p = P(b.prov), att = b.att.map(i => G.armies[i]).filter(a => a && a.divs.length), defs = att.length ? armiesAt(b.prov).filter(x => atWar(att[0].owner, x.owner)) : [];
   const fin = () => { for (const a of att) a.battle = 0; G.battles.splice(G.battles.indexOf(b), 1); };
   if (!att.length || !defs.length) return fin();

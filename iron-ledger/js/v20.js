@@ -20,7 +20,7 @@ function milLoss(tag, n, w) { if (n <= 0) return; const c = C(tag); c.milDead = 
 // manpower: the dead and the captured no longer come back; the wounded do, slowly
 { const _mw = militaryWeekly; militaryWeekly = function (c) {
   const before = c.manpower; _mw(c); const back = (c.wounded || 0) * 0.08; c.wounded = (c.wounded || 0) - back; c.manpower += back;
-  const lostForGood = (c.milDead || 0) + (c.pows || 0) * 0.7, cap = Math.max(0, maxManpower(c) - inService(c) - lostForGood); if (c.manpower > cap && c.manpower > before) c.manpower = Math.max(before, cap);
+  const lostForGood = (c.milDead || 0) * 0.5 + (c.pows || 0) * 0.35, cap = Math.max(0, maxManpower(c) - inService(c) - lostForGood); if (c.manpower > cap && c.manpower > before) c.manpower = Math.max(before, cap);
   c.milDead = (c.milDead || 0) * 0.9975; // each year a new class comes of age
   const crisis = isAtWar(c.tag) && c.manpower < Math.max(15, maxManpower(c) * 0.04); if (crisis && !hasSpirit(c, 'manpower_crisis')) { addSpirit(c, 'manpower_crisis'); if (c.tag === G.player) UIH.notify('Manpower crisis: the depots are empty. Divisions can no longer be brought up to strength.', 'bad'); } else if (!crisis && hasSpirit(c, 'manpower_crisis')) removeSpirit(c, 'manpower_crisis'); }; }
 SPIRITS.manpower_crisis = ['Manpower Crisis', 'There are no more men to send. Boys and old men fill the gaps.', { org: -0.06, atk: -0.05, stab: -4 }];
@@ -50,3 +50,6 @@ function capInfo(tag) { const c = C(tag); let tot = 0, lost = 0; for (const p of
   const lim = clamp(0.58 + (c.ws - 50) / 220 + (c.major ? 0.08 : 0) + M(c, 'caplimit') + (c.civilOf || G.wars.some(w => w.civil && (w.att.includes(tag) || w.def.includes(tag))) ? 0.15 : 0), 0.4, 0.92);
   const f = tot ? lost / tot : 0; return { held: 1 - f, lim, prog: c.capitulated ? 1 : clamp(f / lim, 0, 1) }; }
 const fielded = tag => sum(armiesOf(tag), menOf);
+
+// marching time follows distance: dense Europe is crossed a province at a time, the steppe takes longer
+{ const _md = moveDays; moveDays = function (a, from, to, sea) { const d = _md(a, from, to, sea); if (sea || typeof kmBetween !== 'function') return d; const km = kmBetween(from, to); return Math.max(1.5, d * clamp(km / 210, 0.4, 1.6)); }; }

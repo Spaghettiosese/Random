@@ -38,7 +38,7 @@ function aiLaws(c) {
   const want = war ? (c.warExh > 30 ? 4 : 3) : aiThreat(c) > 0.6 ? 2 : aiThreat(c) > 0.3 ? 1 : 0, cur = order.indexOf(c.laws.mobil);
   if (want > cur) { for (let i = want; i > cur; i--) if (!lawAllowed(c, 'mobil', order[i])) { startLaw(c, 'mobil', order[i]); break; } }
   else if (want < cur - 1 && !war && c.pp >= 100) startLaw(c, 'mobil', order[cur - 1]);
-  const mp = c.manpower, cw = co.indexOf(c.laws.conscription), wantC = war ? (mp < 40 ? Math.min(4, cw + 1) : cw) : aiThreat(c) > 0.4 ? Math.max(cw, 1) : cw;
+  const mp = c.manpower, cw = co.indexOf(c.laws.conscription), wantC = war ? (mp < Math.max(40, maxManpower(c) * 0.15) ? Math.min(4, cw + 1) : cw) : aiThreat(c) > 0.4 ? Math.max(cw, 1) : cw;
   if (wantC > cw && !lawAllowed(c, 'conscription', co[wantC])) startLaw(c, 'conscription', co[wantC]);
   if (!c.enact && c.pp > 150 && Math.random() < 0.06) { // occasional reform favoured by the governing coalition
     let best = null, bs = 0; for (const cat in LAWS) { if (LAWS[cat].instant) continue; for (const l in LAWS[cat].laws) { if (lawAllowed(c, cat, l)) continue; const cur2 = (LAWS[cat].laws[c.laws[cat]] || [0, 0, {}])[2], nw = LAWS[cat].laws[l][2]; let s = 0; for (const g of IG_IDS) if (c.ig[g].gov) s += ((nw[g] || 0) - (cur2[g] || 0)) * c.ig[g].clout; if (cat === 'gov' || (cat === 'power' && c.ideology !== 'dem') || ['traditionalism', 'no_schools', 'land_tax', 'no_police', 'per_capita', 'no_welfare', 'no_rights'].includes(l)) continue; if (cat === 'power') s -= 30; if (s > bs && lawChance(c, cat, l) > 35) { bs = s; best = [cat, l]; } } }
