@@ -20,7 +20,7 @@ function seaMonthly() {
   const at = alive().filter(c => isAtWar(c.tag));
   for (const c of alive()) { const s = seaOf(c); s.lostM = 0; s.sunkM = 0; }
   for (const c of at) { const s = seaOf(c); if (s.ton <= 0.5) continue; let raid = 0; const raiders = [];
-    for (const t of enemiesOf(c.tag)) { const e = C(t); if (!e || e.capitulated) continue; const es = seaOf(e); const r = navalPower(e) * es.raid * (es.unres ? 1.5 : 1) * (e.techs.m_nav2 ? 1.3 : 1); if (r > 0) { raid += r; raiders.push([e, r]); } }
+    for (const t of enemiesOf(c.tag)) { const e = C(t); if (!e || e.capitulated) continue; const es = seaOf(e); const r = navalPower(e) * es.raid * (es.unres ? 1.5 : 1) * (e.techs.m_nav2 ? 1.3 : 1) * (typeof crBroken === 'function' && crBroken(c.tag, e.tag) ? 0.6 : 1) * (typeof crBroken === 'function' && crBroken(e.tag, c.tag) ? 1.3 : 1); if (r > 0) { raid += r; raiders.push([e, r]); } }
     if (raid <= 0) continue; const esc = navalPower(c) * s.escort * (s.convoy ? 1.5 : 1) + airPower(c) * 0.01 * s.escort;
     const sunk = Math.min(s.ton * 0.15, s.ton * 0.06 * raid / (raid + esc * 1.5 + 40) * (s.convoy ? 0.6 : 1)); s.ton -= sunk; s.lostM += sunk; s.lostT += sunk;
     for (const [e, r] of raiders) { const es = seaOf(e); es.sunkM += sunk * r / raid; es.sunkT += sunk * r / raid; e.stock.ships = Math.max(0, e.stock.ships - e.stock.ships * es.raid * 0.012 * esc / (raid + esc + 1)); } }
@@ -28,9 +28,9 @@ function seaMonthly() {
     const liberty = c.tag === 'USA' && isAtWar('USA') && year() >= 1942 ? 6 : 0; s.ton = Math.min(s.ton0 * (liberty ? 2 : 1.15), s.ton + yards * 0.05 + liberty + (isAtWar(c.tag) ? 0 : Math.max(0, s.ton0 - s.ton) * 0.03));
     s.hist.push(+s.ton.toFixed(1)); if (s.hist.length > 60) s.hist.shift();
     const short = clamp(1 - s.ton / Math.max(1, s.ton0), 0, 1), isl = ISLAND.includes(c.tag); removeSpirit(c, 'shipping_losses'); removeSpirit(c, 'convoys'); removeSpirit(c, 'fleet_tasks');
-    if (short > 0.08) { addSpirit(c, 'shipping_losses'); SPIRITS.shipping_losses[2] = { tradecap: -Math.min(0.35, short * 0.5), supply: isl ? -short * 0.2 : 0, stab: isl ? -Math.round(short * 10) : 0 }; }
+    if (short > 0.08) { SPIRITS.shipping_losses[2] = { tradecap: -Math.min(0.35, short * 0.5), supply: isl ? -short * 0.2 : 0, stab: isl ? -Math.round(short * 10) : 0 }; addSpirit(c, 'shipping_losses'); }
     if (s.convoy && isAtWar(c.tag)) addSpirit(c, 'convoys');
-    if (s.escort + s.raid > 0 && isAtWar(c.tag)) { addSpirit(c, 'fleet_tasks'); SPIRITS.fleet_tasks[2] = { navy: -(s.escort + s.raid) * 0.5 }; }
+    if (s.escort + s.raid > 0 && isAtWar(c.tag)) { SPIRITS.fleet_tasks[2] = { navy: -(s.escort + s.raid) * 0.5 }; addSpirit(c, 'fleet_tasks'); }
     if (s.unres && isAtWar(c.tag)) for (const k of alive()) if (k.major && !isAtWar(k.tag) && k.tag !== c.tag) addRel(k.tag, c.tag, k.tag === 'USA' ? -3 : -1);
     if (c.tag === G.player && s.lostM > 0.3) UIH.notify(`The war at sea: ${fmt(s.lostM * 100000)} tons of our shipping sunk this month.`, 'bad');
     if (c.ai) aiSea(c, s); }

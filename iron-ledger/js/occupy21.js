@@ -33,6 +33,6 @@ function garHave(o, ps, L) { const gar = new Set(ps.map(p => p.id)); return sum(
       if (e('rec').legion && L.comp >= 40 && (!L.legDay || G.day - L.legDay >= 90) && pop > 1500) { const host = ps.slice().sort((a, b) => b.pop - a.pop)[0]; const a = newArmy(o, host.id); a.name = `${C(t).adj} Legion`; a.auto = true; for (let i = 0; i < 2; i++) a.divs.push({ t: 'inf', str: 0.7, org: 0.6, xp: 0.1 }); L.legDay = G.day; L.comp -= 4; L.legions = (L.legions || 0) + 2; logMsg(`${o.name} raises the ${a.name} from volunteers in occupied ${cname(t)}.`, 'info', [o.tag, t]); }
     }
     // forced and volunteer labour work in our factories
-    removeSpirit(o, 'occ_labour'); if (o.occLabour > 400) { addSpirit(o, 'occ_labour'); SPIRITS.occ_labour[2] = { output: Math.min(0.08, o.occLabour / 200000), stab: o.occLabour > 8000 ? -1 : 0 }; }
+    removeSpirit(o, 'occ_labour'); if (o.occLabour > 400) { SPIRITS.occ_labour[2] = { output: Math.min(0.08, o.occLabour / 200000), stab: o.occLabour > 8000 ? -1 : 0 }; addSpirit(o, 'occ_labour'); }
     if (o.ai && Math.random() < 0.1) for (const t of ts) { const L = occLaw(o.tag, t); if (L.comp >= 45 && L.pol === 'terror') L.pol = 'aux'; if (L.cover < 0.6 && L.eco === 'plunder' && o.ideology !== 'fas') L.eco = 'req'; if (G.day - (L.since || (L.since = G.day)) > 540 && L.comp < 8 && o.ideology === 'fas' && L.adm === 'civ') { L.adm = 'loc'; L.eco = 'req'; } } } }; }
 SPIRITS.occ_labour = ['Foreign Labour', 'Workers from occupied lands fill our factories.', { output: 0.02 }];

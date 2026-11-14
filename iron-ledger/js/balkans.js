@@ -62,7 +62,7 @@ function setCharter(c, b, d) { const f = fleetOf(c).ch; if (b === 'home') return
 function greMonthly(c) { const f = fleetOf(c); let inc = 0, lost = 0;
   for (const b in f.ch) { const share = f.ch[b] / 100, ton = f.ton * share; if (!share) continue; if (b !== 'home' && (!ok(b) || atWar(b, c.tag))) { lost += ton * (b !== 'home' && ok(b) && atWar(b, c.tag) ? 1 : 0); f.ch.home += f.ch[b]; f.ch[b] = 0; continue; }
     inc += ton * FLEET_BUY[b][1]; if (b !== 'home') { addRel(b, c.tag, share * 3); if (isAtWar(b)) { const e = enemiesOf(b).reduce((s, t) => s + navalPower(C(t)), 0); if (e > 50) lost += ton * 0.02; } } }
-  f.ton = Math.max(5, f.ton - lost + sum(provsOf(c.tag), p => p.b.shipyard || 0) * 0.4); c.money += inc; c.fleetIncome = inc; removeSpirit(c, 'greek_fleet'); if (f.ton > 40) addSpirit(c, 'greek_fleet'); SPIRITS.greek_fleet[2] = { tradecap: Math.min(0.2, f.ton / 800), infl: 0.05 }; }
+  f.ton = Math.max(5, f.ton - lost + sum(provsOf(c.tag), p => p.b.shipyard || 0) * 0.4); c.money += inc; c.fleetIncome = inc; removeSpirit(c, 'greek_fleet'); if (f.ton > 40) SPIRITS.greek_fleet[2] = { tradecap: Math.min(0.2, f.ton / 800), infl: 0.05 }; addSpirit(c, 'greek_fleet'); }
 SPIRITS.greek_fleet = ['The Greek Merchant Marine', 'Tramp steamers from Piraeus and Andros on every sea.', { tradecap: 0.1 }];
 // ======================= Turkey: active neutrality and the Straits =======================
 const BLOCS = { allies: ['The Allies', 'ENG'], axis: ['The Axis', 'GER'], sov: ['The Soviet Union', 'SOV'] };
