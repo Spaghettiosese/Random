@@ -18,7 +18,7 @@ function resMonthly() { G.res = G.res || {};
     for (const o of occ) { const k = C(o); k._partisan = Math.max(k._partisan || 0, r.str); }
     // partisan armies: the government in exile, still at war, raises them in the hills
     if (r.str >= 55 && X && X.exists && Math.random() < 0.3) { const host = L.filter(p => RES_TERR[p.ter] && atWar(t, p.ctrl) && !armiesAt(p.id).some(a => a.owner === p.ctrl)).sort((a, b) => (RES_TERR[b.ter] || 0) - (RES_TERR[a.ter] || 0))[0];
-      if (host) { const a = newArmy(X, host.id); a.name = r.com > 0.5 ? `${X.adj} People's Liberation Army` : `${X.adj} Home Army`; a.auto = true; const n = Math.max(2, Math.round(r.str / 15)); for (let i = 0; i < n; i++) a.divs.push({ t: 'mil', str: 0.8, org: 0.9, xp: 0.2 }); host.ctrl = t; host.unrest = 0; r.str -= 25; r.raised = (r.raised || 0) + n;
+      if (host) { const a = newArmy(X, host.id); a.name = r.com > 0.5 ? `${X.adj} People's Liberation Army` : `${X.adj} Home Army`; a.auto = true; a.partisan = t; const n = Math.max(2, Math.round(r.str / 15)); for (let i = 0; i < n; i++) a.divs.push({ t: 'mil', str: 0.8, org: 0.9, xp: 0.2 }); host.ctrl = t; host.unrest = 0; r.str -= 25; r.raised = (r.raised || 0) + n;
         logMsg(`Partisans rise at ${host.name}: the ${a.name} takes the field.`, 'world', [t, ...occ]); if (occ.includes(G.player)) UIH.notify(`Partisans have liberated ${host.name}.`, 'bad'); UIH.mapDirty(); } } }
   for (const c of alive()) { const v = c._partisan || 0; c._partisan = 0; removeSpirit(c, 'partisan_war'); if (v > 25) { addSpirit(c, 'partisan_war'); SPIRITS.partisan_war[2] = { supply: -v / 400, output: -v / 1000, stab: -Math.round(v / 25) }; } }
   // after liberation: a communist resistance may turn on the restored government
