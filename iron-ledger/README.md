@@ -8,6 +8,20 @@ Open `index.html` in a browser. No build step, no server.
 
 ## Updates
 
+### 2.0 "Empires"
+
+The second edition. Highlights:
+
+- **Map**: 734 provinces (from 477); marching time follows distance.
+- **War**: wars as circles at the bottom right with a war overview; permanent military deaths, slow return of the wounded; civilian deaths from battles, bombing and occupation; naval control weighed against air over the landing zone; large encircled armies lose half their divisions rather than vanishing.
+- **Politics**: named parties and leaders by culture, traits, ageing and succession, elections that change the governing party, boosting and banning parties at home and abroad, coups d'état.
+- **Government 2.0**: 17 forms of government changed by constitutional reform; regime transitions (suspend the constitution, free elections, march on the capital, revolution, the generals restore order); six new law categories; the Government Programme (two pledges per two-year term).
+- **Subjects and occupation**: six subject statuses with tribute, levies, autonomy ceilings and independence drive; wartime occupation governments (military governor, commissariat, collaboration government) that take over newly conquered land; annexed-territory administration and release screens.
+- **Peace conference**: point-based, province by province, with terms per defeated nation; occupation zones; no duplicate governments of one nation.
+- **Army 2.0**: division designer, army groups under field marshals, experience ranks, reinforcement priority. **Industry**: equipment readiness scales combat power. **Spy networks** and **oil embargoes**.
+- **Italy**: a hand-written 232-focus tree. **Japan/China**: annexation war aims and the Reorganised Government hand-over.
+- Balance: an early-war German edge that fades by 1942; Czechoslovakia folds in historical mode.
+
 ### 1.7 "Iron and Fire"
 
 The war layer, rebuilt.
