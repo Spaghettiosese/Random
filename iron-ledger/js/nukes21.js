@@ -16,7 +16,7 @@ function dropNuke(c, p) {
   if (Math.random() < nukeIntercept(c, p)) { logMsg(`A ${c.adj} bomber carrying an atomic bomb is shot down short of ${p.name}.`, 'world', [c.tag, p.ctrl]); return 'intercepted'; }
   const first = !G.flags.firstNuke; G.flags.firstNuke = G.flags.firstNuke || G.day + 1;
   // the blast
-  const dead = p.pop * (p.ter === 'u' ? 0.3 : 0.22); p.pop = Math.max(1, p.pop - dead); own.civDead = (own.civDead || 0) + dead; own._civM = (own._civM || 0) + dead; (own.civBy = own.civBy || {}).atomic = (own.civBy.atomic || 0) + dead; if (typeof wacc === 'function') wacc(w, 'civ', p.owner, dead);
+  const dead = Math.min(p.pop * (p.ter === 'u' ? 0.3 : 0.22), 100 + p.pop * 0.012); p.pop = Math.max(1, p.pop - dead); own.civDead = (own.civDead || 0) + dead; own._civM = (own._civM || 0) + dead; (own.civBy = own.civBy || {}).atomic = (own.civBy.atomic || 0) + dead; if (typeof wacc === 'function') wacc(w, 'civ', p.owner, dead);
   for (const k in p.b) p.b[k] = Math.floor(p.b[k] * 0.4); p.dmg = 0.9; p.fort = 0; p.fallout = G.day + 540; p.unrest = Math.max(p.unrest || 0, 40);
   for (const a of armiesAt(p.id)) for (const d of a.divs) { d.str *= 0.35; d.org = 0; }
   // the nation struck
@@ -25,15 +25,15 @@ function dropNuke(c, p) {
   c.infamy += first ? 25 : 10; G.tension = Math.min(100, G.tension + (first ? 15 : 6)); addSpirit(c, 'nuclear_power');
   for (const k of alive()) if (k.tag !== c.tag && !friendly(k.tag, c.tag)) addRel(k.tag, c.tag, k.ideology === 'dem' ? -15 : -8);
   if (c.nukesUsed >= 3) addSpirit(c, 'nuclear_pariah');
-  logMsg(`${first ? 'For the first time in history, an' : 'An'} atomic bomb falls on ${p.name}. ${mFmt(dead)} ${own.adj} civilians are killed in a single moment.`, 'world', [c.tag, p.ctrl, p.owner]);
-  if (p.ctrl === G.player || p.owner === G.player) UIH.popup({ title: `${p.name} Is Gone`, icon: '☢️', desc: `A single ${c.adj} bomb has destroyed ${p.name}. ${mFmt(dead)} are dead, and the survivors are dying of something no doctor understands. The factories, the barracks and the railway yards are ashes.`, options: [{ name: 'We will never forget.' }] });
+  logMsg(`${first ? 'For the first time in history, an' : 'An'} atomic bomb falls on ${p.name}. ${fmt(dead * 1000)} ${own.adj} civilians are killed in a single moment.`, 'world', [c.tag, p.ctrl, p.owner]);
+  if (p.ctrl === G.player || p.owner === G.player) UIH.popup({ title: `${p.name} Is Gone`, icon: '☢️', desc: `A single ${c.adj} bomb has destroyed ${p.name}. ${fmt(dead * 1000)} are dead, and the survivors are dying of something no doctor understands. The factories, the barracks and the railway yards are ashes.`, options: [{ name: 'We will never forget.' }] });
   // surrender: a beaten nation struck twice may give up
   if (T.ai && !T.capitulated && T.nuked >= 2 && (T.warExh > 55 || capInfo(T.tag).prog > 0.35 || T.ws < 25)) { logMsg(`${T.name} announces its surrender, citing "a new and most cruel bomb".`, 'world'); capitulate(T.tag); }
   else checkCapitulation(T.tag);
   UIH.mapDirty(); return '';
 }
 // production: reactors make bombs; fallout lingers
-function nukeMonthly(c) { if (!c.techs.p_bomb) return; const first = !c.nukeEver; c.nukeProg = (c.nukeProg || 0) + 6 + 5 * (c.reactors || 0) + ((c.gdp || 0) > 15e6 ? 4 : 0);
+function nukeMonthly(c) { if (!c.techs.p_bomb) return; if (year() < 1944 && !(G.rules && G.rules.opt && G.rules.opt.earlynuke)) { if (c.ai) aiNukes(c); return; } const first = !c.nukeEver; c.nukeProg = (c.nukeProg || 0) + 6 + 5 * (c.reactors || 0) + ((c.gdp || 0) > 15e6 ? 4 : 0);
   if (c.nukeProg >= 100 && (c.nukes || 0) < 20) { c.nukeProg -= 100; c.nukes = (c.nukes || 0) + 1; c.nukeEver = true; if (first) { logMsg(`A blinding flash in the desert: ${c.name} has tested an atomic bomb.`, 'world'); G.tension = Math.min(100, G.tension + 5); } else if (c.tag === G.player) UIH.notify('Another atomic bomb is ready.', 'good'); }
   if (c.ai) aiNukes(c); }
 function buildReactor(c) { if (!c.techs.p_atomic) return 'Requires Atomic Research'; if ((c.reactors || 0) >= 4) return 'Four reactors is the most we can run'; const cost = 8 * Math.max(200, c.budget.income || 200); if (c.pp < 50) return 'Needs 50 political power'; if (c.money < cost) return `Needs ${fmt(cost)} in the treasury`; c.pp -= 50; c.money -= cost; c.reactors = (c.reactors || 0) + 1; return ''; }
