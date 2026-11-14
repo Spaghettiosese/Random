@@ -183,3 +183,4 @@ select { font: inherit; color: var(--paper); background: var(--slate2); border: 
 .wt { width: 100%; font-size: 13px; } .wt tr.me { background: #c9a24a18; } .wt tr.capd td { opacity: .5; } .capbar { display: inline-block; width: 60px; height: 7px; background: #2c3944; border-radius: 3px; overflow: hidden; vertical-align: middle; } .capbar i { display: block; height: 100%; background: var(--bad); }
 .wgoals { margin: 0; padding-left: 18px; font-size: 13px; }
 @media (max-width: 720px) { .wcols, .wtop { grid-template-columns: 1fr; } #warbubbles { bottom: 120px; } }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; vertical-align: middle; } .ptable { width: 100%; font-size: 13px; } .ptable tr.me { background: #c9a24a18; } .ptable tr.capd td { opacity: .55; }

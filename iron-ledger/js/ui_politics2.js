@@ -1,0 +1,23 @@
+// 2.0 interface: leader, parties and coups on the Politics tab; backing a party abroad from Diplomacy.
+'use strict';
+{ const _pol = PANELS.politics; PANELS.politics = function (c) {
+  const ps = partiesOf(c), rp = rulingParty(c), risk = coupRisk(c), yrs = Math.max(0, Math.floor((G.day - (c.inOffice || 0)) / 365)), lt = LEADER_TRAITS[c.ltrait];
+  const lead = `<div class="card leadcard"><div class="row sp"><span><b>${c.leader}</b> <span class="dim">· ${rp ? rp.name : c.party} · age ${c.lage || '?'} · ${yrs ? yrs + ' years in office' : 'new in office'}</span></span>${lt ? `<span class="pill"${tip(modText(lt[1]))}>${lt[0]}</span>` : ''}</div></div>`;
+  const rows = ps.slice().sort((a, b) => partyPop(c, b) - partyPop(c, a)).map(p => { const pop = partyPop(c, p), me = p === rp, why = me ? 'You cannot ban the governing party' : '';
+    return `<tr class="${me ? 'me' : ''}${p.banned ? ' capd' : ''}"><td><span class="dot" style="background:${IDEO[p.ideo][1]}"></span> ${p.name}${me ? ' <span class="pill">governing</span>' : p.banned ? ' <span class="pill neg">banned</span>' : ''}<div class="dim">${p.leader} · ${LEADER_TRAITS[p.trait] ? LEADER_TRAITS[p.trait][0] : ''}</div></td><td class="r num">${pop.toFixed(1)}%</td>
+      <td class="r">${btn('Boost', 'partyBoost', `data-i="${p.id}"`, 'sm', `Campaign money and newspapers: ${IDEO[p.ideo][0].toLowerCase()} support +3%, and this party gains ground on its rivals. 25 political power.`, c.pp < 25 || p.banned)}${me ? '' : btn(p.banned ? 'Legalise' : 'Ban', 'partyBan', `data-i="${p.id}"`, 'sm', p.banned ? 'Let the party organise openly again. 60 political power.' : 'Outlaw the party. Its voters drift to us, but a banned party with mass support breeds radicals. 60 political power; not possible while free speech is protected.', c.pp < 60 || !!why)}</td></tr>`; }).join('');
+  const coup = `<div class="card"><div class="row sp"><b>🪖 Coup risk</b><span class="${risk > 25 ? 'neg' : risk > 12 ? 'warn' : 'pos'}">${Math.round(risk)}%</span></div>${bar(risk / 60, risk > 25 ? 'r' : '')}
+    <div class="dim">Rises with an unhappy army, low stability, radicalism, war weariness and weak legitimacy; democracies with high legitimacy are nearly immune. A secret police halves it.</div>
+    <div class="row">${btn('Purge the officers', 'coupAct', 'data-k="purge"', 'sm', 'Risk falls sharply for eight months, but the army resents it and its leadership suffers. 50 political power.', c.pp < 50)}${btn('Buy the generals', 'coupAct', 'data-k="pay"', 'sm', 'Bonuses, promotions and estates: army approval +10.')}${btn('Martial law', 'coupAct', 'data-k="martial"', 'sm', 'Six months of martial law: coup risk falls, stability holds, liberties suffer. 40 political power.', c.pp < 40)}</div></div>`;
+  const base = _pol(c), i = base.indexOf('<h3'); const add = lead + `<h3>Parties</h3><table class="ptable"><tr><th>Party</th><th class="r">Support</th><th></th></tr>${rows}</table>` + coup;
+  return i < 0 ? add + base : base.slice(0, i) + add + base.slice(i); }; }
+Object.assign(ACT, {
+  partyBoost(d) { const c = me(), p = partiesOf(c).find(x => x.id === +d.i); const r = p ? boostParty(c, p) : 'No such party'; if (r) toast(r, 'bad'); renderAll(); },
+  partyBan(d) { const c = me(), p = partiesOf(c).find(x => x.id === +d.i); const r = p ? banParty(c, p) : 'No such party'; toast(r || (p.banned ? `${p.name} is banned.` : `${p.name} may organise again.`), r ? 'bad' : 'good'); renderAll(); },
+  coupAct(d) { const r = counterCoup(me(), d.k); toast(r || 'Done.', r ? 'bad' : 'good'); renderAll(); },
+  partyAbroad(d) { const c = C(d.t), p = c && partiesOf(c).find(x => x.id === +d.i); const r = p ? boostParty(c, p, me()) : 'No such party'; toast(r || `Our agents fund the ${p.name} in ${c.name}.`, r ? 'bad' : 'good'); renderAll(); }
+});
+// Diplomacy: fund a party in another country
+{ const _dip = PANELS.diplomacy; PANELS.diplomacy = function (c) { let h = _dip(c); const t = UI.diploSel; if (!t || t === c.tag || !ok(t)) return h; const k = C(t), ps = partiesOf(k).filter(p => !p.banned && p !== rulingParty(k));
+  const card = `<div class="card"><b>🗳 Parties in ${k.name}</b> <span class="dim">· ${k.leader} governs · coup risk ${Math.round(coupRisk(k))}%</span><div class="row">${ps.map(p => btn(`<span class="dot" style="background:${IDEO[p.ideo][1]}"></span> ${p.name} ${partyPop(k, p).toFixed(0)}%`, 'partyAbroad', `data-t="${t}" data-i="${p.id}"`, 'sm', `Fund ${p.name} (${p.leader}): ${IDEO[p.ideo][0].toLowerCase()} support in ${k.name} +2.5%. 25 influence. They will notice: relations -4.`, c.infl < 25)).join('')}</div></div>`;
+  const i = h.indexOf('<h3>Actions'); return i < 0 ? h + card : h.slice(0, i) + card + h.slice(i); }; }
