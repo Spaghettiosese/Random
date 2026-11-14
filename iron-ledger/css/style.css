@@ -199,3 +199,6 @@ select { font: inherit; color: var(--paper); background: var(--slate2); border: 
 .plog { max-height: 160px; min-height: 40px; flex-shrink: 0; overflow: auto; font-size: 13px; } .plog div { padding: 2px 0; border-bottom: 1px solid #ffffff0a; }
 .wb.pb.far { opacity: .7; }
 .occlaws { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 4px 8px; margin-top: 4px; } .occlaws label { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+/* 2.2 finance */
+.egrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; } .egrid > div { display: flex; flex-direction: column; gap: 2px; } .egrid b { font-size: 18px; } .spark { display: block; margin-top: 2px; }
+.ebar { margin: 4px 0 6px; padding: 4px 8px; background: #ffffff08; border-radius: 3px; flex-wrap: wrap; gap: 6px; font-size: 13px; }
