@@ -186,3 +186,4 @@ select { font: inherit; color: var(--paper); background: var(--slate2); border: 
 .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; vertical-align: middle; } .ptable { width: 100%; font-size: 13px; } .ptable tr.me { background: #c9a24a18; } .ptable tr.capd td { opacity: .55; }
 .batgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; } .bat { display: flex; justify-content: space-between; align-items: center; background: #151d26; border: 1px solid var(--line); border-radius: 3px; padding: 2px 6px; } .bat.lock { opacity: .5; } .bat b { min-width: 18px; text-align: center; } .tpled input { width: 50%; }
 @media (max-width: 720px) { .batgrid { grid-template-columns: 1fr; } }
+.confwrap { position: fixed; inset: 0; background: #000a; z-index: 35; display: grid; place-items: center; } .confwrap[hidden] { display: none; } .confwin select { max-width: 190px; font-size: 12px; }

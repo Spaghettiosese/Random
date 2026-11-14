@@ -20,7 +20,7 @@ const COMMISSARIAT = { GER: ['Reichskommissariat', 'Reichskommissar'], ITA: ['Go
 const REGION_NAME = { SOV: ['Ostland', 'Ukraine', 'Moskowien', 'Kaukasus'], POL: ['Generalgouvernement'], FRA: ['Frankreich'], HOL: ['Niederlande'], NOR: ['Norwegen'], BEL: ['Belgien-Nordfrankreich'], ENG: ['Großbritannien'], YUG: ['Serbien'], GRE: ['Griechenland'], CZE: ['Böhmen und Mähren'], DEN: ['Dänemark'], CHI: ['North China'], USA: ['Amerika'] };
 function regimeName(c, e, kind) {
   const E = C(e), base = e.slice(0, 3);
-  if (kind === 'collab') return COLLAB_NAME[base] || `${E.adj} State`;
+  if (kind === 'collab') return (!['ENG', 'RAJ', 'USA', 'SOV'].includes(base) && COLLAB_NAME[base]) || `${E.adj} State`;
   if (kind === 'rk') { const pre = (COMMISSARIAT[c.tag.slice(0, 3)] || ['Commissariat'])[0], used = Object.values(G.C).filter(k => k.exists && k.stype === 'rk').map(k => k.name), r = ((c.tag.slice(0, 3) === 'GER' && REGION_NAME[base]) || [E.name]).find(n => !used.includes(`${pre} ${n}`)) || E.name; return c.tag.slice(0, 3) === 'GER' ? `${pre} ${r}` : `${pre} of ${r}`; }
   return `Military Government of ${E.name}`;
 }
@@ -93,3 +93,35 @@ SPIRITS.china_quagmire = ['The China Quagmire', 'A million men are tied down gua
 // China fights on from the interior: no surrender while the government holds part of it with an army in the field
 { const _cc = checkCapitulation, INTERIOR = ['Chongqing', 'Chengdu', 'Kunming', 'Guiyang', "Xi'an", 'Lanzhou', 'Changsha', 'Nanning'];
   checkCapitulation = function (tag) { if (tag === 'CHI' && C('CHI').exists && sum(armiesOf('CHI'), a => a.divs.length) >= 10 && INTERIOR.some(n => { const p = PN(n); return p && (p.ctrl === 'CHI' || (friendly('CHI', p.ctrl) && !atWar('CHI', p.ctrl))); })) return; return _cc(tag); }; }
+
+// ---------- peace with provisional governments ----------
+// one nation, one government: when a nation with a regime set up for it is beaten, its remaining land joins the regime;
+// allies hand over the land of that nation they hold, if they are on good terms
+function regimeFor(t) { for (const c of alive()) if (c.regimes && c.regimes[t] && ok(c.regimes[t].tag) && C(c.regimes[t].tag).overlord === c.tag) return [c, C(c.regimes[t].tag)]; return null; }
+function handOver(from, to, t) { let n = 0; for (const p of G.P) if (p.owner === from.tag && (p.orig === t || (p.cores.includes(t) && !p.cores.includes(from.tag))) && p.id !== from.capital) { p.owner = to.tag; p.ctrl = to.tag; if (to.stype === 'collab' && !p.cores.includes(to.tag)) p.cores.push(to.tag); n++; } return n; }
+function uniteUnderRegime(t, quiet) { const r = regimeFor(t); if (!r) return false; const [o, g] = r, L = C(t); let n = 0;
+  if (L && L.exists) { for (const p of G.P) if (p.owner === t) { p.owner = g.tag; p.ctrl = g.tag; if (g.stype === 'collab' && !p.cores.includes(g.tag)) p.cores.push(g.tag); n++; } if (L.capital !== undefined && P(L.capital).owner === g.tag) g.capital = L.capital; eliminate(t); }
+  for (const a of alive()) if (a.tag !== o.tag && a.tag !== g.tag && friendly(a.tag, o.tag) && a.ai && opinion(a.tag, o.tag) >= 0) n += handOver(a, g, t);
+  if (g.stype === 'collab' && L) { g.name = g.name.replace(/^Reorganised National Government of /, '').length > 3 ? g.name : g.name; } if (!quiet) logMsg(`${g.name} now governs all of ${cname(t)} (${n} provinces handed over).`, 'world', [o.tag]); UIH.mapDirty(); return true; }
+function occupationZones(win, L) { const k = C(L); if (!k || !k.exists) return; const by = {}; for (const p of G.P) if (p.owner === L && win.includes(p.ctrl)) (by[p.ctrl] = by[p.ctrl] || []).push(p.id);
+  for (const t in by) { const W = C(t); if (!W.exists || W.capitulated) continue; createRegime(W, L, 'milgov', { provs: by[t], peace: true, name: `${W.adj} Zone of ${k.name}` }); }
+  if (provsOf(L).length) { const rest = provsOf(L); const top = Object.keys(by).sort((a, b) => by[b].length - by[a].length)[0]; if (top) createRegime(C(top), L, 'milgov', { provs: rest.map(p => p.id), peace: true, name: `${C(top).adj} Zone of ${k.name} (II)` }); }
+  if (k.exists && !provsOf(L).length) eliminate(L); logMsg(`${k.name} is divided into occupation zones.`, 'world'); }
+{ const _pe = peace; peace = function (w, winSide) { const win = w[winSide].slice(), lose = (winSide === 'att' ? w.def : w.att).slice(), zoneSnap = {}; for (const L of lose) zoneSnap[L] = G.P.filter(p => p.owner === L && win.includes(p.ctrl)).map(p => [p.id, p.ctrl]);
+  const _pp = UIH.popup; UIH.popup = p => { const L = lose.find(t => p.title === `Peace with ${cname(t)}`); if (L && p.options.length >= 4) { const reg = regimeFor(L), lenient = p.options[p.options.length - 1];
+      p.options.splice(2, 0, { name: 'Divide it into occupation zones', tip: 'Every victor governs the part its armies hold as a military zone; the country ceases to exist.', fn: () => { for (const [id, t] of zoneSnap[L]) if (P(id).owner === L) P(id).ctrl = t; occupationZones(win, L); } });
+      if (reg) p.options.unshift({ name: `Unite all of ${cname(L)} under the ${reg[1].name}`, tip: 'The rest of the country, and the land our allies hold, passes to the government we set up. No second government survives.', fn: () => uniteUnderRegime(L) }); }
+    _pp(p); };
+  try { _pe(w, winSide); } finally { UIH.popup = _pp; }
+  // AI victors, and players who were not asked: never leave two governments of one nation
+  for (const L of lose) { const r = regimeFor(L); if (r && C(L).exists && !(r[0].tag === G.player && !r[0].ai)) uniteUnderRegime(L, false); } }; }
+// diplomacy: ask an ally for the land it holds of a nation we govern through a regime
+DIPLO.askLand = { name: 'Request Occupied Land', cost: 25, can: (a, b) => friendly(a, b) && !!C(a).regimes && Object.keys(C(a).regimes).some(t => G.P.some(p => (p.owner === b || p.ctrl === b) && (p.orig === t || p.owner === t))), ai: (a, b) => opinion(b, a) >= -10, do: (a, b) => { const A = C(a); let n = 0; for (const t in A.regimes || {}) { const g = C(A.regimes[t].tag); if (!g || !g.exists) continue; n += handOver(C(b), g, t); for (const p of G.P) if (p.owner === t && p.ctrl === b) { p.ctrl = a; n++; } } addRel(b, a, -5); logMsg(`${cname(b)} hands ${n} provinces over to ${C(a).name}'s administration.`, 'info', [a, b]); UIH.mapDirty(); }, tip: 'Ask an ally to hand over the land it holds of a nation we govern through an occupation government. They agree if their opinion of us is above -10.' };
+// wartime occupation: allies pass the land they hold to the government set up for that nation; AI powers holding enemy land
+// that nobody governs set up their own military zone
+{ const _rw = regimesWeekly; regimesWeekly = function () { _rw();
+  for (const c of alive()) { if (!c.regimes) continue; for (const e in c.regimes) { const g = C(c.regimes[e].tag); if (!g || !g.exists || !c.regimes[e].auto) continue;
+      for (const p of G.P) if (p.owner === e && p.ctrl !== c.tag && p.ctrl !== g.tag && friendly(c.tag, p.ctrl) && C(p.ctrl).ai && opinion(p.ctrl, c.tag) >= 0 && atWar(c.tag, e)) { p.owner = g.tag; p.ctrl = g.tag; if (g.stype === 'collab' && !p.cores.includes(g.tag)) p.cores.push(g.tag); } } }
+  if (dateObj(G.day).getUTCDate() !== 1) return;
+  for (const c of alive()) { if (!c.ai || !c.major || c.capitulated || c.overlord) continue; for (const e of enemiesOf(c.tag)) { if (regimeFor(e) || /[CKM]\d*$/.test(e.slice(3))) continue; const held = G.P.filter(p => p.owner === e && p.ctrl === c.tag && !p.cores.includes(c.tag) && !p.claims.includes(c.tag));
+      if (held.length >= 4 && Math.random() < 0.25) { const capHeld = held.some(p => p.id === C(e).capital), share = held.length / Math.max(1, G.P.filter(p => p.owner === e && p.cores.includes(e)).length); createRegime(c, e, c.ideology === 'fas' && ['SOV', 'POL'].includes(e.slice(0, 3)) ? 'rk' : c.ideology === 'dem' || !(capHeld || share > 0.3) ? 'milgov' : 'collab', { provs: held.map(p => p.id) }); } } } }; }
