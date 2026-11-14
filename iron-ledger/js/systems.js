@@ -4,7 +4,7 @@
 const SUBJ_LEVEL = [['Integrated Puppet', 0.2], ['Puppet', 0.1], ['Dominion', 0.04], ['Associated State', 0]];
 const autonomyOf = c => c.autonomy === undefined ? (c.autonomy = ['CAN', 'AST', 'NZL', 'SAF'].includes(c.tag) ? 75 : c.tag === 'PHI' ? 65 : 45) : c.autonomy;
 const subjLevel = c => { const a = autonomyOf(c); return a < 25 ? 0 : a < 60 ? 1 : a < 85 ? 2 : 3; };
-const tributeRate = c => SUBJ_LEVEL[subjLevel(c)][1];
+let tributeRate = c => SUBJ_LEVEL[subjLevel(c)][1]; // replaced by status-based tribute in js/subjects2.js
 const subjectsOf = t => alive().filter(k => k.overlord === t);
 const SUBJ = {
   tighten: { name: 'Tighten Control', cost: 60, tip: 'Autonomy -15. Their stability -5 and relations suffer.', can: (o, s) => autonomyOf(s) > 5 ? '' : 'They are already under our thumb', do: (o, s) => { s.autonomy = Math.max(0, s.autonomy - 15); s.stab = Math.max(0, s.stab - 5); addRel(o.tag, s.tag, -15); } },

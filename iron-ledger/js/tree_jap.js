@@ -105,7 +105,7 @@ c_hebei|East Hebei Autonomy|hakko|rel CHI -15; infl 20; claim Peiping, Tianjin|A
 mengjiang|The Mongol Borderlands|c_hebei|claim Kalgan, Hohhot; units cav 2|A prince, a flag and a Japanese adviser.|
 c_shanghai|The Shanghai Landing|china|units inf 8, hvy 1; equip ships 10; spirit Yangtze Expedition [365]: atk .06, navy .04|Three months for a city the plan gave three days.|req atwar CHI; ai 7
 c_nanjing|Drive on the Capital|c_shanghai|ws 5; axp 30; spirit Pursuit Up the River [240]: atk .08 ?? Offer terms through the German ambassador => rel CHI 10; stab 3; tension -2 // No dealings with the Nationalists => ws 8; pp 40; tension 2|No one ordered the advance; no one stopped it.|req atwar CHI; ai 6
-wang|The Reorganised Government|c_nanjing|fn collabCHI|A former premier agrees to head a rival China.|req holdNanjing
+wang|The Reorganised Government|china|fn collabCHI|A former premier agrees to head a rival China. Every Chinese province we take — and, when China falls, all of China — passes to his government.|req holdNanjing; ai 8
 c_xuzhou|The Xuzhou Pincers|c_nanjing|axp 25; equip artillery 150; units inf 4; spirit Railway Offensive [365]: atk .08|North and central armies link along the railway.|req atwar CHI; ai 5
 c_wuhan|Up to Wuhan|c_xuzhou|spirit River Campaign [300]: atk .06, supply .08|A thousand kilometres from the sea.|req atwar CHI
 pacify|Pacification Campaigns|wang|calm; spirit Garrison Armies: supply .05|Blockhouses and sweeps along the railways.|req atwar CHI
