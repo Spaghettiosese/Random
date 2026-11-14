@@ -3,7 +3,7 @@
 // education, harsh rule and the empire's defeats, and at the end of the road a colony rises for its independence, unless
 // it has been given self-government in time. Enemies can stir it up.
 'use strict';
-const COL_REGION = { Senegal: 'French West Africa', Mali: 'French West Africa', Mauritania: 'French West Africa', Niger: 'French West Africa', Guinea: 'French West Africa', "Côte d'Ivoire": 'French West Africa', 'Burkina Faso': 'French West Africa', Benin: 'French West Africa', Togo: 'French West Africa',
+const COL_REGION = { Spain: 'Gibraltar', Senegal: 'French West Africa', Mali: 'French West Africa', Mauritania: 'French West Africa', Niger: 'French West Africa', Guinea: 'French West Africa', "Côte d'Ivoire": 'French West Africa', 'Burkina Faso': 'French West Africa', Benin: 'French West Africa', Togo: 'French West Africa',
   Congo: 'French Equatorial Africa', Gabon: 'French Equatorial Africa', Chad: 'French Equatorial Africa', 'Central African Rep.': 'French Equatorial Africa', Cameroon: 'French Equatorial Africa',
   Vietnam: 'Indochina', Laos: 'Indochina', Cambodia: 'Indochina', Kenya: 'British East Africa', Uganda: 'British East Africa', Tanzania: 'British East Africa', Zambia: 'The Rhodesias', Zimbabwe: 'The Rhodesias', Malawi: 'The Rhodesias',
   Malaysia: 'British Malaya', Singapore: 'British Malaya', Brunei: 'British Malaya', Kuwait: 'The Gulf', Bahrain: 'The Gulf', Qatar: 'The Gulf', 'United Arab Emirates': 'The Gulf', Oman: 'The Gulf', Yemen: 'Aden',

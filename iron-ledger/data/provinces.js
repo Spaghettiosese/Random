@@ -107,18 +107,18 @@ Stalinabad|Tajikistan|38.55|68.8|SOV|1.4|0||m|1
 Tiflis|Georgia|41.7|44.8|SOV|3.4|1||m|4
 Yerevan|Armenia|40.2|44.5|SOV|1.2|1||m|2
 Baku|Azerbaijan|40.4|49.9|SOV|3|3|o5|h|10
-Stockholm|Sweden|59.3|18.1|SWE|2.1|3||f|10
+Stockholm|Sweden|59.3|18.1|SWE|1.44|3||f|10
 Gothenburg|Sweden|57.7|12|SWE|1.61|3||f|4
-Kiruna|Sweden|67.85|20.2|SWE|0.9|1|i5|f|3
-Oslo|Norway|59.9|10.75|NOR|1.33|2||m|8
+Kiruna|Sweden|67.85|20.2|SWE|0.65|1|i5|f|3
+Oslo|Norway|59.9|10.75|NOR|0.98|2||m|8
 Bergen|Norway|60.4|5.3|NOR|0.5|1||m|2
-Narvik|Norway|68.4|17.4|NOR|0.5|0||m|3
-Copenhagen|Denmark|55.7|12.6|DEN|2.59|3||p|8
+Narvik|Norway|68.4|17.4|NOR|0.4|0||m|3
+Copenhagen|Denmark|55.7|12.6|DEN|2.19|3||p|8
 Godthaab|Greenland|64.2|-51.7|DEN|0.02|0||m|1
 Reykjavik|Iceland|64.15|-21.9|DEN|0.12|0||m|2
-Amsterdam|Netherlands|52.4|4.9|HOL|4.17|4||p|12
-Brussels|Belgium|50.85|4.35|BEL|4.07|4|c2|p|12
-Luxembourg|Luxembourg|49.6|6.1|LUX|0.3|3|i2|h|3
+Amsterdam|Netherlands|52.4|4.9|HOL|3.27|4||p|12
+Brussels|Belgium|50.85|4.35|BEL|2.27|4|c2|p|12
+Luxembourg|Luxembourg|49.6|6.1|LUX|0.22|3|i2|h|3
 Bern|Switzerland|46.95|7.45|SWI|4.2|4||m|10
 Vienna|Austria|48.2|16.4|AUT|2.21|3||u|15
 Innsbruck|Austria|47.3|11.4|AUT|1.54|1|i1|m|3
@@ -158,9 +158,9 @@ Naples|Italy|40.85|14.25|ITA|3.43|2||h|6
 Palermo|Italy|38.1|13.35|ITA|1.96|1||h|4
 Cagliari|Italy|39.2|9.1|ITA|0.7|0|c1|h|1
 Madrid|Spain|40.4|-3.7|SPA|1.75|2||h|15
-Barcelona|Spain|41.4|2.15|SPA|4|3||h|8
-Seville|Spain|37.4|-6|SPA|2.45|1||p|5
-Bilbao|Spain|43.25|-2.9|SPA|3|3|i3c1|m|4
+Barcelona|Spain|41.4|2.15|SPA|3.6|3||h|8
+Seville|Spain|37.4|-6|SPA|1.35|1||p|5
+Bilbao|Spain|43.25|-2.9|SPA|2.6|3|i3c1|m|4
 Valencia|Spain|39.5|-0.4|SPA|2.1|1||h|4
 Corunna|Spain|43.35|-8.4|SPA|2.1|0||h|2
 Zaragoza|Spain|41.65|-0.9|SPA|1.05|1||h|2
@@ -544,7 +544,7 @@ Bristol|United Kingdom|51.45|-2.59|ENG|0.63|2||h|3
 Dover|United Kingdom|51.13|1.31|ENG|1.68|4||p|2
 Antwerp|Belgium|51.22|4.4|BEL|2.49|4||u|5
 Liège|Belgium|50.63|5.57|BEL|1.74|3|c2i1|h|3
-Rotterdam|Netherlands|51.92|4.48|HOL|2.55|4||u|5
+Rotterdam|Netherlands|51.92|4.48|HOL|1.45|4||u|5
 Groningen|Netherlands|53.22|6.57|HOL|1.78|3||p|2
 Genoa|Italy|44.41|8.93|ITA|2.7|5||h|5
 Bologna|Italy|44.49|11.34|ITA|1.5|1||p|4
@@ -570,7 +570,7 @@ Lleida|Spain|41.62|0.62|SPA|0.45|0||h|2
 Malmö|Sweden|55.6|13.0|SWE|0.69|2||p|3
 Sundsvall|Sweden|62.39|17.31|SWE|0.9|2||f|1
 Trondheim|Norway|63.43|10.39|NOR|0.57|1||m|3
-Aarhus|Denmark|56.16|10.2|DEN|1.11|2||p|2
+Aarhus|Denmark|56.16|10.2|DEN|0.51|2||p|2
 Turku|Finland|60.45|22.27|FIN|0.69|1||p|3
 Tampere|Finland|61.5|23.76|FIN|0.48|1||f|2
 Tartu|Estonia|58.38|26.72|EST|0.33|0||p|2
@@ -756,5 +756,24 @@ Van|Turkey|38.5|43.38|TUR|0.44|0||m|1
 Zonguldak|Turkey|41.45|31.79|TUR|0.59|0|c3|h|2
 Arad|Romania|46.18|21.31|ROM|0.45|0||p|1
 Suceava|Romania|47.65|26.26|ROM|0.24|0||f|1
+Cádiz|Spain|36.53|-6.29|SPA|0.48|2||p|3
+Gibraltar|Spain|36.14|-5.35|ENG|0.02|3||u|5
+Santander|Spain|43.46|-3.8|SPA|0.4|2|i1|m|2
+Palma|Spain|39.57|2.65|SPA|0.4|2||h|2
+Las Palmas|Spain|28.1|-15.43|SPA|0.6|1||h|2
+Luleå|Sweden|65.58|22.15|SWE|0.25|2||f|2
+Visby|Sweden|57.64|18.29|SWE|0.06|1||p|1
+Örebro|Sweden|59.27|15.21|SWE|0.6|3|i1|f|2
+Rjukan|Norway|59.88|8.59|NOR|0.15|2||m|2
+Kristiansand|Norway|58.15|8.0|NOR|0.2|2||m|2
+Tromsø|Norway|69.65|18.96|NOR|0.1|1||m|1
+Odense|Denmark|55.4|10.39|DEN|0.6|3||p|3
+Aalborg|Denmark|57.05|9.92|DEN|0.4|2||p|2
+Utrecht|Netherlands|52.09|5.12|HOL|0.9|4||p|3
+Eindhoven|Netherlands|51.44|5.47|HOL|0.8|4||p|2
+Vlissingen|Netherlands|51.44|3.57|HOL|0.3|3||s|2
+Ghent|Belgium|51.05|3.72|BEL|1.0|4||p|3
+Charleroi|Belgium|50.41|4.44|BEL|0.8|4|c2|p|2
+Esch|Luxembourg|49.5|5.98|LUX|0.08|4|i2|h|1
 `;
 if (typeof module !== 'undefined') module.exports = PROV_RAW;
