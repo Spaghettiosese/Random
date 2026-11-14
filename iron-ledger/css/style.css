@@ -169,3 +169,17 @@ select { font: inherit; color: var(--paper); background: var(--slate2); border: 
 /* 1.6: doctrine and battle reports */
 .docrow { display: flex; gap: 4px; margin-top: 4px; } .docstep { width: 26px; height: 22px; border: 1px solid var(--line); border-radius: 3px; display: grid; place-items: center; font-size: 12px; color: var(--dim); } .docstep.on { background: var(--brass2); border-color: var(--brass); color: #fff; }
 .fchip { display: inline-block; font-size: 12px; padding: 0 5px; margin: 1px 2px 1px 0; border: 1px solid currentColor; border-radius: 9px; white-space: nowrap; } .breport { font-size: 13px; } .battlerow { cursor: pointer; padding: 2px 0; }
+
+/* 2.0: wars at the bottom right, and the war overview */
+#warbubbles { position: absolute; right: 10px; bottom: 92px; display: flex; flex-direction: row-reverse; gap: 10px; z-index: 6; pointer-events: none; }
+.wb { pointer-events: auto; width: 62px; height: 62px; border-radius: 50%; padding: 4px; border: 0; background: conic-gradient(#3f9a55 0 var(--bal), #b0443a var(--bal) 100%); position: relative; box-shadow: 0 2px 10px #000a; cursor: pointer; }
+.wb:hover { transform: scale(1.06); } .wbin { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; border: 2px solid #111; font: 700 14px var(--display); color: #fff; text-shadow: 0 1px 2px #000; }
+.wbl { position: absolute; top: 64px; left: 50%; transform: translateX(-50%); font: 600 11px var(--display); white-space: nowrap; color: var(--paper); text-shadow: 0 1px 3px #000; }
+#warwinwrap { position: fixed; inset: 0; background: #0009; z-index: 30; display: grid; place-items: center; } #warwinwrap[hidden] { display: none; }
+.warwin { width: min(1000px, 96vw); max-height: 90vh; overflow: auto; background: #1a232d; border: 1px solid var(--brass2); border-top: 3px solid var(--brass); border-radius: 4px; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; } .warwin h2 { margin: 0; flex: 1; }
+.wtop { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 12px; align-items: center; } .wtop .r { text-align: right; }
+.wbar { height: 16px; border-radius: 3px; background: repeating-linear-gradient(135deg, #b0443a 0 8px, #9a3a32 8px 16px); overflow: hidden; } .wbar i.a { display: block; height: 100%; background: repeating-linear-gradient(135deg, #3d6fb0 0 8px, #335f99 8px 16px); }
+.wcols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; } .wside { background: #151d26; border: 1px solid var(--line); border-radius: 3px; padding: 6px; } .wsh { display: flex; justify-content: space-between; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+.wt { width: 100%; font-size: 13px; } .wt tr.me { background: #c9a24a18; } .wt tr.capd td { opacity: .5; } .capbar { display: inline-block; width: 60px; height: 7px; background: #2c3944; border-radius: 3px; overflow: hidden; vertical-align: middle; } .capbar i { display: block; height: 100%; background: var(--bad); }
+.wgoals { margin: 0; padding-left: 18px; font-size: 13px; }
+@media (max-width: 720px) { .wcols, .wtop { grid-template-columns: 1fr; } #warbubbles { bottom: 120px; } }

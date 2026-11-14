@@ -89,7 +89,7 @@ function aiInvasions(c) {
   if (!c.major && navalPower(c) < 40) return; const foes = enemiesOf(c.tag); if (!foes.length || Math.random() > 0.45) return;
   const idle = armiesOf(c.tag).filter(a => a.auto && !a.home && !a.garrison && !a.battle && !a.path.length && !a.inv && a.divs.length >= 3 && P(a.loc).coastal && !NB[a.loc].some(e => !e.sea && atWar(c.tag, P(e.to).ctrl)) && sum(a.divs, d => d.org) / a.divs.length > 0.6); if (!idle.length) return;
   let best = null, bs = 0; const a = pick(idle);
-  for (const p of G.P) { if (!p.coastal || !foes.includes(p.ctrl) || NB[p.id].some(e => !e.sea && (P(e.to).ctrl === c.tag))) continue; if (kmBetween(a.loc, p.id) > 2600 || seaDist(a.loc, p.id) > 2600 || invasionBlock(c, a, p.id)) continue;
+  for (const p of G.P) { if (!p.coastal || !foes.includes(p.ctrl) || NB[p.id].some(e => !e.sea && (P(e.to).ctrl === c.tag))) continue; if (kmBetween(a.loc, p.id) > 1600 || seaDist(a.loc, p.id) > 1600 || invasionBlock(c, a, p.id)) continue;
     const def = sum(armiesAt(p.id).filter(x => atWar(c.tag, x.owner)), armyStr) * (1 + TERRAIN[p.ter][1] + p.fort * 0.12); if (armyStr(a) * 0.55 < def * 1.2) continue; const s = p.vp + (p.claims.includes(c.tag) ? 6 : 0) + (def === 0 ? 3 : 0) - seaDist(a.loc, p.id) / 700 + Math.random() * 2; if (s > bs) { bs = s; best = p; } }
   if (best) launchInvasion(a, best.id);
 }

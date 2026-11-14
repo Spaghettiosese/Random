@@ -54,7 +54,7 @@ function airWeekly() {
     for (const x of pl) { const [f, h] = zoneAir(c.tag, x.z); if (h < 1) continue; const frac = 0.03 * (h / (f + h)) * (x.m === 'sup' ? 0.75 : 1.25); const l = c.stock.aircraft / pl.length * frac; c.stock.aircraft = Math.max(0, c.stock.aircraft - l); lost += l; }
     for (const x of pl) { if (x.m !== 'bomb' || !c.techs.m_air2) continue; const f = airIntensity(c.tag, x.z, 'bomb') * (1 + Math.max(0, M(c, 'bombing')));
       const tg = ZONES[x.z].provs.map(P).filter(p => atWar(c.tag, p.ctrl) && p.ctrl === p.owner && p.dmg < 0.4).sort((a, b) => provLevels(b) - provLevels(a))[0]; if (!tg || f < 0.05) continue; const e = C(tg.owner);
-      tg.dmg = Math.min(0.4, tg.dmg + 0.05 * f * (1 - Math.max(0, M(e, 'civdef')))); e.warExh = Math.min(100, e.warExh + 0.25 * f); if (c.tag === G.player || e.tag === G.player) (G.airLog[x.z] = G.airLog[x.z] || []).push([G.day, c.tag, tg.id]); }
+      tg.dmg = Math.min(0.4, tg.dmg + 0.05 * f * (1 - Math.max(0, M(e, 'civdef')))); if (typeof civDeath === 'function') civDeath(tg, tg.pop * 0.0008 * f * (1 - Math.max(0, M(e, 'civdef'))) * (tg.ter === 'u' ? 1.6 : 1), warOf(c.tag, e.tag), 'bombing'); e.warExh = Math.min(100, e.warExh + 0.25 * f); if (c.tag === G.player || e.tag === G.player) (G.airLog[x.z] = G.airLog[x.z] || []).push([G.day, c.tag, tg.id]); }
     c._airLost = (c._airLost || 0) * 0.5 + lost; }
 }
 // the AI, and the player's air staff when set to automatic
