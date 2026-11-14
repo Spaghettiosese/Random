@@ -190,3 +190,4 @@ select { font: inherit; color: var(--paper); background: var(--slate2); border: 
 
 /* 2.1 nested cards */
 .card.sub { margin: 6px 0; padding: 6px 8px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); }
+.row.wrap { flex-wrap: wrap; gap: 4px; }

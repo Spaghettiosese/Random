@@ -48,3 +48,6 @@ function histFactionOK(minor, leader) {
   const foes = enemiesOf(minor).concat(G.plays.filter(p => p.b === minor).map(p => p.a)); return foes.some(e => atWar(leader, e));
 }
 { const j = DIPLO.joinf.ai; DIPLO.joinf.ai = (a, b) => j(a, b) && histFactionOK(a, b); const i = DIPLO.invite.ai; DIPLO.invite.ai = (a, b) => i(a, b) && histFactionOK(b, a); }
+// in a historical game the Front forms when Japan invades, unless the Chinese are already fighting each other
+{ const _dw = declareWarInner; declareWarInner = function (a, b, ...r) { const w = _dw(a, b, ...r);
+  if (w && G.historical && !G.flags.unitedFront && ((a === 'JAP' && b === 'CHI') || (a === 'CHI' && b === 'JAP')) && !atWar('CHI', 'PRC')) formUnitedFront(); return w; }; }
