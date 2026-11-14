@@ -94,7 +94,7 @@ Stalino|Ukraine|48|37.8|SOV|2.45|5|c5i1|p|6
 Dnepropetrovsk|Ukraine|48.45|35|SOV|2.45|4|i4|p|5
 Odessa|Ukraine|46.5|30.7|SOV|2.8|2||p|6
 Sevastopol|Ukraine|44.6|33.5|SOV|1|1||h|5
-Czernowitz|Ukraine|48.3|25.9|ROM|0.8|0||h|1
+Czernowitz|Ukraine|48.3|25.9|ROM|0.56|0||h|1
 Uzhhorod|Ukraine|48.6|22.3|CZE|0.7|0||m|1
 Alma-Ata|Kazakhstan|43.25|76.9|SOV|2|1||m|3
 Karaganda|Kazakhstan|49.8|73.1|SOV|1.5|1|c3|p|2
@@ -133,20 +133,20 @@ Debrecen|Hungary|47.5|21.6|HUN|2.8|1||p|2
 Bucharest|Romania|44.4|26.1|ROM|3.5|2||p|12
 Ploiești|Romania|44.95|26|ROM|1.4|2|o4|h|4
 Cluj|Romania|46.8|23.6|ROM|2.45|1||m|3
-Timișoara|Romania|45.75|21.2|ROM|1.5|1||p|2
+Timișoara|Romania|45.75|21.2|ROM|1.05|1||p|2
 Iași|Romania|47.15|27.6|ROM|2.1|0||p|2
-Constanța|Romania|44.2|28.6|ROM|0.7|1||p|2
+Constanța|Romania|44.2|28.6|ROM|0.49|1||p|2
 Chișinău|Moldova|47|28.85|ROM|1.75|0||p|2
-Sofia|Bulgaria|42.7|23.3|BUL|2.8|1||m|8
-Varna|Bulgaria|43.2|27.9|BUL|2.2|0||p|2
+Sofia|Bulgaria|42.7|23.3|BUL|1.96|1||m|8
+Varna|Bulgaria|43.2|27.9|BUL|1.08|0||p|2
 Athens|Greece|38|23.7|GRE|1.96|1||h|10
-Salonika|Greece|40.6|22.95|GRE|1.37|1||m|3
-Belgrade|Serbia|44.8|20.5|YUG|2.45|1||h|12
+Salonika|Greece|40.6|22.95|GRE|0.67|1||m|3
+Belgrade|Serbia|44.8|20.5|YUG|1.72|1||h|12
 Zagreb|Croatia|45.8|16|YUG|3.8|1||h|4
 Ljubljana|Slovenia|46.05|14.5|YUG|1.2|2||m|2
 Sarajevo|Bosnia and Herz.|43.85|18.4|YUG|0.88|0|i1|m|2
-Cetinje|Montenegro|42.4|18.9|YUG|0.4|0||m|1
-Skopje|Macedonia|42|21.4|YUG|1|0||m|1
+Cetinje|Montenegro|42.4|18.9|YUG|0.28|0||m|1
+Skopje|Macedonia|42|21.4|YUG|0.7|0||m|1
 Pristina|Kosovo|42.65|21.15|YUG|0.42|0||m|1
 Tirana|Albania|41.3|19.8|ALB|0.49|0|o1|m|5
 Rome|Italy|41.9|12.5|ITA|4.9|3||u|25
@@ -167,10 +167,10 @@ Zaragoza|Spain|41.65|-0.9|SPA|1.05|1||h|2
 Lisbon|Portugal|38.7|-9.15|POR|5|1||h|10
 Porto|Portugal|41.15|-8.6|POR|2|1||h|2
 Istanbul|Turkey|41|29|TUR|1.72|2||u|10
-Ankara|Turkey|39.9|32.85|TUR|1.96|1||h|10
+Ankara|Turkey|39.9|32.85|TUR|1.37|1||h|10
 Izmir|Turkey|38.4|27.1|TUR|2.1|1||h|4
 Adana|Turkey|37|35.3|TUR|1.75|0||h|2
-Erzurum|Turkey|39.9|41.3|TUR|1.47|0|c1|m|2
+Erzurum|Turkey|39.9|41.3|TUR|1.03|0|c1|m|2
 Nicosia|Cyprus|35.1|33.3|ENG|0.3|0||h|2
 Famagusta|N. Cyprus|35.25|33.8|ENG|0.1|0||h|1
 Valletta|Malta|35.9|14.5|ENG|0.25|1||u|5
@@ -548,9 +548,9 @@ Rotterdam|Netherlands|51.92|4.48|HOL|2.55|4||u|5
 Groningen|Netherlands|53.22|6.57|HOL|1.78|3||p|2
 Genoa|Italy|44.41|8.93|ITA|2.7|5||h|5
 Bologna|Italy|44.49|11.34|ITA|1.5|1||p|4
-Trieste|Italy|45.65|13.78|ITA|1.8|2||h|3
+Trieste|Italy|45.65|13.78|ITA|1.26|2||h|3
 Bari|Italy|41.12|16.87|ITA|2.1|1||p|3
-Ancona|Italy|43.62|13.52|ITA|1.05|1||h|2
+Ancona|Italy|43.62|13.52|ITA|0.74|1||h|2
 Reggio Calabria|Italy|38.11|15.65|ITA|1.2|0||m|2
 Taranto|Italy|40.46|17.25|ITA|1.47|1||p|3
 Pescara|Italy|42.46|14.21|ITA|2.1|2||h|1
@@ -602,8 +602,8 @@ Split|Croatia|43.51|16.44|YUG|0.75|0||m|3
 Osijek|Croatia|45.55|18.69|YUG|1.05|0||p|1
 Banja Luka|Bosnia and Herz.|44.77|17.19|YUG|0.53|0||m|2
 Mostar|Bosnia and Herz.|43.34|17.81|YUG|0.35|0||m|1
-Plovdiv|Bulgaria|42.14|24.75|BUL|1.2|0||p|2
-Ioannina|Greece|39.66|20.85|GRE|0.84|0||m|2
+Plovdiv|Bulgaria|42.14|24.75|BUL|0.84|0||p|2
+Ioannina|Greece|39.66|20.85|GRE|0.59|0||m|2
 Larissa|Greece|39.64|22.42|GRE|0.59|0||p|2
 Patras|Greece|38.25|21.73|GRE|1.2|0||m|2
 Heraklion|Greece|35.34|25.13|GRE|0.84|0||m|2
@@ -616,7 +616,7 @@ Trabzon|Turkey|41.0|39.72|TUR|0.9|0||m|2
 Diyarbakır|Turkey|37.91|40.24|TUR|0.63|0||h|2
 Antalya|Turkey|36.9|30.7|TUR|0.9|0||m|1
 Edirne|Turkey|41.68|26.56|TUR|0.73|1||p|2
-Sivas|Turkey|39.75|37.02|TUR|0.75|0||m|1
+Sivas|Turkey|39.75|37.02|TUR|0.53|0||m|1
 Novgorod|Russia|58.52|31.28|SOV|1.8|3||f|3
 Pskov|Russia|57.82|28.33|SOV|1.26|3||f|2
 Kalinin|Russia|56.86|35.9|SOV|3.6|4||f|3
@@ -699,7 +699,7 @@ Kanko|North Korea|39.92|127.54|JAP|2.4|1|c1|m|2
 Kagoshima|Japan|31.6|130.56|JAP|1.89|3||m|2
 Niigata|Japan|37.92|139.04|JAP|1.8|0||p|2
 Kanazawa|Japan|36.56|136.66|JAP|3|3||h|2
-Tobruk|Libya|32.08|23.96|ITA|0.09|0||d|3
+Tobruk|Libya|32.08|23.96|ITA|0.05|0||d|3
 Misrata|Libya|32.37|15.09|ITA|0.15|0||d|1
 Mersa Matruh|Egypt|31.35|27.24|EGY|1.2|0||d|2
 El Alamein|Egypt|30.83|28.95|EGY|0.84|0||d|2
@@ -707,7 +707,7 @@ Suez|Egypt|29.97|32.53|EGY|2.4|0||d|4
 Sfax|Tunisia|34.74|10.76|FRA|0.78|0||d|2
 Casablanca|Morocco|33.57|-7.59|FRA|1.5|0||p|4
 Fez|Morocco|34.03|-5.0|FRA|1.05|0||h|2
-Aleppo|Syria|36.2|37.13|FRA|0.27|0||d|3
+Aleppo|Syria|36.2|37.13|FRA|0.19|0||d|3
 Buffalo|United States of America|42.89|-78.88|USA|3|4||p|4
 Philadelphia|United States of America|39.95|-75.17|USA|5.1|5||u|8
 Cleveland|United States of America|41.5|-81.69|USA|1.8|5|i1|p|5
@@ -736,5 +736,25 @@ Moulmein|Myanmar|16.49|97.63|ENG|2.7|0||j|2
 Myitkyina|Myanmar|25.38|97.4|ENG|1.8|0||j|1
 Penang|Malaysia|5.41|100.33|ENG|1.2|0|r2|j|2
 Haiphong|Vietnam|20.86|106.68|FRA|2.7|0||p|3
+Dobrich|Bulgaria|43.57|27.83|ROM|0.21|0||p|2
+Ruse|Bulgaria|43.85|25.97|BUL|0.66|0||p|2
+Burgas|Bulgaria|42.5|27.47|BUL|0.46|0||p|2
+Vidin|Bulgaria|43.99|22.88|BUL|0.84|0||p|1
+Stara Zagora|Bulgaria|42.43|25.63|BUL|0.36|0||p|1
+Bitola|Macedonia|41.03|21.33|YUG|0.3|0||m|1
+Kragujevac|Serbia|44.01|20.91|YUG|0.73|0||h|2
+Dubrovnik|Croatia|42.65|18.09|YUG|0.12|0||m|1
+Fiume|Croatia|45.33|14.44|ITA|0.54|1||h|2
+Zara|Croatia|44.12|15.23|ITA|0.32|0||h|1
+Kavala|Greece|40.94|24.41|GRE|0.41|0||h|2
+Alexandroupoli|Greece|40.85|25.87|GRE|0.29|0||p|1
+Corfu|Greece|39.62|19.92|GRE|0.25|0||h|1
+Rhodes|Greece|36.43|28.22|ITA|0.05|0||h|2
+Alexandretta|Turkey|36.58|36.17|FRA|0.08|0||h|2
+Kayseri|Turkey|38.72|35.49|TUR|0.22|0||m|2
+Van|Turkey|38.5|43.38|TUR|0.44|0||m|1
+Zonguldak|Turkey|41.45|31.79|TUR|0.59|0|c3|h|2
+Arad|Romania|46.18|21.31|ROM|0.45|0||p|1
+Suceava|Romania|47.65|26.26|ROM|0.24|0||f|1
 `;
 if (typeof module !== 'undefined') module.exports = PROV_RAW;
