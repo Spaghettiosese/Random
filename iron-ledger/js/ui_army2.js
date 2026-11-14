@@ -1,0 +1,40 @@
+// 2.0 interface: division designer, army groups and field marshals, ranks and reinforcement priority.
+'use strict';
+const batList = b => Object.keys(BAT).filter(k => b[k]).map(k => `${b[k]}× ${BAT[k].icon}`).join(' ');
+function tplEditor(c) { const e = UI.tplEdit || (UI.tplEdit = { id: null, name: `${c.adj} Division`, b: { inf: 7, art: c.techs.m_art1 ? 2 : 0 } }), u = tplStats(e.b), ref = UNITS.inf;
+  const cmp = (k, lbl) => `<span>${lbl}</span><span class="num">${u[k]} <span class="dim">(${u[k] >= ref[k] ? '+' : ''}${Math.round((u[k] / Math.max(0.01, ref[k]) - 1) * 100)}% vs stock infantry)</span></span>`;
+  return `<div class="card tpled"><div class="row sp"><b>✎ Division designer</b><input data-ch="tplName" value="${esc(e.name)}" maxlength="30" aria-label="Template name"></div>
+    <div class="batgrid">${Object.keys(BAT).map(k => { const x = BAT[k], lock = x.tech && !c.techs[x.tech]; return `<div class="bat${lock ? ' lock' : ''}"${tip(`<b>${x.name}</b> battalion<br>Attack ${x.atk} · Defence ${x.def} · Breakthrough ${x.brk} · Speed ${x.spd}<br>${fmt(x.mp * 1000)} men · ${Object.keys(x.eq).map(g => `${x.eq[g]} ${GOODS[g][0]}`).join(', ')}${lock ? `<br><span class="neg">Needs ${TECHS[x.tech][0]}</span>` : ''}`)}><span>${x.icon} ${x.name}</span><span class="row">${btn('−', 'batAdd', `data-k="${k}" data-v="-1"`, 'sm', '', !(e.b[k] > 0))}<b class="num">${e.b[k] || 0}</b>${btn('+', 'batAdd', `data-k="${k}" data-v="1"`, 'sm', '', lock)}</span></div>`; }).join('')}</div>
+    <div class="kv">${cmp('atk', 'Attack')}${cmp('def', 'Defence')}${cmp('brk', 'Breakthrough')}<span>Speed</span><span>${u.spd}</span><span>Width</span><span class="${u.width > 10 ? 'neg' : ''}">${u.width} battalions${u.width > 10 ? ' — over 10, every extra battalion costs 4% of attack and defence' : ''}</span>${cmp('mp', 'Men (thousands)')}<span>Equipment</span><span>${Object.keys(u.eq).map(g => `${Math.round(u.eq[g])} ${GOODS[g][0]}`).join(', ')}</span><span>Training</span><span>${u.days} days${u.oil ? ' · burns oil' : ''}</span><span>Fights as</span><span>${UNITS[u.base] ? UNITS[u.base].name : u.base}</span></div>
+    <div class="row">${btn(e.id ? 'Save changes' : 'Save template', 'tplSave', '', 'pri sm')}${e.id ? btn('Save as new', 'tplSave', 'data-new="1"', 'sm') : ''}${btn('Clear', 'tplNew', '', 'sm')}<span class="dim">Existing divisions keep the template they were raised with; changes apply to new ones.</span></div></div>`; }
+{ const _mil = PANELS.military; PANELS.military = function (c) {
+  let h = _mil(c); const s = UI.sub.military;
+  if (s === 'recruit') { const ts = (c.templates || []).filter(t => UNITS[t.id]);
+    const rows = ts.map(t => { const u = UNITS[t.id], lock = u.tech && !c.techs[u.tech]; return `<tr><td>${u.icon} ${esc(t.name)}<div class="dim">${batList(t.b)}</div></td><td class="r">${u.atk}/${u.def}</td><td class="r">${u.mp}K</td><td class="r">${Math.round(u.days / (1 + M(c, 'train')))}</td><td class="r">${lock ? `<span class="dim">Needs ${TECHS[u.tech][0]}</span>` : [1, 5].map(n => btn('+' + n, 'recruit', `data-u="${t.id}" data-n="${n}"`, 'sm')).join('')}${btn('✎', 'tplEditOpen', `data-i="${t.id}"`, 'sm', 'Edit')}${btn('✕', 'tplDel', `data-i="${t.id}"`, 'sm', 'Delete the template (divisions already raised keep it)')}</td></tr>`; }).join('');
+    const block = `<h3>Our templates</h3>${ts.length ? `<table><tr><th>Template</th><th class="r">Atk/Def</th><th class="r">Men</th><th class="r">Days</th><th></th></tr>${rows}</table>` : '<div class="dim">No templates yet. Design one below; stock divisions remain available.</div>'}${tplEditor(c)}`;
+    const i = h.indexOf('<h3>Raise divisions'); h = i < 0 ? h + block : h.slice(0, i) + block + h.slice(i).replace('<h3>Raise divisions', '<h3>Stock divisions'); }
+  if (s === 'armies') { const gs = c.agroups || [], free = c.gens.filter(g => g.skill >= 3 && !g.army && !gs.some(x => x.marshal === g.id));
+    const blk = gs.length ? `<h3>Army groups</h3>` + gs.map(g => { const m = marshalOf(c, g), arms = g.armies.map(i => G.armies[i]).filter(Boolean); return `<div class="card"><div class="row sp"><b>${esc(g.name)}</b><span class="dim">${arms.length} armies · ${sum(arms, a => a.divs.length)} divisions</span></div>
+      <div class="row"><span class="dim">Field marshal</span>${m ? `<b>${m.name}</b> <span class="warn">${'★'.repeat(m.skill)}</span> <span class="dim">${TRAITS[m.trait][0]}</span>` : '<span class="dim">none</span>'}${free.length ? `<select data-ch="marshal" data-g="${g.id}"><option value="">${m ? 'Replace…' : 'Appoint…'}</option>${free.map(x => `<option value="${x.id}">${x.name} ${'★'.repeat(x.skill)} ${TRAITS[x.trait][0]}</option>`).join('')}</select>` : ''}</div>
+      <div class="dim">+${m ? (m.skill * 2.5).toFixed(1) : 0}% to every army of the group in battle${m && ['off', 'panzer'].includes(m.trait) ? ', more in attack' : m && m.trait === 'def' ? ', more in defence' : ''}. Marshals need three stars and learn from the group's battles.</div>
+      <div class="row">${btn('Select', 'agSel', `data-g="${g.id}"`, 'sm')}${btn('Disband group', 'agDel', `data-g="${g.id}"`, 'sm')}</div></div>`; }).join('') : '';
+    if (blk) { const j = h.indexOf('data-a="selAll"'), k = j > 0 ? h.lastIndexOf('<div class="row">', j) : -1; h = k > 0 ? h.slice(0, k) + blk + h.slice(k) : h + blk; } }
+  return h; }; }
+{ const _gc = groupCard; groupCard = function (c, list) { const h = _gc(c, list); return h.replace('<div class="row">', `<div class="row">${btn('Form army group', 'agForm', '', 'sm', 'Put the selected armies under one command. Appoint a field marshal for a bonus to all of them.')}`); }; }
+{ const _ac = armyCard; armyCard = function (c, a) { let h = _ac(c, a); const g = agOf(a);
+  const ranks = a.divs.map(d => rankOf(d.xp)), cnt = {}; ranks.forEach(r => cnt[r] = (cnt[r] || 0) + 1);
+  const extra = `<div class="row"><span class="dim">Experience</span>${RANKS.map(r => r[1]).filter(r => cnt[r]).map(r => `<span class="pill">${cnt[r]} ${r}</span>`).join('')}${g ? `<span class="pill">${esc(g.name)}</span>` : ''}</div>
+    <div class="row"><span class="dim"${tip('High: reinforced first. Low: not reinforced at all, saving men and equipment for the armies that need them.')}>Reinforcement</span>${['high', 'normal', 'low'].map(k => btn(k[0].toUpperCase() + k.slice(1), 'rprio', `data-i="${a.id}" data-k="${k}"`, 'sm' + ((a.rprio || 'normal') === k ? ' on' : ''))).join('')}</div>`;
+  return h.replace('<table>', extra + '<table>'); }; }
+Object.assign(ACT, {
+  batAdd(d) { const e = UI.tplEdit; e.b[d.k] = Math.max(0, (e.b[d.k] || 0) + +d.v); renderPanel(); },
+  tplSave(d) { const c = me(), e = UI.tplEdit, r = saveTemplate(c, e.name, e.b, d.new ? null : e.id); if (r) toast(r, 'bad'); else { toast(`Template saved: ${e.name}.`, 'good'); UI.tplEdit = null; } renderPanel(); },
+  tplNew() { UI.tplEdit = null; renderPanel(); },
+  tplEditOpen(d) { const t = (me().templates || []).find(x => x.id === d.i); if (t) UI.tplEdit = { id: t.id, name: t.name, b: Object.assign({}, t.b) }; renderPanel(); },
+  tplDel(d) { const c = me(); c.templates = (c.templates || []).filter(x => x.id !== d.i); renderPanel(); },
+  agForm() { const c = me(), l = selArmies(); if (!l.length) return; const g = formGroup(c, l); toast(`${g.name} is formed. Appoint a field marshal from the Armies tab.`, 'good'); UI.sub.military = 'armies'; renderAll(); },
+  agSel(d) { const g = (me().agroups || []).find(x => x.id === +d.g); if (g) setSelection(g.armies.map(i => G.armies[i]).filter(Boolean)); renderAll(); },
+  agDel(d) { const c = me(); c.agroups = (c.agroups || []).filter(x => x.id !== +d.g); renderAll(); },
+  rprio(d) { const a = G.armies[+d.i]; if (a) a.rprio = d.k === 'normal' ? undefined : d.k; renderPanel(); }
+});
+Object.assign(CHG, { tplName(el) { UI.tplEdit.name = el.value; }, marshal(el) { const c = me(), g = (c.agroups || []).find(x => x.id === +el.dataset.g); if (!g || !el.value) return; const r = setMarshal(c, g, +el.value); toast(r || 'Field marshal appointed.', r ? 'bad' : 'good'); renderAll(); } });

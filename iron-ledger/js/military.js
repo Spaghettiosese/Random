@@ -99,10 +99,10 @@ function sidePower(armies, attacking, p, enemyOwners) {
   let air = 0, eair = 0; for (const o of owners) air += airPower(C(o)); for (const o of enemyOwners) eair += airPower(C(o));
   const airF = 1 + clamp((air - eair) / Math.max(50, air + eair), -1, 1) * 0.18;
   for (const [d, a] of eng) { const u = UNITS[d.t], c = C(a.owner), g = genOf(a); let fa = 1 + M(c, 'atk'), fd = 1 + M(c, 'def'); const amph = attacking && (a._amph === p.id ? a._amphV : (a._amph = p.id, a._amphV = (NB[a.loc].find(e => e.to === p.id) || {}).sea ? 0.5 : 1)); const eff = d.str * (0.3 + 0.7 * d.org) * (1 + d.xp * 0.25) * (a.oos ? 0.5 : 1) * (amph || 1);
-    if (d.t === 'arm') { fa += M(c, 'tank'); if ('mjsu'.includes(p.ter)) fa -= 0.4; } if (u.oil) fa *= 0.5 + 0.5 * c.ful.oil; if (d.t === 'mtn' && 'mh'.includes(p.ter)) { fa += 0.3; fd += 0.3; }
+    if ((u.base || d.t) === 'arm') { fa += M(c, 'tank'); if ('mjsu'.includes(p.ter)) fa -= 0.4; } if (u.oil) fa *= 0.5 + 0.5 * c.ful.oil; if ((u.base || d.t) === 'mtn' && 'mh'.includes(p.ter)) { fa += 0.3; fd += 0.3; }
     if (g) { fa += g.skill * 0.05; fd += g.skill * 0.05; const t = g.trait;
-      if (t === 'panzer' && d.t === 'arm') fa += 0.2; if (t === 'inf' && (d.t === 'inf' || d.t === 'hvy')) fd += 0.1; if (t === 'def') fd += 0.15; if (t === 'off') fa += 0.12; if (t === 'mtn' && 'mh'.includes(p.ter)) { fa += 0.25; fd += 0.25; }
-      if (t === 'winter') { fd += 0.1; fa += 0.05; } if (t === 'brilliant') { fa += 0.1; fd += 0.1; } if (t === 'old') { fa -= 0.05; fd += 0.05; } if (t === 'cav' && (d.t === 'cav' || d.t === 'mot')) fa += 0.15;
+      if (t === 'panzer' && (u.base || d.t) === 'arm') fa += 0.2; if (t === 'inf' && ((u.base || d.t) === 'inf' || (u.base || d.t) === 'hvy')) fd += 0.1; if (t === 'def') fd += 0.15; if (t === 'off') fa += 0.12; if (t === 'mtn' && 'mh'.includes(p.ter)) { fa += 0.25; fd += 0.25; }
+      if (t === 'winter') { fd += 0.1; fa += 0.05; } if (t === 'brilliant') { fa += 0.1; fd += 0.1; } if (t === 'old') { fa -= 0.05; fd += 0.05; } if (t === 'cav' && ((u.base || d.t) === 'cav' || (u.base || d.t) === 'mot')) fa += 0.15;
       if (t === 'jungle' && 'js'.includes(p.ter)) { fa += 0.25; fd += 0.25; } if (t === 'desert' && p.ter === 'd') { fa += 0.25; fd += 0.25; } if (t === 'urban' && p.ter === 'u') { fa += 0.25; fd += 0.25; } if (t === 'politic') fd += 0.05; if (t === 'trick' && divs.length < 6) fa += 0.1; }
     atk += u.atk * eff * fa * airF * (attacking ? 1 : 1.0);
     tough += attacking ? (u.brk + u.def * 0.45) * eff * fd : u.def * eff * fd * (1 + ter[1] + p.fort * 0.12 + Math.min(10, a.dug || 0) * 0.02 * (1 + M(c, 'entrench') * 4));
