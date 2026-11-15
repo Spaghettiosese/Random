@@ -186,7 +186,7 @@ function startPlay(a, b, goal, opt = {}) {
 function playStrength(list) { return sum(list, t => countryStr(t) + C(t).gdp / 4000); }
 function playDaily() {
   for (const pl of G.plays.slice()) { const A = C(pl.a), B = C(pl.b), t = G.day - pl.day; if (!A.exists || !B.exists || atWar(pl.a, pl.b)) { G.plays.splice(G.plays.indexOf(pl), 1); continue; }
-    if (t === 8) for (const k of alive()) { if (pl.A.includes(k.tag) || pl.B.includes(k.tag)) continue; let side = null;
+    if (t === 8) for (const k of alive()) { if (pl.A.includes(k.tag) || pl.B.includes(k.tag)) continue; if ((k.ai || k.tag !== G.player) && hasSpirit(k, 'armed_neutrality')) continue; let side = null; // armed neutrals back no one
         if (friendly(k.tag, pl.b) || hasPact('guar', k.tag, pl.b) || hasPact('ally', k.tag, pl.b)) side = 'B'; else if (friendly(k.tag, pl.a) || hasPact('ally', k.tag, pl.a)) side = 'A'; if (!side) continue;
         if (side === 'B' && (k.ai || k.tag !== G.player) && (pl.noBack.includes(k.tag) || hasSpirit(k, 'appeasement') && !hasPact('guar', k.tag, pl.b) || hasSpirit(k, 'isolationism') || hasSpirit(k, 'political_paralysis') && !hasPact('guar', k.tag, pl.b))) { if (k.major) logMsg(`${k.name} declines to back ${B.name}.`, 'world'); continue; }
         const go = () => { pl[side].push(k.tag); logMsg(`${k.name} backs ${cname(side === 'A' ? pl.a : pl.b)} in the crisis.`, k.major ? 'world' : 'info', [pl.a, pl.b]); };
