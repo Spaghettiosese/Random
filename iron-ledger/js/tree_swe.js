@@ -34,7 +34,7 @@ unempins|Unemployment Insurance|publicworks|unemp -2; stab 2; money -3|The union
 sickpay|Sick Pay for All|moller|stab 2; spirit Sick Pay: manpower .01, stab 1|No Swede need go to work with a fever to feed the family.|
 childallow|Child Allowances|sickpay|popgrow 1; stab 2|1947: an allowance for every child, paid to the mother.|date 1947-1
 # The Neutral Kingdom
-neutral|Strict Neutrality||pp 20; swcred 5|Sweden has not fought a war since 1814, and Per Albin means to keep it that way.|ai 6
+neutral|Strict Neutrality||pp 20; swcred 5; spirit armed_neutrality|Sweden has not fought a war since 1814, and Per Albin means to keep it that way.|ai 6
 sandler|Sandler's Foreign Ministry|neutral|pp 15; rel NOR 10, DEN 10, FIN 10|Rickard Sandler believes in the League and in the North, in that order.|
 oslo|The Oslo States|sandler|trade NOR,DEN,HOL,BEL,FIN; rel HOL 10, BEL 10|The small democracies of the north and the west coordinate their trade and their neutrality.|
 article16|Free of Article Sixteen|sandler|pp 10 ?? We are no longer bound to impose sanctions => swcred 8 // We stay loyal to Geneva => rel ENG 10, FRA 10; legit 3|July 1936: after the fiasco over Abyssinia, the Oslo States declare that League sanctions no longer bind them.|date 1936-7
@@ -197,12 +197,12 @@ snf|The National League of Sweden|lindholm|ideo fas 4; ig army 2|The Conservativ
 kingactivist|Court the Powerful|snf|stab -4; ideo fas 4 ?? Court the old King => rel GER 10 // Court the officers => ig army 6|The activists need someone stronger than themselves.|ai 0
 nsweden|A New Sweden|kingactivist|setIdeo fas; leader Sven Olov Lindholm/Swedish Socialist Union; law oneparty; stab -6|The activists take the ministries with the army's blessing.|ai 0
 npress|The Party Press|nsweden|ws 6; law censorship|Dagsposten and Den Svenske Folksocialisten replace the free papers.|ai 0; req ideo fas
-axis|Join the New Order|nsweden|fn joinAxis; swpress ax -50|Stockholm signs the Anti-Comintern Pact and opens its railways to the Wehrmacht.|ai 0; req ideo fas
+axis|Join the New Order|nsweden|rmspirit armed_neutrality; fn joinAxis; swpress ax -50|Stockholm signs the Anti-Comintern Pact and opens its railways to the Wehrmacht.|ai 0; req ideo fas
 eastvol|Volunteers for the East|axis|units inf 2; rel GER 10, FIN 10|Swedish volunteers in Finnish and SS uniforms.|ai 0; req gerSovWar
 oreall|All the Ore for the Reich|axis|swore 30; rel GER 20, ENG -30|Every ore train, summer and winter, for Germany.|ai 0
 greatersweden|Greater Sweden|axis|claim Trondheim, Narvik; ws 4|Trondheim was Swedish once, the activists say, and Narvik should be.|ai 0
 balticdream|The Baltic Empire|greatersweden|claim Tallinn, Riga|The Sweden of Gustavus Adolphus held Reval and Riga.|ai 0
-northfront|The Northern Front|eastvol|units inf 3, mtn 2; war SOV|Sweden marches with Finland on Leningrad.|ai 0; req gerSovWar & ideo fas
+northfront|The Northern Front|eastvol|rmspirit armed_neutrality; units inf 3, mtn 2; war SOV|Sweden marches with Finland on Leningrad.|ai 0; req gerSovWar & ideo fas
 # The Swedish Left
 linderot|Linderot's Communists|folkhem|ideo com 4|Sven Linderot's party: small, disciplined, and loyal to Moscow.|ai 1
 rednorth|The Red North|linderot|ideo com 4; ig union 3|The miners of Kiruna and the lumberjacks of Norrbotten vote Communist.|ai 1
@@ -212,9 +212,9 @@ flamman|The Norrskensflamman Bombing|rednorth|ideo com 3; stab -2|March 1940: a 
 redwave|The Red Wave of 1944|linderot|ideo com 6; stab -2|The Communists win ten per cent in 1944 on the Red Army's victories.|date 1944-9; ai 1
 peoplesrep|A Swedish People's Republic|redwave|setIdeo com; leader Sven Linderot/Communist Party; stab -8; law council|The Riksdag gives way to councils of workers and soldiers.|ai 0
 nationalise|Nationalise the Banks|peoplesrep|ig ind -10; law command; money 10|The banks, the mines and the shipyards pass to the people.|ai 0; req ideo com
-comintern|With Moscow|peoplesrep|fn joinComintern|Sweden joins the camp of the Soviet Union.|ai 0; req ideo com
+comintern|With Moscow|peoplesrep|rmspirit armed_neutrality; fn joinComintern|Sweden joins the camp of the Soviet Union.|ai 0; req ideo com
 # The Nordic Union
-nordunion|A Nordic Defence Union|nordic|mkfaction Nordic Defence Union; invite NOR, DEN, FIN|Bind the North together: if one is attacked, all fight.|ai 0; req tension 50
+nordunion|A Nordic Defence Union|nordic|rmspirit armed_neutrality; mkfaction Nordic Defence Union; invite NOR, DEN, FIN|Bind the North together: if one is attacked, all fight.|ai 0; req tension 50
 kalmar|The Kalmar Dream|nordunion|rel NOR 10, DEN 10, FIN 10|Five centuries ago one crown ruled the whole North.|ai 0
 nordcouncil|A Nordic Council|kalmar|trade NOR, DEN, FIN; rel NOR 15, DEN 15, FIN 15|Ministers meet every year, and no Nordic citizen needs a passport.|ai 0
 nordindustry|Nordic Industry|nordcouncil|build arms 1, steel 1|Swedish steel, Norwegian power, Danish farms and Finnish timber in one economy.|ai 0
@@ -224,7 +224,7 @@ nordguarantee|Guarantee the North|nordarmy|guarantee NOR, DEN, FIN|Whoever attac
 nordfed|The Nordic Federation|nordguarantee,nordindustry|pp 50; legit 5; invite NOR, DEN, FIN; spirit The Nordic Federation: stab 3, def .05|One foreign policy, one army and four parliaments.|ai 0
 # The War's End
 endgame|The Turn of the Tide|boheman|swpress al -10; swcred 4|After Stalingrad the question in Stockholm is no longer who will win, but when.|date 1943-2
-enterwar|Enter the War?|endgame,defact42|swpress al -20 ?? Stay neutral to the end => swcred 15; stab 3 // Join the Allies => fn joinAllies; war GER|Spring 1945: the Allies would welcome Swedish divisions in Norway and Denmark. The government hesitates, and waits.|date 1945-2; req gerLosing; ai 1
+enterwar|Enter the War?|endgame,defact42|swpress al -20 ?? Stay neutral to the end => swcred 15; stab 3 // Join the Allies => rmspirit armed_neutrality; fn joinAllies; war GER|Spring 1945: the Allies would welcome Swedish divisions in Norway and Denmark. The government hesitates, and waits.|date 1945-2; req gerLosing; ai 1
 intonorway|Into Norway|enterwar|units mtn 2; rel NOR 25|Swedish divisions cross into Trøndelag.|ai 0; req atwar GER
 acrosssound|Across the Sound|enterwar|units inf 2; rel DEN 25|Swedish troops land in Zealand.|ai 0; req atwar GER
 sovcredit|The Soviet Credit|endgame|rel SOV 15; money 6|1946: a billion kronor of credit for Soviet orders, to keep the factories busy after the war.|date 1946-10

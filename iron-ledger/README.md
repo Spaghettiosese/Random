@@ -8,6 +8,16 @@ Open `index.html` in a browser. No build step, no server.
 
 ## Updates
 
+### 2.2 "Small Nations, Great Powers"
+
+- **Seven new focus trees**: Spain (234, one tree for the Republic and the Nationalists), Sweden (236), Norway (232), Denmark (233), the Netherlands (234), Belgium (232) and Luxembourg (234), hand-written with choices, requirements and sections.
+- **A system for each**: Spain's factions and the unity of each camp; Sweden's balance between Axis and Allied pressure and the credibility of its neutrality, and Kiruna's ore; Norway's neutral waters, Vemork's heavy water (it speeds atomic research) and the merchant fleet; Denmark's farm exports, the policy of cooperation under occupation, and Iceland and Greenland; the Dutch Water Line and the Indies' oil for Japan; Belgium's Flemings and Walloons, the King's choice and Congo uranium; Radio Luxembourg and ARBED steel.
+- **Great powers**: Germany's rival power centres and the generals' plot; Soviet plans and terror; America's Congress, public opinion and the acts that lead to war; Commonwealth unity; French cabinet crises; the Duce's prestige and the Grand Council; Japan's oil clock; China's War of Resistance (supply roads, defence in depth, United Front cohesion).
+- **Economy 2.0**: public debt and bonds, credit ratings, printing money and repudiation, unemployment and inflation, currency blocs and devaluation, rationing and price controls, reserves, investment priorities, economic events and a Finance tab.
+- **Navy and Air Force tabs** and the **war at sea** (merchant fleets, raiding, escorts, convoys, unrestricted submarine warfare, Liberty ships). Armies reach enemy-held land across the sea only by naval invasion.
+- **League of Nations**, **governments in exile**, **expeditionary forces**, **arms designers**, and ten more mechanics: codebreaking, scientists, refugees, operational planning, evacuation and scorched earth, prisoners of war, disease, propaganda, defensive lines and summits.
+- **Map**: 773 provinces. **Balance**: when a nation falls, overseas allies' armies that are cut off are evacuated by sea with their heavy equipment lost (Dunkirk), instead of fighting on behind the lines; in historical games the Allies do not land in Axis-held Europe before July 1943 (Italy) and June 1944 (France), Pearl Harbor comes in autumn 1941 after the oil embargo, China holds its interior, the war in China becomes the Pacific War rather than "the Second World War", recently joined wars are never ended as stalemates, and the Scandinavians stay out of Finland's wars.
+
 ### 2.1 "The Balkans and the Bomb"
 
 - **Balkan focus trees**: Romania (235), Yugoslavia (233), Bulgaria (232), Greece (232) and Turkey (234), hand-written with choices, requirements and sections.

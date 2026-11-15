@@ -59,7 +59,7 @@ function expMonthly() { for (const a of Object.values(G.armies)) { if (!a.expFro
     addRel(k.tag, c.tag, 2); c.axp = (c.axp || 0) + a.divs.length * 0.3; }
   for (const c of alive()) { if (!c.ai || c.capitulated || !isAtWar(c.tag) || c.major || Math.random() > 0.06) continue; const f = factionOf(c.tag); if (!f || f.leader === c.tag) continue;
     const threatened = G.P.some(p => p.ctrl === c.tag && NB[p.id].some(e => !e.sea && atWar(c.tag, P(e.to).ctrl))); if (threatened) continue;
-    const tot = sum(armiesOf(c.tag), x => x.divs.length), a = armiesOf(c.tag).filter(x => !x.battle && !x.inv && !x.expFrom && x.divs.length >= 2 && x.divs.length <= Math.max(2, tot * 0.34)).sort((x, y) => y.divs.length - x.divs.length)[0]; if (a && expTargets(c).some(k => k.tag === f.leader)) sendExpedition(c, a, f.leader); } }
+    const tot = sum(armiesOf(c.tag), x => x.divs.length), a = armiesOf(c.tag).filter(x => !x.battle && !x.inv && !x.expFrom && x.divs.length >= 2 && x.divs.length <= Math.max(2, tot * 0.34)).sort((x, y) => y.divs.length - x.divs.length)[0]; if (a && expTargets(c).some(k => k.tag === f.leader) && (c.overlord === f.leader || kmBetween(c.capital, C(f.leader).capital) < 3000)) sendExpedition(c, a, f.leader); } }
 // ======================= arms designers and licences =======================
 const FIRMS = {
   GER: { land: [['Krupp', { atk: 0.03, def: 0.02 }], ['Rheinmetall-Borsig', { mil_out: 0.05 }]], armour: [['Daimler-Benz', { atk: 0.05 }], ['Henschel', { def: 0.03, org: 0.03 }]], air: [['Messerschmitt', { air: 0.08 }], ['Junkers', { bombing: 0.1, air: 0.03 }]], naval: [['Blohm & Voss', { navy: 0.08 }], ['Germaniawerft', { navy: 0.05, supply: 0.02 }]] },

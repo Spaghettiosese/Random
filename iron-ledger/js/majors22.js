@@ -59,8 +59,9 @@ function usMonthly(c) { const U = usOf(c); let d = -0.1;
   U.inter = clamp(U.inter + d, 0, 100);
   if (G.day === mjDay(1938, 11) || (G.day > mjDay(1938, 11) && !U.e38)) { U.e38 = 1; U.d -= 72; U.r += 72; } if (G.day > mjDay(1942, 11) && !U.e42) { U.e42 = 1; U.d -= 45; U.r += 45; }
   if (U.inter >= 50 && hasSpirit(c, 'isolationism')) { removeSpirit(c, 'isolationism'); if (!U.acts.lendlease) addSpirit(c, 'neutrality_acts'); logMsg('American opinion turns: isolation is over.', 'world', [c.tag]); }
-  if (U.acts.lendlease) { for (const k of alive()) { if (k.tag === c.tag || k.capitulated || !isAtWar(k.tag) || atWar(k.tag, c.tag) || !(friendly(k.tag, 'ENG') || k.tag === 'ENG' || k.tag === 'SOV' || k.tag === 'CHI')) continue; if (!enemiesOf(k.tag).some(e => ['GER', 'JAP', 'ITA'].includes(e))) continue;
-      for (const g of ['arms', 'aircraft', 'tanks']) { const x = (c.stock[g] || 0) * 0.01; c.stock[g] -= x; k.stock[g] = (k.stock[g] || 0) + x; } addRel(k.tag, c.tag, 1); } }
+  // Lend-Lease: two per cent of America's arms, aircraft and tanks a month, shared among the nations fighting its enemies
+  if (U.acts.lendlease) { const R = alive().filter(k => k.tag !== c.tag && !k.capitulated && isAtWar(k.tag) && !atWar(k.tag, c.tag) && (friendly(k.tag, 'ENG') || ['ENG', 'SOV', 'CHI'].includes(k.tag)) && enemiesOf(k.tag).some(e => ['GER', 'JAP', 'ITA'].includes(e)));
+    if (R.length) { for (const g of ['arms', 'aircraft', 'tanks']) { const x = (c.stock[g] || 0) * 0.02; c.stock[g] -= x; for (const k of R) k.stock[g] = (k.stock[g] || 0) + x / R.length; } for (const k of R) addRel(k.tag, c.tag, 1); } }
   if (c.ai) for (const a of Object.keys(US_ACTS)) if (!U.acts[a] && U.inter >= US_ACTS[a][1] && (!U.tried[a] || G.day - U.tried[a] > 120) && (a !== 'war' || (!isAtWar(c.tag) && (!G.historical || year() >= 1942)))) usAct(c, a);
   if (G.historical && c.ai && G.day >= mjDay(1941, 8) && ok('JAP') && C('JAP').ideology !== 'dem' && !atWar('JAP', c.tag) && !c.flags.oilFreeze) { c.flags.oilFreeze = G.day; if (!embargoing(c, 'JAP')) setEmbargo(c, 'JAP', true, true); if (ok('HOL') && !C('HOL').capitulated && !embargoing(C('HOL'), 'JAP')) setEmbargo(C('HOL'), 'JAP', true, true); addSpirit(C('JAP'), 'oil_embargo');
     logMsg('Washington freezes Japanese assets and embargoes oil; the Dutch East Indies follow. Japan has two years of fuel.', 'world', [c.tag, 'JAP']); } }
@@ -148,6 +149,7 @@ function cnMonthly(c) { const N = cnOf(); let aid = 0; const usa = ok('USA') ? u
     if (was !== undefined && was !== now && r !== 'hump') logMsg(`${CN_ROUTES[r][0]} is ${now ? 'open again' : 'closed'}${now ? '.' : ': one less road for the arms of Free China.'}`, 'world', [c.tag]);
     if (!now) continue; if (r === 'hump') { N.hump = Math.min(260, (N.hump || 20) + 8); aid += N.hump * (usa && usa.acts.lendlease ? 1 : 0.4); }
     else aid += CN_ROUTES[r][3] * (r === 'nw' ? 1 : sponsor); }
+  if (!(ok('JAP') && atWar(c.tag, 'JAP'))) aid = 0; // the roads carry war aid, and the war has not begun
   if (aid > 0) { c.stock.arms += aid; c.stock.artillery += aid * 0.12; c.stock.aircraft += aid * (N.open.nw ? 0.08 : 0.04); N.total += aid; } N.aid = Math.round(aid);
   removeSpirit(c, 'space_for_time'); if (isAtWar(c.tag) && ok('JAP') && atWar(c.tag, 'JAP')) addSpirit(c, 'space_for_time');
   // the United Front
@@ -175,6 +177,30 @@ const CN_HALT = ['Chongqing', 'Chengdu', 'Kunming', "Xi'an", 'Lanzhou', "Yan'an"
 { const _aa = aiArmies; aiArmies = function (tag) { _aa(tag); const k = C(tag); if (!G.historical || year() >= 1946 || !k || !k.ai || (tag !== 'JAP' && k.overlord !== 'JAP')) return;
   const halt = new Set(CN_HALT.concat(year() < 1944 ? CN_HALT44 : []).map(n => PNAME[n]).filter(x => x !== undefined));
   for (const a of armiesOf(tag)) if (a.auto && a.path.length && halt.has(a.path[0]) && atWar(tag, P(a.path[0]).ctrl)) a.path = []; }; }
+// Dunkirk: when a nation falls, the armies of its allies that came from overseas and are now cut off from any friendly
+// land are taken off by sea, as the British were from Dunkirk, Norway and Greece. Their heavy equipment stays behind.
+function mjLandPath(from, ok2, goal) { const seen = new Set([from]), q = [from]; let n = 0;
+  while (q.length && n++ < 900) { const id = q.shift(); if (goal(P(id))) return true; for (const e of NB[id]) { if (e.sea || seen.has(e.to)) continue; const p = P(e.to); if (!ok2(p)) continue; seen.add(e.to); q.push(e.to); } } return false; }
+function evacuateStranded(fallen, allies) { const out = {};
+  for (const a of Object.values(G.armies)) { const o = a.owner, k = C(o); if (!allies.includes(o) || !k || !k.exists || k.capitulated || o === fallen || !a.divs.length || a.inv) continue; const here = P(a.loc); if (!here || here.owner === o) continue;
+    const home = P(k.capital); if (!home || home.ctrl !== o) continue;
+    if (mjLandPath(a.loc, () => true, p => p.id === home.id)) continue; // the homeland can be reached overland: not an overseas army
+    const held = p => p.ctrl === o || (friendly(o, p.ctrl) && !atWar(o, p.ctrl) && !C(p.ctrl).capitulated);
+    const friendlySoil = p => p.ctrl === p.owner && p.owner !== fallen && (p.owner === o || (friendly(o, p.owner) && !atWar(o, p.owner) && !C(p.owner).capitulated));
+    if (mjLandPath(a.loc, held, friendlySoil)) continue; // still joined to an ally's front
+    if (a.battle && typeof leaveBattle === 'function') leaveBattle(a); a.path = []; a.loc = home.id; a.order = null;
+    for (const d of a.divs) { d.str = Math.max(0.3, d.str * 0.7); d.org = Math.min(d.org, 0.2); }
+    k.stock.arms = Math.max(0, (k.stock.arms || 0) - a.divs.length * 30); k.stock.artillery = Math.max(0, (k.stock.artillery || 0) - a.divs.length * 5); k.stock.autos = Math.max(0, (k.stock.autos || 0) - a.divs.length * 10);
+    out[o] = (out[o] || 0) + a.divs.length; }
+  for (const o in out) logMsg(o === 'ENG' && fallen === 'FRA' ? `Dunkirk: ${out[o]} divisions of the British Expeditionary Force are taken off the beaches by every ship in England. Their guns and lorries stay behind.` : `${out[o]} ${C(o).adj} divisions are evacuated by sea from ${cname(fallen)}, leaving their heavy equipment.`, 'world', [o, fallen]); }
+{ const _cap = capitulate; capitulate = function (tag) { // only the fallen nation's own comrades in arms are taken off
+  const allies = G.wars.filter(w => w.att.includes(tag) || w.def.includes(tag)).flatMap(w => w.att.includes(tag) ? w.att : w.def).filter(t => t !== tag);
+  _cap(tag); try { evacuateStranded(tag, [...new Set(allies)]); } catch (e) { /* never block a capitulation */ } }; }
+// Fortress Europe: in the historical course the AI makes no landings on Axis-held Europe before the real ones
+// (Sicily in July 1943, Normandy in June 1944, Greece in October 1944)
+const FORTRESS = { ITA: [1943, 7], FRA: [1944, 6], BEL: [1944, 6], HOL: [1944, 6], LUX: [1944, 6], DEN: [1944, 6], NOR: [1944, 6], GER: [1944, 6], GRE: [1944, 10], YUG: [1944, 10], ALB: [1944, 10] };
+const axisHeld = t => !!t && ok(t) && (t === 'GER' || t === 'ITA' || (ok('GER') && friendly('GER', t)) || (ok('ITA') && friendly('ITA', t)));
+{ const _ml = aiMayLand; aiMayLand = function (tag, q) { if (G.historical && atWar(tag, q.ctrl) && axisHeld(q.ctrl) && !axisHeld(tag)) { const k = [q.owner].concat(q.cores).find(x => FORTRESS[x]); if (k && G.day < mjDay(FORTRESS[k][0], FORTRESS[k][1])) return false; } return _ml(tag, q); }; }
 // ---------- hooks ----------
 { const _pm = politicsMonthly; politicsMonthly = function (c) { _pm(c); if (!c.exists || c.capitulated) return; const t = c.tag;
   if (t === 'GER' && c.ideology === 'fas') polyMonthly(c); else if (t === 'SOV' && c.ideology === 'com') planMonthly(c); else if (t === 'USA') usMonthly(c); else if (t === 'ENG') cwMonthly(c); else if (t === 'FRA') frMonthly(c); else if (t === 'ITA') itMonthly(c); else if (t === 'JAP') jpMonthly(c); else if (t === 'CHI') cnMonthly(c); }; }

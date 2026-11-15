@@ -10,7 +10,7 @@ const ndAxis = t => !!t && ok(t) && (t === 'GER' || C(t).overlord === 'GER' || (
 // Berlin and the Allies each press Stockholm. Every concession to one side relieves its pressure and raises the other's;
 // each concession also spends the credibility of Swedish neutrality. Kiruna's ore goes out through Luleå (frozen in winter)
 // and Narvik; Germany's steelworks feel it at once when the share sent to them falls.
-SPIRITS.armed_neutrality = ['Armed Neutrality', 'Strong enough that invading us would cost more than it would gain.', { def: 0.06, stab: 2 }];
+SPIRITS.credible_neutrality = ['A Credible Neutrality', 'Strong enough that invading us would cost more than it would gain, and trusted by both sides.', { def: 0.06, stab: 2 }];
 SPIRITS.compromised_neutrality = ['Compromised Neutrality', 'Everyone knows we bend; no one believes we would fight.', { stab: -3, legit: -4 }];
 SPIRITS.transit_traffic = ['The Transit Traffic', 'Leave trains full of German soldiers cross Sweden to and from Norway.', { stab: -2 }];
 SPIRITS.beredskap = ['The Readiness', 'Beredskapen: conscripts on the frontiers, rationing at home, the whole nation on guard.', { def: 0.1, manpower: 0.05, tax: -0.03 }];
@@ -67,7 +67,7 @@ function swMonthly(c) { const S = swOf(c); if (c.overlord) return; const war = i
   S.vol = kir ? Math.min(1, (lul ? 0.6 : 0) + (nar ? 0.6 : 0)) : 0; c.money += weeksIncome(c, 0.4 * S.vol);
   if (ok('GER')) { const g = C('GER'), toG = !atWar(c.tag, 'GER') && !embargoing(c, 'GER') ? S.ore / 100 : 0, narG = nar && !atWar(nt, 'GER'), got = (ndCtrl('Kiruna') === 'GER' ? 1 : 0) + (kir ? Math.min(1, (lul ? 0.6 : 0) + (narG ? 0.6 : 0)) * toG : 0);
     removeSpirit(g, 'swedish_ore'); removeSpirit(g, 'ore_famine'); if (got >= 0.45) addSpirit(g, 'swedish_ore'); else if (gw && got < 0.2) addSpirit(g, 'ore_famine'); }
-  removeSpirit(c, 'armed_neutrality'); removeSpirit(c, 'compromised_neutrality'); if (!war) { if (S.cred >= 70) addSpirit(c, 'armed_neutrality'); else if (S.cred < 30) addSpirit(c, 'compromised_neutrality'); }
+  removeSpirit(c, 'credible_neutrality'); removeSpirit(c, 'compromised_neutrality'); if (!war) { if (S.cred >= 70) addSpirit(c, 'credible_neutrality'); else if (S.cred < 30) addSpirit(c, 'compromised_neutrality'); }
   if (!war && G.day - S.ult > 150) { if (S.ax >= 100 && gw) swUltimatum(c, 'ax'); else if (S.al >= 100 && alw) swUltimatum(c, 'al'); }
   if (c.ai) swAI(c); }
 function swAI(c) { const S = swOf(c); if (!S.conc.finvol && ok('FIN') && ok('SOV') && atWar('FIN', 'SOV') && !atWar(c.tag, 'SOV') && c.pp >= 20) swAct(c, 'finvol'); if (isAtWar(c.tag)) return;
@@ -164,6 +164,8 @@ function dkIslands() { const den = C('DEN'); if (!den) return; const fallen = !d
     if (G.day >= ndDay(1944, 6) && !G.flags.iceland && den.exists) { G.flags.iceland = G.day; const k = ice.ctrl, r = secede(den, ['Reykjavik'], 'Iceland', 'dem', '#4a7fb5', false); if (r) { if (k && k !== r.tag && ok(k) && !ndAxis(k)) addRel(r.tag, k, 30); logMsg('At Þingvellir the Althing proclaims the Republic of Iceland.', 'world', [r.tag, 'DEN']); } } }
   if (gr && gr.owner === 'DEN' && ok('USA') && gr.ctrl !== 'USA' && !ndAxis(gr.ctrl) && (year() >= 1941 || isAtWar('USA'))) { const first = !G.flags.grUSA; G.flags.grUSA = G.day; gr.ctrl = 'USA'; if (first) logMsg('The Danish minister in Washington places Greenland under American protection.', 'world', ['USA', 'DEN']); UIH.mapDirty(); } }
 
+// in the historical course Sweden stays out of every alliance, and Norway and Denmark join none while they are neutral
+{ const _jf = joinFaction; joinFaction = function (t, lead) { const k = C(t); if (G.historical && k && k.ai && (t === 'SWE' || ((t === 'NOR' || t === 'DEN') && !isAtWar(t)))) return; return _jf(t, lead); }; }
 // ---------- hooks ----------
 { const _pm = politicsMonthly; politicsMonthly = function (c) { _pm(c); if (!c.exists || c.capitulated) return; if (c.tag === 'SWE') swMonthly(c); else if (c.tag === 'NOR') noMonthly(c); else if (c.tag === 'DEN') dkMonthly(c); }; }
 { const _dm = diplomacyMonthly; diplomacyMonthly = function () { _dm(); hwMonthly(); dkIslands(); const E = exiles().NOR; if (E) E.funds = (E.funds || 0) + 1.5; }; }

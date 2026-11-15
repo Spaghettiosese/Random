@@ -105,7 +105,7 @@ Object.assign(XTOK, {
   befl: v => [c => { const B = beOf(c); B.fl = clamp(B.fl + +v, 0, 100); }, `Flemish goodwill ${+v > 0 ? '+' : ''}${v}`],
   bewa: v => [c => { const B = beOf(c); B.wa = clamp(B.wa + +v, 0, 100); }, `Walloon goodwill ${+v > 0 ? '+' : ''}${v}`],
   uran: v => [() => { if (ok(v.trim())) C(v.trim()).uran = C(v.trim()).uran || G.day; }, `${COUNTRY_DEF[v.trim()].n} receives Congolese uranium for its atomic programme`],
-  lxair: v => [c => { lxOf(c).air = v.trim(); }, `Radio Luxembourg broadcasts for ${COUNTRY_DEF[v.trim()].n}`],
+  lxair: v => { const t = v.trim(); return [c => { lxOf(c).air = t === '-' ? '' : t; }, t === '-' ? 'Radio Luxembourg goes back on the open market' : `Radio Luxembourg broadcasts for ${COUNTRY_DEF[t].n}`]; },
   lxsteel: v => [c => { lxOf(c).steel = v.trim(); }, `ARBED steel goes to ${COUNTRY_DEF[v.trim()].n}`]
 });
 Object.assign(REQF, {
