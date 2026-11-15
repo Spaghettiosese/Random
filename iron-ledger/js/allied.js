@@ -456,7 +456,7 @@ function aiIntel(c) {
   if (!i.lvl || i.ops.length > i.lvl || c.infl < 60 || Math.random() > 0.35) return;
   const foes = enemiesOf(c.tag).map(C).filter(t => !t.capitulated), rivals = alive().filter(t => t.tag !== c.tag && !friendly(c.tag, t.tag) && opinion(c.tag, t.tag) < -25 && (t.major || NBcountry(c.tag, t.tag)));
   const t = foes.length ? pick(foes) : rivals.length ? pick(rivals) : null; if (!t) return;
-  const order = foes.length ? ['infiltrate', 'sabotage', 'steal', 'unrest'] : ['coup', 'propaganda', 'steal', 'unrest']; for (const id of order.sort(() => Math.random() - 0.4)) if (!opBlock(c, t, id) && (id !== 'coup' || opChance(c, t, id) > 30)) { startOp(c, t.tag, id); return; }
+  const order = foes.length ? ['infiltrate', 'sabotage', 'steal', 'unrest'] : ['coup', 'propaganda', 'steal', 'unrest']; for (const id of order.sort(() => Math.random() - 0.4)) if (!opBlock(c, t, id) && (id !== 'coup' || (opChance(c, t, id) > 30 && !(G.historical && t.major)))) { startOp(c, t.tag, id); return; }
 }
 const NBcountry = (a, b) => G.P.some(p => p.owner === a && NB[p.id].some(e => !e.sea && P(e.to).owner === b));
 

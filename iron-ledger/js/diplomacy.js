@@ -43,7 +43,10 @@ function friendly(a, b) {
 function joinWar(w, t, side) {
   const c = C(t); if (!c || !c.exists || w.att.includes(t) || w.def.includes(t)) return; const other = side === 'att' ? w.def : w.att;
   if (w[side].some(m => atWar(m, t))) return; w[side].push(t); G._wc = null; for (const o of other) dropPacts(t, o);
-  if (!w.civil && !w.ww && w.att.some(t => C(t).major) && w.def.some(t => C(t).major) && w.att.length + w.def.length > 6 && w.att.concat(w.def).filter(t => !C(t).overlord).length >= 4) { w.ww = true; w.name = 'Second World War'; logMsg('The conflict has become a world war.', 'world'); }
+  // a world war needs three great powers, and there is only one; the war in Asia that America or Britain joins becomes the Pacific War
+  if (!w.civil && !w.ww && w.att.some(t => C(t).major) && w.def.some(t => C(t).major) && w.att.length + w.def.length > 6) { const ind = w.att.concat(w.def).filter(t => !C(t).overlord), mj = ind.filter(t => C(t).major).length, other = G.wars.find(x => x !== w && x.ww), all = w.att.concat(w.def);
+    if (!other && ind.length >= 4 && mj >= 3) { w.ww = true; w.name = 'Second World War'; logMsg('The conflict has become a world war.', 'world'); }
+    else if (other && !w.pac && all.includes('JAP') && (all.includes('USA') || all.includes('ENG'))) { w.pac = true; w.name = 'Pacific War'; logMsg('The war in Asia has become the Pacific War.', 'world'); } }
   logMsg(`${c.name} joins the ${w.name} ${side === 'att' ? 'against ' + cname(w.def[0]) : 'against ' + cname(w.att[0])}.`, c.major ? 'world' : 'info', [t]);
   for (const s of alive()) if (s.overlord === t) joinWar(w, s.tag, side);
   repatriate(); UIH.mapDirty();
@@ -140,6 +143,9 @@ function checkWarEnd(w) {
   if (!live(w.def).length) peace(w, 'att'); else if (!live(w.att).length) peace(w, 'def');
 }
 function restoreControl() { warCache(); for (const p of G.P) if (p.ctrl !== p.owner && !atWar(p.ctrl, p.owner)) p.ctrl = p.owner; repatriate(); UIH.mapDirty(); }
+// a war that someone has joined in the last two years is not a stalemate, whatever the score says
+// (and in the historical course Japan never makes peace with Chongqing)
+function warFresh(w) { const all = w.att.concat(w.def); return G.day - Math.max(w.start, ...Object.values(w.joined || {})) < 730 || (G.historical && all.includes('JAP') && all.includes('CHI') && year() < 1946); }
 function whitePeace(w) { logMsg(`The ${w.name} ends in a white peace.`, 'world'); for (const a of w.att) for (const d of w.def) addPact('truce', a, d, 720); G.wars.splice(G.wars.indexOf(w), 1); for (const t of w.att.concat(w.def)) C(t).capitulated = false; G._wc = null; restoreControl(); }
 function peace(w, winSide) {
   const win = w[winSide].slice(), lose = (winSide === 'att' ? w.def : w.att).slice(); G.wars.splice(G.wars.indexOf(w), 1); G._wc = null; warCache();
@@ -222,6 +228,6 @@ function diplomacyMonthly() {
   G.pacts = G.pacts.filter(p => !p.until || p.until > G.day); claimCache();
   for (const c of alive()) { c.infamy = Math.max(0, c.infamy - 0.4); for (const t in c.rel) if (c.rel[t]) c.rel[t] -= Math.sign(c.rel[t]) * Math.min(Math.abs(c.rel[t]), 0.5); }
   G.tension = Math.max(0, G.tension - (G.wars.some(w => w.att.concat(w.def).some(t => C(t).major)) ? 0 : 0.25));
-  for (const w of G.wars.slice()) { if (G.day - w.start > 1300 && !w.civil) { const s = warScore(w); if (Math.abs(s.att - s.def) < 0.08 && C(w.att[0]).warExh + C(w.def[0]).warExh > 80) whitePeace(w); } else checkWarEnd(w); }
+  for (const w of G.wars.slice()) { if (G.day - w.start > 1300 && !w.civil && !warFresh(w)) { const s = warScore(w); if (Math.abs(s.att - s.def) < 0.08 && C(w.att[0]).warExh + C(w.def[0]).warExh > 80) whitePeace(w); } else checkWarEnd(w); }
   for (const f of G.factions) f.members = f.members.filter(t => C(t).exists); G.factions = G.factions.filter(f => f.members.length);
 }

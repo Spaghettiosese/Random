@@ -89,7 +89,7 @@ function politics2Monthly(c) {
   if (dateObj(G.day).getUTCMonth() === 0) { c.lage = (c.lage || 55) + 1; for (const p of ps) if (p !== rulingParty(c) && Math.random() < 0.12) { p.leader = personName(c); p.trait = pick(IDEO_TRAIT[p.ideo]); } }
   if ((c.lage || 55) > 64 && Math.random() < ((c.lage - 63) * 0.0005)) { const r = rulingParty(c), old = c.leader; if (r && !ALT_LEADERS_FIXED(c, old)) { r.leader = personName(c); r.trait = pick(IDEO_TRAIT[r.ideo]); c.lage = rint(48, 66); takeOffice(c, r, `succeeds the late ${old}`); } }
   for (const p of ps) if (p.banned && c.sup[p.ideo] > 25 && Math.random() < 0.05) { c.rad = Math.min(1, c.rad + 0.03); c.stab = Math.max(0, c.stab - 2); }
-  const risk = coupRisk(c); c.coupRisk = risk; if (risk > 12 && Math.random() < risk / 1100 && !(G.historical && c.major && c.ai && G.day < 365 * 4)) stageCoup(c);
+  const risk = coupRisk(c); c.coupRisk = risk; if (risk > 12 && Math.random() < risk / 1100 && !(G.historical && c.major && c.ai && G.day < 365 * 10)) stageCoup(c);
 }
 const ALT_LEADERS_FIXED = (c, name) => G.historical && c.ai && COUNTRY_DEF[c.tag] && COUNTRY_DEF[c.tag].ld === name && G.day < 365 * 9; // history's leaders live out the war // keep the historical cast for the first years
 { const _pm = politicsMonthly; politicsMonthly = function (c) { _pm(c); if (c.exists) politics2Monthly(c); }; }

@@ -30,7 +30,7 @@ Object.assign(FNS, {
   leaderHesse: [setLeader('Väinö I', 'Royal Government'), 'A king is crowned in Helsinki'],
   leaderMannerheim: [setLeader('Carl Gustaf Mannerheim', 'Regency'), 'Mannerheim becomes Regent'],
   kareliaGift: [c => { const p = PN('Petrozavodsk'); if (p.owner === 'SOV' && C('SOV').ai && friendly(c.tag, 'SOV')) { transferProv(p, c.tag); p.cores.push(c.tag); } else c.infl += 30; }, 'A friendly Moscow cedes East Karelia'],
-  inviteNordic: [c => inviteAll(c, ['SWE', 'NOR', 'DEN'], k => opinion(k.tag, c.tag) > 10), 'Sweden, Norway and Denmark are invited'],
+  inviteNordic: [c => inviteAll(c, ['SWE', 'NOR', 'DEN'], k => opinion(k.tag, c.tag) > 10 && !(G.historical && k.ai)), 'Sweden, Norway and Denmark are invited (in the historical course their governments decline)'],
   finJoinGer: [c => { const w = G.wars.find(x => (x.att.includes('GER') && x.def.includes('SOV')) || (x.def.includes('GER') && x.att.includes('SOV'))); if (w && !atWar(c.tag, 'SOV')) joinWar(w, c.tag, w.att.includes('GER') ? 'att' : 'def'); }, 'Enter the war against the Soviet Union alongside Germany, without joining its faction'],
   dropSovClaims: [c => dropClaimsOf('SOV', c.tag), 'The Soviet Union drops its claims on our territory'],
   whitePeaceSOV: [c => { const w = G.wars.find(x => (x.att[0] === 'SOV' && x.def[0] === c.tag) || (x.att[0] === c.tag && x.def[0] === 'SOV')); if (w && C('SOV').ai && G.day - w.start > 90 && P(c.capital).ctrl === c.tag) whitePeace(w); else c.ws = Math.min(100, c.ws + 5); }, 'If we lead our own war with Moscow, have held out for three months and still hold the capital, the war ends in a white peace'],

@@ -46,7 +46,7 @@ function armyExercise(c) { if (exerciseBlock(c)) return false; c.money -= exerci
   };
   const _dm = diplomacyMonthly; diplomacyMonthly = function () { _dm();
     for (const w of G.wars.slice()) { if (w.civil) continue; const sc = warScore(w), v = sc.att - sc.def; w.born = w.born === undefined ? G.day : w.born; if (w.sc === undefined || Math.abs(v - w.sc) > 0.03) { w.sc = v; w.still = 0; continue; } w.still = (w.still || 0) + 1;
-      if (w.still >= 18 && G.day - w.born > 1000 && !w.att.concat(w.def).some(t => t === G.player && !C(t).ai) && Math.abs(v) < 0.25) { logMsg(`After years of stalemate the ${w.name} is ended by an armistice.`, 'world'); whitePeace(w); } } }; }
+      if (w.still >= 18 && G.day - w.born > 1000 && !warFresh(w) && !w.att.concat(w.def).some(t => t === G.player && !C(t).ai) && Math.abs(v) < 0.25) { logMsg(`After years of stalemate the ${w.name} is ended by an armistice.`, 'world'); whitePeace(w); } } }; }
 
 // requirements on the old object-style trees
 { const need = (tree, id, req) => { const f = (TREES[tree] || []).find(x => x.id === id); if (f) f.req = f.req ? both(f.req, req) : req; };
