@@ -8,6 +8,18 @@ Open `index.html` in a browser. No build step, no server.
 
 ## Updates
 
+### 2.3 "Fronts and Weather"
+
+- **Fronts and battle plans**: a Fronts tab; fronts against a nation with armies, an order (hold, attack, fall back) and a stance; sectors and fallback lines painted on the map, objectives clicked on it; planning up to +25% attack. The 1.7 fronts are replaced.
+- **Provinces taken a piece at a time**: marches and battles take provinces gradually; narrow wins take part of a province, which is kept while the attackers stay next to it and drawn on the map.
+- **Weather**: daily weather per region (rain, storms, fog, snow, blizzards, heat, sandstorms, monsoon) carried east by the westerlies, and the ground it leaves (mud, deep snow, frozen ground, floods), with effects on marches, attacks, aircraft, landings and attrition. Weather map mode.
+- **Province conditions**: floods, scorched earth, devastation, partisans, epidemics, famine, front line, refugees, sieges, minefields, fortified zones, burning oil fields, martial law, bombing. Conditions map mode.
+- **192 national decisions** for all 78 nations, among them China's breach of the Yellow River dikes; the AI takes urgent ones when the moment comes.
+- **Peace treaties that partition**: AI victors annex borderlands and colonies (and, in historical games, what history took) before anything is puppeted; overlords absorb claimed districts from subjects; players can annex border districts from a subject.
+- **Politics 3.0**: parliaments and coalitions, votes of confidence, approval ratings, scandals, party militias, regional movements and press policy.
+- **New focus trees**: Portugal (237), Canada (233) and the British Raj (239), hand-written, each with a system of its own: the Lisbon Balance (wolfram, neutrality, refugees, the Azores), Conscription and the Commonwealth (unity, the plebiscite, the Air Training Plan), the Road to Independence (Congress, the League, the princes, Quit India, famine, partition).
+- **Balance**: France asks for an armistice once Paris falls and about a third of it is lost; China never surrenders while it holds the interior, and moves its government inland. Historical games keep the calendar of 1939 and 1940: Fall Weiss, the Soviet invasion of Poland, the Phoney War, Fall Gelb, Italy's entry in June 1940 and the Balkans later. **Map**: 990 provinces.
+
 ### 2.2 "Small Nations, Great Powers"
 
 - **Seven new focus trees**: Spain (234, one tree for the Republic and the Nationalists), Sweden (236), Norway (232), Denmark (233), the Netherlands (234), Belgium (232) and Luxembourg (234), hand-written with choices, requirements and sections.

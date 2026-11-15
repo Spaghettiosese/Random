@@ -35,7 +35,7 @@ function econSupplyDemand(c) {
     const wf = p.pop * 0.3 * (1 - p.dmg * 0.5), lv = provLevels(p), staff = lv ? Math.min(1, wf / EMP / lv) : 1, ic = infraCap(p, c), im = lv > ic ? Math.max(0.5, ic / lv) : 1, coreF = p.cores.includes(c.tag) ? 1 : 0.7;
     st.wf += wf; st.levels += lv; let used = 0;
     for (const t in p.b) {
-      const def = BLD[t], pm = def.pms[c.pm[t] || 0], l = p.b[t]; let th = l * staff * im * (1 - p.dmg) * coreF;
+      const def = BLD[t], pm = def.pms[c.pm[t] || 0], l = p.b[t]; let th = l * staff * im * (1 - p.dmg) * coreF * (p.pout || 1);
       if (def.cat === 'gov') { used += l * staff * EMP; const o = bt[t] || (bt[t] = { lv: 0, th: 0 }); o.lv += l;
         if (t === 'admin') st.bureau += th * 10; else if (t === 'university') st.innov += th * 3; else if (t === 'port') st.ports += th;
         else if (t === 'construction') { st.cpts += th * CONSTR_PTS[c.pm[t] || 0]; th *= cActive; }
@@ -47,7 +47,7 @@ function econSupplyDemand(c) {
       for (const g in pm[2]) mk[g].d += pm[2][g] * th; for (const g in pm[3]) mk[g].s += pm[3][g] * th * om;
     }
     const peas = Math.max(0, wf - used); st.emp += used; st.peas += peas;
-    for (const g in SUBSIST) mk[g].s += SUBSIST[g] * peas / 1000 * (1 - p.dmg) * (0.8 + 0.4 * p.dev / 5);
+    for (const g in SUBSIST) mk[g].s += SUBSIST[g] * peas / 1000 * (1 - p.dmg) * (p.pout || 1) * (0.8 + 0.4 * p.dev / 5);
   }
   st.empPop = Math.min(st.pop, st.emp / 0.3 + (c._ndiv || 0) * 40); st.peasPop = st.pop - st.empPop;
   const nf = (1 + M(c, 'needs')) * st.empPop / 1000;

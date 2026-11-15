@@ -16,7 +16,7 @@ UPDATES.unshift(['1.4', 'Rising Sun', 'The fourth major update: Asia rebuilt fro
 MODES.push(['weather', 'Weather']);
 { const _pc = provColor; provColor = function (p) { if (MV.mode !== 'weather') return _pc(p); return { clear: '#3f5a45', winter: '#cfe0ea', mud: '#7a5a3a', monsoon: '#3a6f9a' }[weatherKey(p.id)]; };
   const _rp = renderProv; renderProv = function () { _rp(); if (SEL.prov === null) return; const p = P(SEL.prov), el = $('provinfo'), k = weatherKey(p.id), w = WEATHER[k], c = me(), sel = selArmies().filter(a => a.loc !== p.id); let add = '';
-    if (k !== 'clear') add += `<div${tip(`Marches take ${Math.round((w[3] - 1) * 100)}% longer and attacks are ${Math.round((1 - w[2]) * 100)}% weaker. Nations used to the cold suffer far less in winter.`)}>${w[1]} <b>${w[0]}</b></div>`;
+    // 2.3: the weather line is drawn by ui_weather23.js
     const at = Object.values(G.armies).filter(a => a.inv && a.inv.to === p.id && (a.owner === c.tag || friendly(a.owner, c.tag))); if (at.length) add += `<div class="warn">⚓ ${at.length} ${at.length > 1 ? 'armies' : 'army'} at sea, landing in ${Math.max(0, at[0].inv.eta - G.day)} days</div>`;
     if (sel.length && atWar(c.tag, p.ctrl) && p.coastal && !NB[p.id].some(e => !e.sea && sel.some(a => a.loc === e.to))) { const why = sel.map(a => invasionBlock(c, a, p.id)).find(x => x) || ''; add += `<div class="row">${btn(`⚓ Naval invasion (${why ? '—' : invasionDays(sel[0].loc, p.id) + ' days'})`, 'invade', `data-p="${p.id}"`, 'pri sm', why || 'The selected armies embark and assault this province from the sea. Amphibious attacks fight at 55% strength.', !!why)}</div>`; }
     if (add) el.insertAdjacentHTML('beforeend', add); }; }

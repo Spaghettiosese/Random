@@ -16,8 +16,8 @@ function polyMonthly(c) { const P0 = polyOf(c), f = P0.f, war = isAtWar(c.tag), 
     if (c.tag === G.player && !c.ai) UIH.popup({ title: 'The 20th of July', icon: '💣', desc: 'A bomb has exploded under the map table at the Wolf\'s Lair. Officers in Berlin claim the Führer is dead and order the SS disarmed.', options: [{ name: 'The plot succeeds: the generals take over.', fn: () => julyPlot(c, true) }, { name: 'The Führer survives. Hunt them down.', fn: () => julyPlot(c, false) }] });
     else julyPlot(c, ok_); }
   if (c.ai && c.pp > 120 && G.day - P0.last > 180) { const want = war ? (lose > 0.2 ? 'ind' : 'wehr') : 'ind'; if (top !== want) polyAct(c, 'favour', want); }
-  // Fall Gelb: when the Phoney War ends, the armour goes through the Ardennes whether or not the focus is done
-  if (G.historical && c.ai && G.day >= mjDay(1940, 5) && !c.flags.sichel && ok('FRA') && atWar(c.tag, 'FRA') && !C('FRA').capitulated) { c.flags.sichel = G.day; if (!hasSpirit(c, 'blitzkrieg')) addSpirit(c, 'blitzkrieg', 150); logMsg('Fall Gelb: German armour pours through the Ardennes.', 'world', [c.tag, 'FRA']); } }
+  // Fall Gelb (10 May 1940): when the Phoney War ends, the armour goes through the Ardennes whether or not the focus is done
+  if (G.historical && c.ai && G.day >= mjDay(1940, 5) + 9 && !c.flags.sichel && ok('FRA') && atWar(c.tag, 'FRA') && !C('FRA').capitulated) { c.flags.sichel = G.day; if (!hasSpirit(c, 'blitzkrieg')) addSpirit(c, 'blitzkrieg', 150); } } // 2.3: balance23.js announces Fall Gelb
 function julyPlot(c, success) { const f = polyOf(c).f;
   if (success) { setIdeology(c, 'aut', true); c.ws = Math.max(0, c.ws - 15); f.wehr = 60; polyNorm(polyOf(c)); logMsg('The generals seize power in Berlin. The Führer is dead.', 'world', [c.tag]); }
   else { f.ss += 25; f.wehr = Math.max(2, f.wehr - 10); polyNorm(polyOf(c)); c.gens = c.gens.slice(0, Math.max(2, c.gens.length - 2)); c.stab = Math.min(100, c.stab + 2); logMsg('The plot against the Führer fails. Thousands are arrested; field marshals are hanged.', 'world', [c.tag]); } }

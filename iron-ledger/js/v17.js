@@ -113,6 +113,9 @@ if (typeof dayTick === 'function') installWarLayer(); else document.addEventList
   const p = P(b.prov), att = b.att.map(i => G.armies[i]).filter(a => a && a.divs.length), defs = att.length ? armiesAt(b.prov).filter(x => atWar(att[0].owner, x.owner)) : [];
   const fin = () => { for (const a of att) a.battle = 0; G.battles.splice(G.battles.indexOf(b), 1); };
   if (!att.length || !defs.length) return fin();
-  if (b.mbal >= 0.52) { for (const a of defs) retreat(a, att[0].owner); for (const a of att) a.prog = 99; battleNote(b, att, defs, true); }
-  else { for (const a of att) { a.path = []; a.prog = 0; for (const d of a.divs) d.org = Math.min(d.org, 0.35); } battleNote(b, att, defs, false); }
+  // 2.3: a clear win takes the province; a narrow one takes part of it (fronts23.js); a defeat gives back half the ground won
+  const push = b.push || 0, part = typeof cqPartial === 'function';
+  if (!part || b.mbal >= 0.56 || (b.mbal >= 0.52 && push >= 0.55)) { for (const a of defs) retreat(a, att[0].owner); for (const a of att) a.prog = 99; battleNote(b, att, defs, true); }
+  else if (b.mbal >= 0.49 && push > 0.08) cqPartial(b, att, defs);
+  else { for (const a of att) { a.path = []; a.prog = 0; for (const d of a.divs) d.org = Math.min(d.org, 0.35); } if (p.cq) p.cq.v *= 0.5; battleNote(b, att, defs, false); }
   fin(); }; }

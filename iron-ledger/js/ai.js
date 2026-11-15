@@ -102,7 +102,7 @@ function aiArmies(tag) {
     if (org > 0.5 && !a.oos) for (const e of NB[a.loc]) { const q = P(e.to); if (!hostile(q)) continue; if (e.sea && (!seaOK(tag, q) || e.sea > 1500)) continue;
       const def = (strAt[q.id] || 0) * (1 + TERRAIN[q.ter][1] + q.fort * 0.12) * (e.sea ? 1.5 : 1); let att = my; for (const x of armiesAt(a.loc)) if (x !== a && (x.owner === tag || friendly(tag, x.owner)) && (x.path[0] === q.id || x.auto)) att += armyStr(x) * 0.8;
       for (const b of G.battles) if (b.prov === q.id) att += sum(b.att, i => G.armies[i] && G.armies[i].loc !== a.loc ? armyStr(G.armies[i]) : 0);
-      const ratio = att / Math.max(1, def); if (def > 0 && ratio < (phoney ? 3.2 : c.major && c.ideology === 'fas' ? 0.95 : c.ws > 60 ? 1.15 : 1.35)) continue; if (phoney && def === 0 && !q.cores.includes(tag) && C(q.owner).major) continue;
+      const ratio = att / Math.max(1, def); if (def > 0 && ratio < (phoney ? 3.2 : c.major && c.ideology === 'fas' ? 0.95 : c.ws > 60 ? 1.15 : 1.35) * (typeof aiAtkMul === 'function' ? aiAtkMul(tag, q) : 1)) continue; if (phoney && def === 0 && !q.cores.includes(tag) && C(q.owner).major) continue;
       let fn2 = 0; for (const e2 of NB[q.id]) if (!e2.sea && (P(e2.to).ctrl === tag || friendly(tag, P(e2.to).ctrl))) fn2++; if (fn2 < 2 && !e.sea && q.vp < 10 && Math.random() < (c.major && c.ideology === 'fas' ? 0.4 : 0.8)) continue;
       const s = q.vp + fn2 * 2 + (def === 0 ? 6 : 0) + Math.min(4, ratio) + (q.cores.includes(tag) ? 4 : 0) + (q.id === C(q.owner).capital ? 6 : 0) + Math.random() * 2; if (s > bs) { bs = s; best = q.id; } }
     if (best !== null && (!a.home || P(best).cores.includes(tag))) { a.path = [best]; a.prog = 0; a._t = G.day; continue; }

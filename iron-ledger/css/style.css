@@ -202,3 +202,11 @@ select { font: inherit; color: var(--paper); background: var(--slate2); border: 
 /* 2.2 finance */
 .egrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; } .egrid > div { display: flex; flex-direction: column; gap: 2px; } .egrid b { font-size: 18px; } .spark { display: block; margin-top: 2px; }
 .ebar { margin: 4px 0 6px; padding: 4px 8px; background: #ffffff08; border-radius: 3px; flex-wrap: wrap; gap: 6px; font-size: 13px; }
+
+/* 2.3 fronts */
+#frdraw { position: absolute; left: 50%; top: 34px; transform: translateX(-50%); z-index: 5; max-width: min(640px, calc(100% - 32px)); background: #10161df0; border: 2px solid var(--brass); border-radius: 4px; padding: 6px 10px; font-size: 13px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.frcard { display: flex; flex-direction: column; gap: 5px; }
+.frcard .frname { font: 600 17px var(--display); background: transparent; border: 1px solid transparent; color: var(--paper); padding: 1px 3px; min-width: 0; flex: 1; }
+.frcard .frname:hover, .frcard .frname:focus { border-color: var(--line); }
+.frarmies { display: flex; flex-wrap: wrap; gap: 3px; }
+.card.udec { border-left: 3px solid var(--brass); }
