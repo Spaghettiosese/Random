@@ -8,6 +8,13 @@ Open `index.html` in a browser. No build step, no server.
 
 ## Updates
 
+### 2.4 "The Concert of Powers"
+
+- **Diplomacy 3.0**: opinion with remembered reasons that fade; trust built by kept treaties and destroyed by betrayal, watched by everyone; new treaties (friendship, defensive pacts, border treaties, loans, arms supply); every proposal shows its likely answer and reasons first; envoys (improve relations, build trust, court for our faction, mediate); border incidents and demands for apologies; AI proposals to the player become choices.
+- **Factions 3.0**: ranks (leader, core, member, associate), contribution, cohesion, goals and policies, a council that votes on admissions, expulsions, joint wars and leadership, refusable calls to arms, and AI that joins nearby factions that share its interests without dragging them into its own wars.
+- **Five new mechanics**: supply lines (sources, depots, the Russian broad gauge and its conversion, a Supply map mode); mobilisation and reserves (alert, partial and general mobilisation, with neighbours reacting); crowns and dynasties (24 monarchs, prestige, tours, royal weddings, successions, regencies); international law (naval treaties, the bombing pledge, the Geneva Conventions, conferences); the great power ranking (industry, armies, fleets and prestige).
+- **The Diplomacy tab** has five sub-tabs: Nations, Treaties, Envoys, Factions and Standing.
+
 ### 2.3 "Fronts and Weather"
 
 - **Fronts and battle plans**: a Fronts tab; fronts against a nation with armies, an order (hold, attack, fall back) and a stance; sectors and fallback lines painted on the map, objectives clicked on it; planning up to +25% attack. The 1.7 fronts are replaced.

@@ -9,23 +9,24 @@
 //  - The Raj: the road to independence. Congress, the Muslim League and the princes; self-government won by talks or
 //    by struggle; the Indian Army; Quit India; famine; independence, as one India or partitioned.
 'use strict';
+const wkInc = c => Math.max(200, (c.budget && c.budget.income) || 200); // money effects are counted in weeks of income
 // ======================= Portugal =======================
 const PT_WOLF = { both: ['Sell to Both', 'Wolfram to whoever pays: the best prices in Europe, and neither side is pleased.', 4, 0], axis: ['Sell to Germany', 'The Reich pays in gold, and Berlin is grateful.', 3, -5], allies: ['Sell to the Allies', 'The British and Americans buy it all to keep it from Germany.', 2.5, 5], embargo: ['Embargo', 'No wolfram leaves Portugal.', 0, 0] };
 const ptOf = c => c.pt || (c.pt = { tilt: 10, wolf: 'both', cred: 60, gold: 20, ref: 0, visas: false, azores: false });
 const ptWar = c => ok('GER') && ok('ENG') && atWar('GER', 'ENG') && !atWar(c.tag, 'GER') && !atWar(c.tag, 'ENG');
 function ptMonthly(c) { const T = ptOf(c), war = ptWar(c);
   if (c.money > 0) T.gold = Math.min(250, T.gold + 1 + (c.laws.econ === 'corporatist' ? 0.5 : 0));
-  if (war) { const w = PT_WOLF[T.wolf]; c.money += w[2] * (1 + (c.techs.p_deepdrill ? 0.25 : 0)); T.tilt = clamp(T.tilt + w[3] / 5, -100, 100);
+  if (war) { const w = PT_WOLF[T.wolf]; c.money += w[2] * 0.25 * wkInc(c) * (1 + (c.techs.p_deepdrill ? 0.25 : 0)); T.tilt = clamp(T.tilt + w[3] / 5, -100, 100);
     if (T.wolf === 'axis' || T.wolf === 'both') addRel('ENG', c.tag, T.wolf === 'axis' ? -2 : -0.5); if (T.wolf === 'allies' || T.wolf === 'both') addRel('GER', c.tag, T.wolf === 'allies' ? -2 : -0.5);
     T.cred = clamp(T.cred + (T.wolf === 'both' || T.wolf === 'embargo' ? 0.6 : -0.7) - Math.max(0, Math.abs(T.tilt) - 40) / 120, 0, 100);
-    if (year() >= 1940 && year() <= 1944) { T.ref += T.visas ? 8 : 2; c.money += T.visas ? 0.6 : 0.2; if (T.visas) { c.legit = Math.min(100, c.legit + 0.4); addRel('GER', c.tag, -0.5); addRel('USA', c.tag, 0.6); } } }
+    if (year() >= 1940 && year() <= 1944) { T.ref += T.visas ? 8 : 2; c.money += (T.visas ? 0.15 : 0.05) * wkInc(c); if (T.visas) { c.legit = Math.min(100, c.legit + 0.4); addRel('GER', c.tag, -0.5); addRel('USA', c.tag, 0.6); } } }
   else T.cred = clamp(T.cred + 0.4, 0, 100);
   // a neutral nobody believes in invites invasion; in historical games neither side came
   if (war && !G.historical && T.cred < 15 && Math.random() < 0.08) { const by = T.tilt > 0 ? 'GER' : 'ENG'; if (ok(by) && C(by).ai && !atWar(by, c.tag)) declareWar(by, c.tag, [{ by, vs: c.tag, type: 'puppet' }]); }
   if (c.ai) { if (war && G.historical) T.wolf = year() >= 1944 ? 'embargo' : 'both'; if (war && year() >= 1943 && dateObj(G.day).getUTCMonth() >= 9 && !T.azores) ptAct(c, 'azores'); if (war && !T.visas && year() === 1940) T.visas = true; } }
 function ptAct(c, a) { const T = ptOf(c);
   if (PT_WOLF[a]) { if (!ptWar(c)) return 'There is only a market for wolfram while Britain and Germany are at war'; T.wolf = a; return ''; }
-  if (a === 'azores') { if (T.azores) return 'The bases are already leased'; if (!ptWar(c)) return 'Only while Britain is at war'; T.azores = true; T.tilt = clamp(T.tilt + 30, -100, 100); addRel('ENG', c.tag, 30); addRel('USA', c.tag, 20); addRel('GER', c.tag, -25); c.money += 10;
+  if (a === 'azores') { if (T.azores) return 'The bases are already leased'; if (!ptWar(c)) return 'Only while Britain is at war'; T.azores = true; T.tilt = clamp(T.tilt + 30, -100, 100); addRel('ENG', c.tag, 30); addRel('USA', c.tag, 20); addRel('GER', c.tag, -25); c.money += 2 * wkInc(c);
     logMsg('Portugal leases the Azores to the Allies under the alliance of 1373: air bases on Terceira close the Atlantic gap.', 'world', [c.tag, 'ENG']); if (ok('ENG')) addSpirit(C('ENG'), 'azores_bases'); return ''; }
   if (a === 'visas') { T.visas = !T.visas; return ''; }
   if (a === 'works') { if (T.gold < 25) return 'Needs 25 of the treasury'; T.gold -= 25; applyEff(c, { build: { construction: 1, railway: 1 } }); c.stab = Math.min(100, c.stab + 1); return ''; }
@@ -42,7 +43,7 @@ function caSetCons(c, k) { const A = caOf(c); if (!CA_CONS[k] || A.cons === k) r
 function caMonthly(c) { const A = caOf(c), war = isAtWar(c.tag);
   A.unity = clamp(A.unity + (war ? -0.25 : 0.3) - (A.cons === 'nrma' ? 0.2 : A.cons === 'overseas' ? 0.9 : 0) + (c.leader === 'William Lyon Mackenzie King' ? 0.15 : 0), 0, 100);
   if (A.unity < 35) { c.stab = Math.max(0, c.stab - 0.5); const R = typeof regsOf === 'function' ? regsOf(c) : []; if (R[0]) R[0].s = Math.min(100, R[0].s + 1.5); }
-  if (A.bcatp && war) { A.trained += 1; if (ok('ENG') && atWar('ENG', enemiesOf(c.tag)[0] || 'ENG')) { const E = C('ENG'); E.stock.aircraft = (E.stock.aircraft || 0) + 4; } c.money -= 0.5; }
+  if (A.bcatp && war) { A.trained += 1; if (ok('ENG') && atWar('ENG', enemiesOf(c.tag)[0] || 'ENG')) { const E = C('ENG'); E.stock.aircraft = (E.stock.aircraft || 0) + 4; } c.money -= 0.1 * wkInc(c); }
   if (c.ai && war) { if (A.cons === 'volunteer' && year() >= 1940 && G.day > mjDay(1940, 6)) caSetCons(c, 'nrma'); if (!A.bcatp) caAct(c, 'bcatp'); if (!A.pleb && year() >= 1942 && G.day > mjDay(1942, 4) + 26) caAct(c, 'pleb'); if (A.pleb && A.cons === 'nrma' && G.day > mjDay(1944, 11) + 22) caSetCons(c, 'overseas'); if (A.unity < 45 && c.pp > 60) caAct(c, 'king'); } }
 function caAct(c, a) { const A = caOf(c);
   if (CA_CONS[a]) return caSetCons(c, a);
@@ -50,7 +51,7 @@ function caAct(c, a) { const A = caOf(c);
   if (a === 'pleb') { if (A.pleb) return 'Already held'; if (!isAtWar(c.tag)) return 'Only in war'; if (c.pp < 20) return 'Needs 20 political power'; c.pp -= 20; A.pleb = true; A.unity = Math.max(0, A.unity - 8);
     logMsg('Canada votes to release the government from its promise of no overseas conscription: 64% yes, but Quebec votes 72% no.', 'info', [c.tag]); return ''; }
   if (a === 'bcatp') { if (A.bcatp) return 'Already running'; if (!isAtWar(c.tag)) return 'Only in war'; A.bcatp = true; addSpirit(c, 'bcatp'); addRel('ENG', c.tag, 15); logMsg('The British Commonwealth Air Training Plan opens its schools on the prairies.', 'info', [c.tag, 'ENG']); return ''; }
-  if (a === 'gift') { if (!ok('ENG') || !isAtWar('ENG')) return 'Britain is not at war'; if (c.money < 20) return 'Needs 20 in the treasury'; c.money -= 20; C('ENG').money += 20; A.gift += 1; addRel('ENG', c.tag, 15); return ''; }
+  if (a === 'gift') { const g = 4 * wkInc(c); if (!ok('ENG') || !isAtWar('ENG')) return 'Britain is not at war'; if (c.money < g) return 'Needs four weeks of income in the treasury'; c.money -= g; C('ENG').money += g; A.gift += 1; addRel('ENG', c.tag, 15); return ''; }
   return 'Unknown'; }
 SPIRITS.bcatp = ['The Air Training Plan', '131,000 aircrew from the whole Commonwealth learn to fly over the prairies.', { air: 0.05 }];
 // ======================= the Raj =======================
@@ -70,13 +71,13 @@ function rjMonthly(c) { const R = rjOf(c); if (R.indep) return; const war = isAt
   if (R.famine && !G.P.some(p => p.owner === c.tag && p.pm && p.pm.famine > G.day)) R.famine = false;
   if (R.self >= 100) rjIndependence(c);
   if (c.ai) { if (R.unrest > 60 && c.pp > 50) rjAct(c, 'repress'); else if (R.cong > 65 && c.pp > 70 && (c.overlord ? C(c.overlord).ideology === 'dem' : true) && Math.random() < 0.15) rjAct(c, 'talks');
-    if (R.famine && c.money > 15) rjAct(c, 'relief'); if (isAtWar(c.tag) && c.pp > 60 && Math.random() < 0.1) rjAct(c, 'recruit'); } }
+    if (R.famine && c.money > 3 * wkInc(c)) rjAct(c, 'relief'); if (isAtWar(c.tag) && c.pp > 60 && Math.random() < 0.1) rjAct(c, 'recruit'); } }
 function rjAct(c, a) { const R = rjOf(c); if (R.indep) return 'India is independent';
   if (a === 'talks') { if (c.pp < 40) return 'Needs 40 political power'; c.pp -= 40; R.self = Math.min(100, R.self + 10); R.cong = Math.max(0, R.cong - 5); R.league = Math.min(100, R.league + 3); R.princes = Math.max(0, R.princes - 3); return ''; }
   if (a === 'repress') { if (c.pp < 30) return 'Needs 30 political power'; c.pp -= 30; R.unrest = Math.max(0, R.unrest - 15); R.cong = Math.max(0, R.cong - 10); R.rep++; c.legit = Math.max(0, c.legit - 3); return ''; }
   if (a === 'recruit') { if (c.pp < 30) return 'Needs 30 political power'; c.pp -= 30; spawnDivisions(c, 'inf', 3, c.capital); c.manpower += 60; R.unrest = Math.min(100, R.unrest + 3); return ''; }
   if (a === 'princes') { if (c.pp < 20) return 'Needs 20 political power'; if (R.princes < 30) return 'The princes will not answer'; c.pp -= 20; spawnDivisions(c, 'inf', 1, c.capital); R.princes = Math.max(0, R.princes - 4); return ''; }
-  if (a === 'relief') { if (c.money < 10) return 'Needs 10 in the treasury'; c.money -= 10; for (const p of G.P) if (p.owner === c.tag && p.pm && p.pm.famine) { delete p.pm.famine; p._pe = null; } R.famine = false; R.unrest = Math.max(0, R.unrest - 5); return ''; }
+  if (a === 'relief') { const g = 2 * wkInc(c); if (c.money < g) return 'Needs two weeks of income in the treasury'; c.money -= g; for (const p of G.P) if (p.owner === c.tag && p.pm && p.pm.famine) { delete p.pm.famine; p._pe = null; } R.famine = false; R.unrest = Math.max(0, R.unrest - 5); return ''; }
   return 'Unknown'; }
 // independence: one India, or two states if the League is strong enough to insist on Pakistan
 const PAK_PROVS = ['Lahore', 'Karachi', 'Peshawar', 'Quetta', 'Multan', 'Rawalpindi', 'Hyderabad (Sind)', 'Dacca', 'Chittagong'];
