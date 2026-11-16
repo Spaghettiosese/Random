@@ -3,8 +3,8 @@
 const armiesOf = t => Object.values(G.armies).filter(a => a.owner === t);
 const armiesAt = id => Object.values(G.armies).filter(a => a.loc === id);
 const genOf = a => a.gen ? C(a.owner).gens.find(g => g.id === a.gen) : null;
-const airPower = c => c.stock.aircraft * (1 + M(c, 'air'));
-const navalPower = c => c.stock.ships * (1 + M(c, 'navy'));
+const airPower = c => c.stock.aircraft * (1 + M(c, 'air')) * (c.prod && c.prod.q.aircraft ? 1 + 0.5 * (c.prod.q.aircraft - 1) : 1);
+const navalPower = c => c.stock.ships * (1 + M(c, 'navy')) * (c.prod && c.prod.q.ships ? 1 + 0.5 * (c.prod.q.ships - 1) : 1);
 const armyStr = a => sum(a.divs, d => (UNITS[d.t].atk + UNITS[d.t].def) * d.str);
 const countryStr = t => sum(armiesOf(t), armyStr) * (1 + M(C(t), 'atk') + M(C(t), 'def'));
 function maxManpower(c) { return (c.stats.corePop || 0) * M(c, 'conscr') * (1 + M(c, 'manpower')); }
@@ -98,7 +98,7 @@ function sidePower(armies, attacking, p, enemyOwners) {
   divs.sort((x, y) => y[0].org * y[0].str - x[0].org * x[0].str); const eng = divs.slice(0, 12), ter = TERRAIN[p.ter];
   let air = 0, eair = 0; for (const o of owners) air += airPower(C(o)); for (const o of enemyOwners) eair += airPower(C(o));
   const airF = 1 + clamp((air - eair) / Math.max(50, air + eair), -1, 1) * 0.18;
-  for (const [d, a] of eng) { const u = UNITS[d.t], c = C(a.owner), g = genOf(a); let fa = 1 + M(c, 'atk'), fd = 1 + M(c, 'def'); const amph = attacking && (a._amph === p.id ? a._amphV : (a._amph = p.id, a._amphV = (NB[a.loc].find(e => e.to === p.id) || {}).sea ? 0.5 : 1)); const eff = d.str * (0.3 + 0.7 * d.org) * (1 + d.xp * 0.25 + (d.hon || 0) * 0.03 + (d.g ? 0.08 : 0)) * (typeof encF === 'function' ? encF(a, attacking) : a.oos ? 0.5 : 1) * (amph || 1);
+  for (const [d, a] of eng) { const u = UNITS[d.t], c = C(a.owner), g = genOf(a); let fa = 1 + M(c, 'atk'), fd = 1 + M(c, 'def'); const amph = attacking && (a._amph === p.id ? a._amphV : (a._amph = p.id, a._amphV = (NB[a.loc].find(e => e.to === p.id) || {}).sea ? 0.5 : 1)); const eff = d.str * (0.3 + 0.7 * d.org) * (1 + d.xp * 0.25 + (d.hon || 0) * 0.03 + (d.g ? 0.08 : 0)) * (typeof encF === 'function' ? encF(a, attacking) : a.oos ? 0.5 : 1) * (amph || 1) * (typeof eqF === 'function' ? eqF(c, u) : 1);
     if ((u.base || d.t) === 'arm') { fa += M(c, 'tank'); if ('mjsu'.includes(p.ter)) fa -= 0.4; } if (u.oil) fa *= 0.5 + 0.5 * c.ful.oil; if ((u.base || d.t) === 'mtn' && 'mh'.includes(p.ter)) { fa += 0.3; fd += 0.3; }
     if (g) { fa += g.skill * 0.05 + (g.medal || 0) * 0.01; fd += g.skill * 0.05 + (g.medal || 0) * 0.01; const t = g.trait;
       if (t === 'panzer' && (u.base || d.t) === 'arm') fa += 0.2; if (t === 'inf' && ((u.base || d.t) === 'inf' || (u.base || d.t) === 'hvy')) fd += 0.1; if (t === 'def') fd += 0.15; if (t === 'off') fa += 0.12; if (t === 'mtn' && 'mh'.includes(p.ter)) { fa += 0.25; fd += 0.25; }

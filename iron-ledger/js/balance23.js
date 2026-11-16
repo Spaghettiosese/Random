@@ -29,8 +29,9 @@ const WEST = ['FRA', 'BEL', 'HOL', 'LUX', 'ENG'];
 // (2.5: and after it they still do not set foot on German soil before the middle of 1942: a failed Fall Gelb ends in a
 // stalemate on the frontier, not in the fall of Berlin in 1940)
 const WEST_ALLIES = WEST.concat(['CAN', 'AST', 'NZL', 'SAF', 'RAJ']);
-{ const _aa = aiArmies; aiArmies = function (tag) { _aa(tag); const k = C(tag); if (!G.historical || G.day >= mjDay(1942, 6) || !k || !k.ai || !WEST_ALLIES.includes(tag.slice(0, 3)) || G.day < mjDay(1939, 1)) return;
-  for (const a of armiesOf(tag)) { if (!a.auto || !a.path.length) continue; const q = P(a.path[0]); if (!atWar(tag, q.ctrl) || q.owner === tag || q.cores.includes(tag)) continue; if (q.owner === 'GER' || q.cores.includes('GER')) { if (a.battle) leaveBattle(a); a.path = []; a.prog = 0; } } }; }
+// (and off Italian soil until the summer of 1943: the French army of the Alps never came down into Piedmont)
+{ const _aa = aiArmies; aiArmies = function (tag) { _aa(tag); const k = C(tag); if (!G.historical || G.day >= mjDay(1943, 7) || !k || !k.ai || !WEST_ALLIES.includes(tag.slice(0, 3)) || G.day < mjDay(1939, 1)) return; const ger = G.day < mjDay(1942, 6);
+  for (const a of armiesOf(tag)) { if (!a.auto || !a.path.length) continue; const q = P(a.path[0]); if (!atWar(tag, q.ctrl) || q.owner === tag || q.cores.includes(tag)) continue; if ((ger && (q.owner === 'GER' || q.cores.includes('GER'))) || q.cores.includes('ITA')) { if (a.battle) leaveBattle(a); a.path = []; a.prog = 0; } } }; }
 // Fall Weiss: in historical games the war on Poland begins on the first of September 1939, whatever the focus tree's pace
 { const _pd = playDaily; playDaily = function () { _pd(); if (!G.historical || G.day < mjDay(1939, 9) || G.day > mjDay(1940, 6) || !ok('GER') || !ok('POL') || !C('GER').ai || atWar('GER', 'POL') || C('POL').overlord || G.flags.fallWeiss) return;
   G.flags.fallWeiss = G.day; G.plays = (G.plays || []).filter(pl => !(pl.a === 'GER' && pl.b === 'POL'));
@@ -93,3 +94,17 @@ function befCap() { if (!G.historical || !ok('ENG') || !C('ENG').ai || !ok('FRA'
   for (const a of mine) { if (!a.path.length || cont(P(a.loc))) continue; if (!cont(P(a.path[a.path.length - 1]))) continue; if (n + a.divs.length > BEF_CAP) { a.path = []; a.prog = 0; delete a.order; } else n += a.divs.length; } }
 { const _aa = aiArmies; aiArmies = function (tag) { _aa(tag); if (tag === 'ENG') befCap(); }; }
 { const _pd = playDaily; playDaily = function () { _pd(); befCap(); }; }
+// 2.5 The long stalemate in China: in historical games the Japanese AI (and its client states) does not go beyond the
+// ground Japan held in the real war before Operation Ichi-Go in April 1944, and the Chinese AI needs more than twice
+// the usual odds to throw it out again before 1945.
+const JAP_LIMIT = ['Peiping', 'Tianjin', 'Kalgan', 'Baoding', 'Shijiazhuang', 'Cangzhou', 'Handan', 'Jinan', 'Qingdao', 'Yantai', 'Weifang', 'Linyi', 'Xuzhou', 'Lianyungang', 'Kaifeng', 'Bengbu', 'Hefei', 'Anqing', 'Wuhu', 'Nanjing', 'Suzhou', 'Shanghai', 'Hangzhou', 'Ningbo', 'Jiujiang', 'Nanchang', 'Wuhan', 'Xinyang', 'Yichang', 'Jingzhou', 'Amoy', 'Shantou', 'Guangzhou', 'Hainan', 'Taiyuan', 'Datong', 'Hohhot', 'Baotou', 'Linfen', 'Changzhi'];
+const JAP_ICHIGO = ['Zhengzhou', 'Luoyang', 'Changsha', 'Hengyang', 'Shaoyang', 'Guilin', 'Liuzhou', 'Nanning', 'Shaoguan', 'Ganzhou', 'Jinhua', 'Fuzhou', 'Wenzhou', 'Zhoukou', 'Fuyang', 'Nanyang', 'Xiangyang', 'Changde', 'Ji\'an'];
+const CN_FAM = ['CHI', 'GXC', 'YUN', 'SHX', 'XSM', 'SIC', 'PRC'];
+let _japLim = null;
+const japLimit = () => _japLim || (_japLim = [new Set(JAP_LIMIT.map(n => PNAME[n]).filter(x => x !== undefined)), new Set(JAP_ICHIGO.map(n => PNAME[n]).filter(x => x !== undefined))]);
+const japSideTag = t => t === 'JAP' || (!!C(t) && C(t).overlord === 'JAP');
+const cnSoil = q => q.cores.some(t => CN_FAM.includes(t)) && q.orig !== 'MAN' && q.orig !== 'JAP';
+// ground the AI of this nation does not attack in a historical game
+function aiNoGo(tag, q) { if (!G.historical || !japSideTag(tag) || !C('JAP') || !C('JAP').ai || !cnSoil(q) || year() >= 1946) return false; const [a, b] = japLimit(); return !(a.has(q.id) || (b.has(q.id) && G.day >= mjDay(1944, 4))); }
+{ const _am = aiAtkMul; aiAtkMul = function (tag, q) { const m = _am(tag, q); if (!G.historical || year() >= 1945 || !CN_FAM.includes(tag.slice(0, 3)) || !japSideTag(q.ctrl) || !cnSoil(q) || !C(tag).ai) return m; return m * 2.2; }; }
+{ const _aa = aiArmies; aiArmies = function (tag) { _aa(tag); if (!G.historical || !japSideTag(tag)) return; for (const a of armiesOf(tag)) { if (!a.auto || !a.path.length) continue; const q = P(a.path[0]); if (atWar(tag, q.ctrl) && aiNoGo(tag, q)) { if (a.battle) leaveBattle(a); a.path = []; a.prog = 0; } } }; }

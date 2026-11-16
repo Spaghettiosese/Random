@@ -44,9 +44,11 @@ function encSuffer(c, a, k) { if ((a.paraUntil || 0) > G.day || a.enc <= ENC_GRA
   if (a.airsup) { const need = a.divs.length * 0.4, foe = k.foe && C(k.foe), contested = !!foe && airPower(foe) > airPower(c) * 1.5;
     if ((c.stock.aircraft || 0) < need * 4) { a.airsup = false; if (c.tag === G.player) UIH.notify(`The air bridge to ${a.name} is given up: no aircraft are left to fly it.`, 'bad'); }
     else { c.stock.aircraft -= need * (contested ? 0.5 : 0.22); lift = contested ? 0.1 : 0.2; back = contested ? 0.002 : 0.0035; } }
-  const floor = k.press ? 0.05 : 0.35, loss = (n > 21 && !k.home ? 0.003 * slow : 0) - back, cap = clamp(0.8 - n * (k.home ? 0.01 : 0.02) + lift, k.home ? 0.55 : 0.4, 0.9);
+  const floor = k.press ? 0.05 : 0.35, loss = -back, cap = clamp(0.8 - n * (k.home ? 0.01 : 0.02) + lift, k.home ? 0.55 : 0.4, 0.9);
   for (const d of a.divs) { if (loss > 0 && d.str > floor) { const l = Math.min(loss, d.str - floor); d.str -= l; c.casualties += l * UNITS[d.t].mp; } else if (loss < 0) d.str = Math.min(1, d.str - loss); if (d.org > cap) d.org = cap; }
-  if (!k.press) return; const N = a.divs.length || 1, str = sum(a.divs, d => d.str) / N;
+  // a pocket that our own armies press lays down its arms after two months (four with an air bridge), and so do our own;
+  // between the AI's nations a pocket withers, as it always has, until it is stormed or relieved
+  if (!k.press || !(k.owner === G.player || k.foe === G.player || (k.foe && G.player && friendly(G.player, k.foe) && !C(G.player).ai))) return; const N = a.divs.length || 1, str = sum(a.divs, d => d.str) / N;
   if (n >= (a.airsup ? 120 : 60) || str < 0.12) encSurrender(c, a, k); }
 function encSurrender(c, a, k) { const foe = k.foe && C(k.foe), n = a.divs.length, at = P(a.loc).name;
   if (foe && foe.exists) { for (const d of a.divs) for (const g in UNITS[d.t].eq) foe.stock[g] = (foe.stock[g] || 0) + UNITS[d.t].eq[g] * d.str * 0.3; if (typeof prestigeAdd === 'function') prestigeAdd(foe.tag, n * 0.4); }
@@ -55,8 +57,8 @@ function encSurrender(c, a, k) { const foe = k.foe && C(k.foe), n = a.divs.lengt
   if (c.tag === G.player) UIH.notify(`${a.name} has surrendered at ${at}.`, 'bad'); removeArmy(a); }
 function encDaily() { for (const k of encCompute()) { const c = C(k.owner); for (const id of k.armies.slice()) { const a = G.armies[id]; if (a && a.divs.length) encSuffer(c, a, k); } } }
 // an AI army in a pocket attacks the weakest part of the ring on the side of home
-function encBreakout(a) { const c = C(a.owner); let best = null, bs = 1e9; for (const e of NB[a.loc]) { if (e.sea) continue; const q = P(e.to); if (!atWar(a.owner, q.ctrl)) continue;
-    const en = sum(armiesAt(q.id).filter(x => atWar(a.owner, x.owner)), armyStr), s = en * 3 + frDist(q.id, c.capital) / 100; if (s < bs) { bs = s; best = q.id; } }
+function encBreakout(a) { const c = C(a.owner), my = armyStr(a) * encF(a, true) * (0.4 + 0.6 * frOrg(a)); let best = null, bs = 1e9; for (const e of NB[a.loc]) { if (e.sea) continue; const q = P(e.to); if (!atWar(a.owner, q.ctrl)) continue; if (typeof aiNoGo === 'function' && aiNoGo(a.owner, q)) continue;
+    const en = sum(armiesAt(q.id).filter(x => atWar(a.owner, x.owner)), armyStr); if (en * (1 + TERRAIN[q.ter][1]) > my * 1.3) continue; /* no hopeless sorties: better to dig in and wait for relief */ const s = en * 3 + frDist(q.id, c.capital) / 100; if (s < bs) { bs = s; best = q.id; } }
   return best !== null && orderMove(a, best); }
 function airBridge(a, on) { const c = C(a.owner); if (!a.enc) return 'Only an army that is cut off needs an air bridge'; if (on && (c.stock.aircraft || 0) < a.divs.length * 4) return 'We have too few aircraft to supply it'; a.airsup = !!on; return ''; }
 // attacks from several sides; defenders with nowhere to go

@@ -233,7 +233,8 @@ function generateBuildings() {
     const d = COUNTRY_DEF[c.tag], ps = heldBy(c.tag).sort((a, b) => b.dev * 10 + b.vp - a.dev * 10 - a.vp), cap = P(c.capital), pop = sum(ps, p => p.pop);
     cap.b.admin = Math.max(1, Math.round(pop / 9000)); cap.b.university = (cap.b.university || 0) + (c.lit > 0.8 ? 1 + Math.round(pop / 30000) : 0); if (!cap.b.university) delete cap.b.university;
     cap.b.construction = Math.max(1, Math.round(sum(ps, p => sum(Object.values(p.b))) / 28));
-    const mil = d.mil || [pop > 6000 ? 1 : 0, 0, 0, 0, 0], types = ['arms', 'artyf', 'tankp', 'aircraftp', 'shipyard'];
+    const mil = ((typeof MIL36 !== 'undefined' && MIL36[c.tag]) || d.mil || [pop > 6000 ? 1 : 0, 0, 0, 0, 0]).slice(), types = ['arms', 'artyf', 'tankp', 'aircraftp', 'shipyard'];
+    if (typeof placeWorks === 'function') placeWorks(c, mil, types); // 2.6: the named works take their share first
     mil.forEach((n, i) => { for (let k = 0; k < n; k++) { const cand = types[i] === 'shipyard' ? ps.filter(p => p.coastal) : ps; const p = cand[k % Math.min(cand.length, 4)]; if (p) p.b[types[i]] = (p.b[types[i]] || 0) + 1; } });
   }
 }

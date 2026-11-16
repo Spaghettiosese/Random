@@ -41,7 +41,7 @@ function econSupplyDemand(c) {
         else if (t === 'construction') { st.cpts += th * CONSTR_PTS[c.pm[t] || 0]; th *= cActive; }
         o.th += th; for (const g in pm[2]) mk[g].d += pm[2][g] * th; continue; }
       let f = 1; for (const g in pm[2]) f = Math.min(f, 0.25 + 0.75 * c.ful[g]);
-      th *= f * (def.cat === 'military' ? c.milProd : c.act[t]); used += l * staff * EMP * (def.cat === 'military' ? c.milProd : c.act[t]);
+      th *= f * (def.cat === 'military' ? c.milProd * (typeof prodMul === 'function' ? prodMul(c, p, t) : 1) : c.act[t]); used += l * staff * EMP * (def.cat === 'military' ? c.milProd : c.act[t]);
       const om = outAll * (1 + (def.cat === 'military' ? M(c, 'mil_out') : def.cat === 'mine' ? M(c, 'res_out') : def.cat === 'rural' ? M(c, 'farm_out') : 0));
       const o = bt[t] || (bt[t] = { lv: 0, th: 0, om }); o.lv += l; o.th += th; o.om = om;
       for (const g in pm[2]) mk[g].d += pm[2][g] * th; for (const g in pm[3]) mk[g].s += pm[3][g] * th * om;
