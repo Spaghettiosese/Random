@@ -150,7 +150,7 @@ function militaryWeekly(c) {
   // supply
   if (war) { const sup = new Set(), st = []; for (const p of G.P) if ((p.ctrl === c.tag || friendly(c.tag, p.ctrl)) && (p.cores.includes(p.ctrl) || (p.coastal && !(c.blockade > 0.3)))) { sup.add(p.id); st.push(p.id); }
     while (st.length) { const x = st.pop(); for (const e of NB[x]) if (!e.sea && !sup.has(e.to)) { const q = P(e.to); if (q.ctrl === c.tag || friendly(c.tag, q.ctrl)) { sup.add(e.to); st.push(e.to); } } }
-    for (const a of mine) { const was = a.oos; a.oos = (a.enc || 0) > 0 || (!sup.has(a.loc) && !(genOf(a) && genOf(a).trait === 'log')); if (a.oos) { for (const d of a.divs) d.str = Math.max(0.05, d.str - 0.05); if (!was && c.tag === G.player) UIH.notify(`${a.name} is cut off from supply at ${P(a.loc).name}!`, 'bad'); } }
+    for (const a of mine) { const was = a.oos; a.oos = ((a.enc || 0) > 0 && !a.encHome) || (!sup.has(a.loc) && !(genOf(a) && genOf(a).trait === 'log')); if (a.oos) { for (const d of a.divs) d.str = Math.max(0.05, d.str - 0.05); if (!was && c.tag === G.player) UIH.notify(`${a.name} is cut off from supply at ${P(a.loc).name}!`, 'bad'); } }
   } else for (const a of mine) a.oos = false;
   // reinforcement
   for (const a of mine) { if (a.oos) continue; const p = P(a.loc), cap = (8 + (p.b.railway || 0) * 3 + p.dev * 2 + (p.b.port ? 3 : 0)) * (1 + M(c, 'supply')); const over = armiesAt(a.loc).reduce((n, x) => n + (x.owner === c.tag ? x.divs.length : 0), 0) > cap * 1.5;

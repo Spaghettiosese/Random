@@ -123,7 +123,7 @@ function releaseCountry(tag, from) {
 // ---------- capitulation & peace ----------
 // 2.5: land that an occupier has already handed to a regime of its own (a military government, a commissariat) is still
 // land the nation has lost: it counts towards capitulation like any other occupied province
-const lostToRegime = (tag, p) => { const k = G.C[p.owner]; return !!k && k.exists && k.collabOf === tag && p.ctrl !== tag && atWar(tag, p.owner); };
+function lostToRegime(tag, p) { const k = G.C[p.owner]; return !!k && k.exists && k.collabOf === tag && p.ctrl !== tag && atWar(tag, p.owner); }
 function checkCapitulation(tag) {
   const c = C(tag); if (!c || !c.exists || c.capitulated || !isAtWar(tag)) return; let tot = 0, lost = 0;
   for (const p of G.P) { if (!p.cores.includes(tag)) continue; if (p.owner === tag) { tot += p.vp; if (p.ctrl !== tag && atWar(tag, p.ctrl)) lost += p.vp; } else if (lostToRegime(tag, p)) { tot += p.vp; lost += p.vp; } }
