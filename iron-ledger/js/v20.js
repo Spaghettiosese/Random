@@ -45,7 +45,7 @@ seaOK = function (tag, p) {
 const navalControl = (tag, p) => { let mine = 0, theirs = 0; for (const c of alive()) { if (c.tag === tag || (friendly(tag, c.tag) && atWar(c.tag, p.ctrl))) mine += navalPower(c); else if (c.tag === p.ctrl || (friendly(p.ctrl, c.tag) && atWar(c.tag, tag))) theirs += navalPower(c); } const sup = zoneSup(tag, PZ[p.id]); return { mine, theirs, sup, ratio: (mine * (0.5 + sup)) / Math.max(1, theirs * (1.5 - sup)) }; };
 
 // capitulation progress, as checkCapitulation sees it
-function capInfo(tag) { const c = C(tag); let tot = 0, lost = 0; for (const p of G.P) if (p.owner === tag && p.cores.includes(tag)) { tot += p.vp; if (p.ctrl !== tag && atWar(tag, p.ctrl)) lost += p.vp; }
+function capInfo(tag) { const c = C(tag); let tot = 0, lost = 0; for (const p of G.P) { if (!p.cores.includes(tag)) continue; if (p.owner === tag) { tot += p.vp; if (p.ctrl !== tag && atWar(tag, p.ctrl)) lost += p.vp; } else if (lostToRegime(tag, p)) { tot += p.vp; lost += p.vp; } }
   if (!tot) for (const p of G.P) if (p.owner === tag) { tot += p.vp; if (p.ctrl !== tag && atWar(tag, p.ctrl)) lost += p.vp; }
   const lim = clamp(0.58 + (c.ws - 50) / 220 + (c.major ? 0.08 : 0) + M(c, 'caplimit') + (c.civilOf || G.wars.some(w => w.civil && (w.att.includes(tag) || w.def.includes(tag))) ? 0.15 : 0), 0.4, 0.92);
   const f = tot ? lost / tot : 0; return { held: 1 - f, lim, prog: c.capitulated ? 1 : clamp(f / lim, 0, 1) }; }

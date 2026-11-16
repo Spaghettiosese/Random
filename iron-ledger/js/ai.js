@@ -82,11 +82,12 @@ function aiArmies(tag) {
   if (!foes.length) return aiPeaceDeploy(c, mine);
   const hostile = p => atWar(tag, p.ctrl), strAt = {}, friendAt = {};
   for (const id in G.armies) { const a = G.armies[id]; if (atWar(tag, a.owner)) strAt[a.loc] = (strAt[a.loc] || 0) + armyStr(a); else if (a.owner === tag || friendly(tag, a.owner)) friendAt[a.loc] = (friendAt[a.loc] || 0) + armyStr(a); }
+  if (typeof decoyStr === 'function') decoyStr(tag, strAt); // 2.5: armies the enemy only pretends to have
   // front provinces we (or friends) hold next to the enemy
   const fronts = [], seaC = {};
   for (const p of G.P) { if (!(p.ctrl === tag || friendly(tag, p.ctrl))) continue; let need = 0, any = false;
     for (const e of NB[p.id]) { const q = P(e.to); if (!hostile(q)) continue; if (e.sea) { if (seaC[q.ctrl] === undefined) seaC[q.ctrl] = seaOK(tag, q); if (!seaC[q.ctrl] || e.sea > 1500) continue; need += 2; } else need += 10 + (strAt[q.id] || 0); any = true; }
-    if (any) fronts.push({ id: p.id, need: need * (p.ctrl === tag ? 1 : 0.5) + p.vp * 2 - (friendAt[p.id] || 0) * 0.6, x: MAP.P[p.id].x, y: MAP.P[p.id].y }); }
+    if (any) fronts.push({ id: p.id, need: need * (p.ctrl === tag ? 1 : 0.5) + p.vp * 2 - (friendAt[p.id] || 0) * 0.6 + (typeof opNeed === 'function' ? opNeed(tag, p.id) : 0), x: MAP.P[p.id].x, y: MAP.P[p.id].y }); }
   const capThreat = NB[c.capital].some(e => hostile(P(e.to)) && !e.sea) && P(c.capital).ctrl === tag;
   let capGuard = armiesAt(c.capital).some(a => a.owner === tag);
   // the Phoney War: democracies do not open offensives in the first months unless their own soil is invaded
@@ -102,9 +103,9 @@ function aiArmies(tag) {
     if (org > 0.5 && !a.oos) for (const e of NB[a.loc]) { const q = P(e.to); if (!hostile(q)) continue; if (e.sea && (!seaOK(tag, q) || e.sea > 1500)) continue;
       const def = (strAt[q.id] || 0) * (1 + TERRAIN[q.ter][1] + q.fort * 0.12) * (e.sea ? 1.5 : 1); let att = my; for (const x of armiesAt(a.loc)) if (x !== a && (x.owner === tag || friendly(tag, x.owner)) && (x.path[0] === q.id || x.auto)) att += armyStr(x) * 0.8;
       for (const b of G.battles) if (b.prov === q.id) att += sum(b.att, i => G.armies[i] && G.armies[i].loc !== a.loc ? armyStr(G.armies[i]) : 0);
-      const ratio = att / Math.max(1, def); if (def > 0 && ratio < (phoney ? 3.2 : c.major && c.ideology === 'fas' ? 0.95 : c.ws > 60 ? 1.15 : 1.35) * (typeof aiAtkMul === 'function' ? aiAtkMul(tag, q) : 1)) continue; if (phoney && def === 0 && !q.cores.includes(tag) && C(q.owner).major) continue;
-      let fn2 = 0; for (const e2 of NB[q.id]) if (!e2.sea && (P(e2.to).ctrl === tag || friendly(tag, P(e2.to).ctrl))) fn2++; if (fn2 < 2 && !e.sea && q.vp < 10 && Math.random() < (c.major && c.ideology === 'fas' ? 0.4 : 0.8)) continue;
-      const s = q.vp + fn2 * 2 + (def === 0 ? 6 : 0) + Math.min(4, ratio) + (q.cores.includes(tag) ? 4 : 0) + (q.id === C(q.owner).capital ? 6 : 0) + Math.random() * 2; if (s > bs) { bs = s; best = q.id; } }
+      const ratio = att / Math.max(1, def); if (def > 0 && ratio < (phoney ? 3.2 : c.major && c.ideology === 'fas' ? 0.95 : c.ws > 60 ? 1.15 : 1.35) * (typeof aiAtkMul === 'function' ? aiAtkMul(tag, q) : 1) * (typeof opThr === 'function' && !e.sea ? opThr(tag, a.loc, q.id) : 1)) continue; if (phoney && def === 0 && !q.cores.includes(tag) && C(q.owner).major) continue;
+      let fn2 = 0; for (const e2 of NB[q.id]) if (!e2.sea && (P(e2.to).ctrl === tag || friendly(tag, P(e2.to).ctrl))) fn2++; const og = typeof opGain === 'function' && !e.sea ? opGain(tag, a.loc, q.id) : 0; if (fn2 < 2 && !e.sea && q.vp < 10 && Math.random() < (c.major && c.ideology === 'fas' ? 0.4 : 0.8) ) continue;
+      const s = q.vp + fn2 * 2 + (def === 0 ? (og < 0 ? 2 : 6) : 0) + (og > 0 ? 5 : og < 0 ? -3 : 0) + (typeof reliefScore === 'function' ? reliefScore(tag, q.id) : 0) + Math.min(4, ratio) + (q.cores.includes(tag) ? 4 : 0) + (q.id === C(q.owner).capital ? 6 : 0) + Math.random() * 2; if (s > bs) { bs = s; best = q.id; } }
     if (best !== null && (!a.home || P(best).cores.includes(tag))) { a.path = [best]; a.prog = 0; a._t = G.day; continue; }
     if (a.home) { if (!here.cores.includes(tag) && P(c.capital).ctrl === tag) orderMove(a, c.capital); const hf = fronts.filter(f => P(f.id).cores.includes(tag) && P(f.id).ctrl === tag && NB[f.id].some(e => !e.sea && hostile(P(e.to)))); if (hf.length && !hf.some(f => f.id === a.loc)) { hf.sort((x, y) => y.need - x.need); orderMove(a, hf[0].id); a._t = G.day; } continue; }
     // otherwise go where the front needs us

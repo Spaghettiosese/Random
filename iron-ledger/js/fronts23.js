@@ -52,7 +52,8 @@ const frontsOf = t => Object.values(fronts()).filter(f => f.owner === t);
 const frontOf = a => { if (!a || a.front === undefined || a.front === null || typeof a.front === 'object' || !G.fronts) return null; const f = G.fronts[a.front]; return f && f.owner === a.owner ? f : null; };
 const frOurs = (o, p) => p.ctrl === o || (friendly(o, p.ctrl) && !atWar(o, p.ctrl));
 // a front faces one nation: its own land and troops, its subjects, and its land held by its allies
-const frTheirs = (f, q) => { if (!q.ctrl || frOurs(f.owner, q)) return false; if (q.ctrl === f.enemy) return true; const k = C(q.ctrl); return !!k && (k.overlord === f.enemy || (q.owner === f.enemy && atWar(f.owner, q.ctrl))); };
+// (2.5: a front that was drawn on the map may face several nations at once: f.faces)
+const frTheirs = (f, q) => { if (!q.ctrl || frOurs(f.owner, q)) return false; const E = f.faces && f.faces.length ? f.faces : [f.enemy]; if (E.includes(q.ctrl)) return true; const k = C(q.ctrl); return !!k && (E.includes(k.overlord) || (E.includes(q.owner) && atWar(f.owner, q.ctrl))); };
 function frontNew(owner, enemy) { const id = G.nid++, n = frontsOf(owner).filter(f => f.enemy === enemy).length, used = new Set(frontsOf(owner).map(f => f.col));
   let col = 0; while (used.has(col) && col < FR_COLORS.length - 1) col++;
   return (fronts()[id] = { id, owner, enemy, name: `${C(enemy).adj || cname(enemy)} Front${n ? ' ' + 'ABCDEFGH'[Math.min(7, n)] : ''}`, armies: [], order: 'hold', stance: 'balanced', targets: [], fallback: [], only: [], plan: 0, col, made: G.day }); }
@@ -74,45 +75,58 @@ const frOrg = a => (a.divs.length ? sum(a.divs, d => d.org) / a.divs.length : 0)
 const frEnemyStr = (o, id) => sum(armiesAt(id).filter(x => atWar(o, x.owner)), x => armyStr(x) * (0.4 + 0.6 * frOrg(x)));
 const frTargetOf = (f, id) => { let best = null, bd = 1e9; for (const t of f.targets || []) { const d = frDist(id, t); if (d < bd) { bd = d; best = t; } } return best; };
 function frontDaily(f) { const c = C(f.owner); if (!c || !c.exists || c.capitulated) return; const A = frArmies(f);
-  const war = ok(f.enemy) && atWar(f.owner, f.enemy), attacking = f.order === 'attack' && war;
+  if (typeof frFacesGrow === 'function') frFacesGrow(f);
+  const war = typeof frWar === 'function' ? frWar(f) : ok(f.enemy) && atWar(f.owner, f.enemy), attacking = f.order === 'attack' && war;
   // objectives reached
   if (f.targets && f.targets.length) { const left = f.targets.filter(id => !frOurs(f.owner, P(id)));
-    if (left.length < f.targets.length && f.owner === G.player) for (const id of f.targets) if (!left.includes(id)) UIH.notify(`${f.name}: the battle plan's objective ${P(id).name} is taken.`, 'good');
-    f.targets = left; if (!left.length && f.order === 'attack' && f._hadT) { f.order = 'hold'; if (f.owner === G.player) UIH.notify(`${f.name}: every objective of the battle plan is taken. The front holds and plans again.`, 'good'); } f._hadT = left.length > 0; }
-  // planning: preparation while the front holds, spent while it attacks
+    if (left.length < f.targets.length && f.owner === G.player && !f.tAuto) for (const id of f.targets) if (!left.includes(id)) UIH.notify(`${f.name}: the battle plan's objective ${P(id).name} is taken.`, 'good');
+    f.targets = left; if (!left.length && f.order === 'attack' && f._hadT && !f.tAuto) { f.order = 'hold'; if (f.owner === G.player) UIH.notify(`${f.name}: every objective of the battle plan is taken. The front holds and plans again.`, 'good'); } f._hadT = left.length > 0; }
+  if (!f.targets.length) f.tAuto = false; if (f.tAuto && !attacking) { f.targets = []; f.tAuto = false; }
+  // planning: preparation while the front holds, spent while it attacks (2.5: slower, and quieter, in radio silence)
   const fighting = A.some(a => a.battle);
-  if (!attacking) f.plan = Math.min(1, (f.plan || 0) + 0.02 * (1 + M(c, 'org')) * (A.length ? 1 : 0.3)); else if (fighting) f.plan = Math.max(0, (f.plan || 0) - 0.03);
+  if (!attacking) f.plan = Math.min(1, (f.plan || 0) + 0.02 * (1 + M(c, 'org')) * (A.length ? 1 : 0.3) * (f.silent ? 0.7 : 1)); else if (fighting) f.plan = Math.max(0, (f.plan || 0) - 0.03);
   if (!A.length) return;
   // where the armies should stand
   const pairs = frontPairs(f); let line = [...new Set(pairs.map(x => x[0]))];
   if (f.order === 'fallback') { const fb = f.fallback.filter(id => frOurs(f.owner, P(id))); if (fb.length) line = fb; }
+  if (!line.length && f.only && f.only.length) line = f.only.filter(id => frOurs(f.owner, P(id))); // 2.5: a line drawn behind the border is held as it is
   if (!line.length) { if (f.owner === G.player && f._noLine !== G.day - 1 && !f._toldNo) { f._toldNo = 1; UIH.notify(`${f.name}: there is no land border with ${cname(f.enemy)} in this sector. The armies wait where they are.`, 'bad'); } f._noLine = G.day; return; } f._toldNo = 0;
+  // 2.5: an offensive drives along an axis. With no objectives drawn, the staff picks the nearest capitals and cities.
+  if (attacking && !f.targets.length && typeof frAutoTargets === 'function') { f.targets = frAutoTargets(f, line); f.tAuto = f.targets.length > 0; f._hadT = f.tAuto; }
+  const hasT = attacking && f.targets.length > 0, field = hasT && typeof hopField === 'function' ? hopField(f.targets, 40, p => frOurs(f.owner, p) || atWar(f.owner, p.ctrl)) : null;
+  const fd = id => { const v = field ? field.get(id) : undefined; return v === undefined ? 99 : v; }; let minF = 99; if (field) for (const id of line) minF = Math.min(minF, fd(id));
   const w = {}; let mt = 1; for (const id of line) { const t = frThreat(f.owner, id); w[id] = t; mt = Math.max(mt, t); }
-  const hasT = attacking && f.targets && f.targets.length;
-  for (const id of line) { const t = hasT ? frTargetOf(f, id) : null; w[id] = 1 + 2.2 * w[id] / mt + P(id).vp / 10 + (id === c.capital ? 2 : 0) + (t !== null ? 2.5 * (1 - Math.min(1, frDist(id, t) / 900)) : 0); }
-  const tw = sum(line, id => w[id]), want = {}; for (const id of line) want[id] = A.length * w[id] / tw;
+  for (const id of line) { const k = fd(id) - minF; w[id] = 1 + 2.2 * w[id] / mt + P(id).vp / 10 + (id === c.capital ? 2 : 0) + (field ? (k <= 0 ? 5 : k === 1 ? 2.5 : k === 2 ? 1 : 0) : 0); }
+  const R = A.filter(a => a.role === 'reserve'), L = A.filter(a => a.role !== 'reserve');
+  const tw = sum(line, id => w[id]), want = {}; for (const id of line) want[id] = L.length * w[id] / tw;
   const onLine = new Set(line), have = {};
-  for (const a of A) { if (a.fpost !== undefined && !onLine.has(a.fpost)) delete a.fpost; if (a.fpost !== undefined) have[a.fpost] = (have[a.fpost] || 0) + 1; }
-  // battle plan: armies at their posts strike where the odds and the axis are best
-  const busy = new Set();
+  for (const a of L) { if (a.fpost !== undefined && !onLine.has(a.fpost)) delete a.fpost; if (a.fpost !== undefined) have[a.fpost] = (have[a.fpost] || 0) + 1; }
+  // battle plan: armies at their posts strike down the axis, and widen the breach on its shoulders; nothing else moves
+  const busy = new Set(), ourN = id => NB[id].filter(e => !e.sea && frOurs(f.owner, P(e.to))).length;
   if (attacking) { const st = FR_STANCE[f.stance] || FR_STANCE.balanced, cand = new Map();
     for (const a of A) { if (a.battle || a.path.length || a.oos || frOrg(a) < st[2] || !onLine.has(a.loc)) continue;
       for (const e of NB[a.loc]) { if (e.sea) continue; const q = P(e.to); if (!frTheirs(f, q) || !atWar(f.owner, q.ctrl)) continue; (cand.get(q.id) || cand.set(q.id, []).get(q.id)).push(a); } }
     const scored = [...cand.entries()].map(([id, list]) => { const q = P(id), mine = sum(list, a => armyStr(a) * (0.4 + 0.6 * frOrg(a))) * (1 + 0.25 * (f.plan || 0)), def = frEnemyStr(f.owner, id) * (1 + TERRAIN[q.ter][1] + q.fort * 0.12) * (1 - 0.32 * cqFor(q, f.owner)), r = def > 0 ? mine / def : 9;
-      const t = hasT ? frTargetOf(f, id) : null, axis = t !== null ? 3 * clamp((Math.min(...list.map(a => frDist(a.loc, t))) - frDist(id, t)) / 300, -1, 1) + (id === t ? 3 : 0) : q.vp / 5 + (q.cores.includes(f.owner) || q.claims.includes(f.owner) ? 1 : 0);
-      return { id, list, r, s: Math.min(4, r) + axis + cqFor(q, f.owner) * 2 }; }).sort((x, y) => y.s - x.s);
-    for (const x of scored) { if (x.r < st[1] || (hasT && x.s < 0.5)) continue; const go = x.list.filter(a => !busy.has(a.id)); if (!go.length) continue;
+      let axis, spear = false;
+      if (field) { const from = Math.min(...list.map(a => fd(a.loc))), g = from - fd(id), n = ourN(id);
+        if (g > 0) { spear = true; axis = 4 + (f.targets.includes(id) ? 3 : 0) + (from <= minF ? 1.5 : 0); } else if (g === 0 && fd(id) <= minF + 1 && n >= 2) axis = 0.4; else if (def === 0 && n >= 3) axis = 0.2; else axis = -9; }
+      else axis = q.vp / 5 + (q.cores.includes(f.owner) || q.claims.includes(f.owner) ? 1 : 0);
+      return { id, list, r, spear, s: Math.min(4, r) + axis + cqFor(q, f.owner) * 2 }; }).sort((x, y) => y.s - x.s);
+    for (const x of scored) { if (x.r < st[1] * (x.spear ? 0.9 : 1) || (field && x.s < 0.5)) continue; const go = x.list.filter(a => !busy.has(a.id)); if (!go.length) continue;
       // keep a part of the line manned: never strip a post facing a strong enemy bare
       for (const a of go) { const lone = armiesAt(a.loc).filter(y => y.owner === f.owner && !busy.has(y.id) && y !== a).length === 0, threat = frThreat(f.owner, a.loc) - frEnemyStr(f.owner, x.id);
         if (lone && threat > armyStr(a) * 1.5 && go.length > 1) continue; if (orderMove(a, x.id)) { busy.add(a.id); a.fpost = x.id; } } } }
+  // 2.5: reserves stand behind the point of main effort in the attack, and go where the line is hardest pressed in defence
+  if (R.length) { let post = null, bs = -1e9; for (const id of line) { const hot = G.battles.some(b => b.prov === id) ? 3 : 0, s = attacking && field ? -fd(id) * 3 + w[id] : w[id] + hot; if (s > bs) { bs = s; post = id; } }
+    for (const a of R) { if (busy.has(a.id) || a.battle) continue; a.fpost = post; if (post !== null && a.loc !== post && (!a.path.length || a.path[a.path.length - 1] !== post)) { if (!orderMove(a, post)) delete a.fpost; } } }
   // everyone else takes up a post on the line, staying put while the post is still needed
-  for (const a of A.slice().sort((x, y) => armyStr(y) - armyStr(x))) { if (busy.has(a.id) || a.battle) continue;
+  for (const a of L.slice().sort((x, y) => armyStr(y) - armyStr(x))) { if (busy.has(a.id) || a.battle) continue;
     const cur = a.fpost !== undefined ? a.fpost : (onLine.has(a.loc) ? a.loc : undefined);
     if (cur !== undefined && onLine.has(cur) && (have[cur] || 0) <= Math.ceil(want[cur]) + (a.fpost === undefined ? 0 : 0.5)) { if (a.fpost === undefined) { a.fpost = cur; have[cur] = (have[cur] || 0) + 1; } }
     else { let best = null, bs = -1e9; for (const id of line) { const gap = want[id] - (have[id] || 0) - (id === cur ? -1 : 0); const s = gap * 4 - frDist(a.loc, id) / 250; if (s > bs) { bs = s; best = id; } }
       if (best !== null && best !== cur) { if (cur !== undefined && a.fpost === cur) have[cur]--; a.fpost = best; have[best] = (have[best] || 0) + 1; } }
     if (a.fpost === undefined) continue;
-    if (a.loc !== a.fpost && (!a.path.length || a.path[a.path.length - 1] !== a.fpost)) { if (!orderMove(a, a.fpost)) { delete a.fpost; } } } }
+    if (a.loc !== a.fpost && (!a.path.length || a.path[a.path.length - 1] !== a.fpost)) { if (!orderMove(a, a.fpost)) { delete a.fpost; } else if (typeof railTry === 'function') railTry(a); } } }
 // planned battles: the front's preparation is spent in its attacks; a planned defence holds a little better
 { const _sp = sidePower; sidePower = function (armies, attacking, p, eo) { const r = _sp(armies, attacking, p, eo); if (!armies.length || !G.fronts) return r; let n = 0, b = 0;
   for (const a of armies) { const f = frontOf(a); n += a.divs.length; if (!f) continue; if (attacking && f.order === 'attack') b += 0.25 * (f.plan || 0) * a.divs.length; else if (!attacking && f.order !== 'attack') b += 0.1 * (f.plan || 0) * a.divs.length; }

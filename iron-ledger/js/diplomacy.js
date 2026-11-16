@@ -121,15 +121,18 @@ function releaseCountry(tag, from) {
   spawnDivisions(c, 'inf', Math.max(2, Math.round(sum(ps, p => p.pop) / 3000)), c.capital, 0.6); logMsg(`${c.name} is restored as an independent state.`, 'world'); UIH.mapDirty(); return true;
 }
 // ---------- capitulation & peace ----------
+// 2.5: land that an occupier has already handed to a regime of its own (a military government, a commissariat) is still
+// land the nation has lost: it counts towards capitulation like any other occupied province
+const lostToRegime = (tag, p) => { const k = G.C[p.owner]; return !!k && k.exists && k.collabOf === tag && p.ctrl !== tag && atWar(tag, p.owner); };
 function checkCapitulation(tag) {
   const c = C(tag); if (!c || !c.exists || c.capitulated || !isAtWar(tag)) return; let tot = 0, lost = 0;
-  for (const p of G.P) if (p.owner === tag && p.cores.includes(tag)) { tot += p.vp; if (p.ctrl !== tag && atWar(tag, p.ctrl)) lost += p.vp; }
+  for (const p of G.P) { if (!p.cores.includes(tag)) continue; if (p.owner === tag) { tot += p.vp; if (p.ctrl !== tag && atWar(tag, p.ctrl)) lost += p.vp; } else if (lostToRegime(tag, p)) { tot += p.vp; lost += p.vp; } }
   if (!tot) { for (const p of G.P) if (p.owner === tag) { tot += p.vp; if (p.ctrl !== tag && atWar(tag, p.ctrl)) lost += p.vp; } }
   const lim = clamp(0.58 + (c.ws - 50) / 220 + (c.major ? 0.08 : 0) + M(c, 'caplimit') + (c.civilOf || G.wars.some(w => w.civil && (w.att.includes(tag) || w.def.includes(tag))) ? 0.15 : 0), 0.4, 0.92), capLost = atWar(tag, P(c.capital).ctrl);
   if (lost / tot >= lim || (capLost && lost / tot >= lim * 0.85)) capitulate(tag);
 }
 function capitulate(tag) {
-  const c = C(tag); c.capitulated = true; const occ = {}; for (const p of G.P) if (p.owner === tag && p.ctrl !== tag) occ[p.ctrl] = (occ[p.ctrl] || 0) + p.vp;
+  const c = C(tag); c.capitulated = true; const occ = {}; for (const p of G.P) { if (p.owner === tag && p.ctrl !== tag) occ[p.ctrl] = (occ[p.ctrl] || 0) + p.vp; else if (lostToRegime(tag, p)) { const o = C(p.owner).overlord || p.owner; occ[o] = (occ[o] || 0) + p.vp; } }
   const top = Object.keys(occ).sort((a, b) => occ[b] - occ[a])[0]; for (const a of armiesOf(tag)) removeArmy(a); c.training = [];
   const patron = alive().find(o => o.tag !== tag && !o.capitulated && o.major && G._ws[tag + '|' + o.tag]);
   for (const p of G.P) if (p.ctrl === tag) { if (p.cores.includes(tag) || !patron) { if (top) p.ctrl = top; } else p.ctrl = patron.tag; }

@@ -8,6 +8,16 @@ Open `index.html` in a browser. No build step, no server.
 
 ## Updates
 
+### 2.5 "The Art of War"
+
+- **The command bar**: every army on a card along the bottom of the map under its general, the cards gathered under field marshals. Click, Shift-click, double-click, right-click and drag: select, find, appoint generals and marshals, move armies between army groups. Selecting armies no longer opens the Military tab.
+- **Plans drawn from the armies**: select armies or an army group and draw the front line (`F`), the offensive line (`O`) and the fallback line (`B`), then Execute (`E`). A drawn plan faces whoever stands across the line, follows its army group, and can be spread out or concentrated.
+- **Offensives drive along an axis**: towards the offensive line by the shortest way, massing at the point of main effort, widening the breach on its shoulders; the rest of the front holds. With no line drawn the staff picks the nearest capital or city. The AI's general staff plans the same way, with one to four objectives for every nation at war.
+- **Pockets**: armies cut off from a capital, an open coast, a depot or five provinces of friendly land weaken by the day and finally surrender; air bridges, breakouts and relief; a bonus for attacks from several sides.
+- **Five new mechanics**: reserves, railway redeployment, airborne landings, battle honours (Guards divisions, decorated generals), and operational surprise and deception.
+- **Quality of life**: keys for everything (`?` on the bar), a find box (`/`), `Tab` through the armies, the roads of every selected army, generals handed out in one click, map modes folded down to the one in use.
+- **Fixed**: land handed to an occupation regime in the middle of a war now counts as lost when a nation weighs capitulation; in historical games the British Expeditionary Force is no more than sixteen divisions before France falls.
+
 ### 2.4 "The Concert of Powers"
 
 - **Diplomacy 3.0**: opinion with remembered reasons that fade; trust built by kept treaties and destroyed by betrayal, watched by everyone; new treaties (friendship, defensive pacts, border treaties, loans, arms supply); every proposal shows its likely answer and reasons first; envoys (improve relations, build trust, court for our faction, mediate); border incidents and demands for apologies; AI proposals to the player become choices.
@@ -195,8 +205,11 @@ Initial release.
 
 ## Controls
 
-Drag to pan, wheel or pinch to zoom. Click an army counter to select it, right-click a province
-to march (or select the province and press "Move here"). Space pauses, `+`/`-` change speed.
+Right-drag (or one finger) to pan, wheel or pinch to zoom, left-drag to select armies in a box. Click an army's
+card on the command bar or its counter on the map to select it, right-click a province to march. With armies
+selected: `F` front line, `O` offensive line, `B` fallback line, `E` execute or hold, `R` reserve, `H` halt, `X` split,
+`G` merge, `C` centre. `Tab` walks through the armies, `/` finds a province or a country, `?` lists every key.
+Space pauses, `1`-`5` and `+`/`-` change speed.
 
 ## Development
 

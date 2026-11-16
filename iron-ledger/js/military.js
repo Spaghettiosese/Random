@@ -98,9 +98,9 @@ function sidePower(armies, attacking, p, enemyOwners) {
   divs.sort((x, y) => y[0].org * y[0].str - x[0].org * x[0].str); const eng = divs.slice(0, 12), ter = TERRAIN[p.ter];
   let air = 0, eair = 0; for (const o of owners) air += airPower(C(o)); for (const o of enemyOwners) eair += airPower(C(o));
   const airF = 1 + clamp((air - eair) / Math.max(50, air + eair), -1, 1) * 0.18;
-  for (const [d, a] of eng) { const u = UNITS[d.t], c = C(a.owner), g = genOf(a); let fa = 1 + M(c, 'atk'), fd = 1 + M(c, 'def'); const amph = attacking && (a._amph === p.id ? a._amphV : (a._amph = p.id, a._amphV = (NB[a.loc].find(e => e.to === p.id) || {}).sea ? 0.5 : 1)); const eff = d.str * (0.3 + 0.7 * d.org) * (1 + d.xp * 0.25) * (a.oos ? 0.5 : 1) * (amph || 1);
+  for (const [d, a] of eng) { const u = UNITS[d.t], c = C(a.owner), g = genOf(a); let fa = 1 + M(c, 'atk'), fd = 1 + M(c, 'def'); const amph = attacking && (a._amph === p.id ? a._amphV : (a._amph = p.id, a._amphV = (NB[a.loc].find(e => e.to === p.id) || {}).sea ? 0.5 : 1)); const eff = d.str * (0.3 + 0.7 * d.org) * (1 + d.xp * 0.25 + (d.hon || 0) * 0.03 + (d.g ? 0.08 : 0)) * (typeof encF === 'function' ? encF(a, attacking) : a.oos ? 0.5 : 1) * (amph || 1);
     if ((u.base || d.t) === 'arm') { fa += M(c, 'tank'); if ('mjsu'.includes(p.ter)) fa -= 0.4; } if (u.oil) fa *= 0.5 + 0.5 * c.ful.oil; if ((u.base || d.t) === 'mtn' && 'mh'.includes(p.ter)) { fa += 0.3; fd += 0.3; }
-    if (g) { fa += g.skill * 0.05; fd += g.skill * 0.05; const t = g.trait;
+    if (g) { fa += g.skill * 0.05 + (g.medal || 0) * 0.01; fd += g.skill * 0.05 + (g.medal || 0) * 0.01; const t = g.trait;
       if (t === 'panzer' && (u.base || d.t) === 'arm') fa += 0.2; if (t === 'inf' && ((u.base || d.t) === 'inf' || (u.base || d.t) === 'hvy')) fd += 0.1; if (t === 'def') fd += 0.15; if (t === 'off') fa += 0.12; if (t === 'mtn' && 'mh'.includes(p.ter)) { fa += 0.25; fd += 0.25; }
       if (t === 'winter') { fd += 0.1; fa += 0.05; } if (t === 'brilliant') { fa += 0.1; fd += 0.1; } if (t === 'old') { fa -= 0.05; fd += 0.05; } if (t === 'cav' && ((u.base || d.t) === 'cav' || (u.base || d.t) === 'mot')) fa += 0.15;
       if (t === 'jungle' && 'js'.includes(p.ter)) { fa += 0.25; fd += 0.25; } if (t === 'desert' && p.ter === 'd') { fa += 0.25; fd += 0.25; } if (t === 'urban' && p.ter === 'u') { fa += 0.25; fd += 0.25; } if (t === 'politic') fd += 0.05; if (t === 'trick' && divs.length < 6) fa += 0.1; }
@@ -150,7 +150,7 @@ function militaryWeekly(c) {
   // supply
   if (war) { const sup = new Set(), st = []; for (const p of G.P) if ((p.ctrl === c.tag || friendly(c.tag, p.ctrl)) && (p.cores.includes(p.ctrl) || (p.coastal && !(c.blockade > 0.3)))) { sup.add(p.id); st.push(p.id); }
     while (st.length) { const x = st.pop(); for (const e of NB[x]) if (!e.sea && !sup.has(e.to)) { const q = P(e.to); if (q.ctrl === c.tag || friendly(c.tag, q.ctrl)) { sup.add(e.to); st.push(e.to); } } }
-    for (const a of mine) { const was = a.oos; a.oos = !sup.has(a.loc) && !(genOf(a) && genOf(a).trait === 'log'); if (a.oos) { for (const d of a.divs) d.str = Math.max(0.05, d.str - 0.05); if (!was && c.tag === G.player) UIH.notify(`${a.name} is cut off from supply at ${P(a.loc).name}!`, 'bad'); } }
+    for (const a of mine) { const was = a.oos; a.oos = (a.enc || 0) > 0 || (!sup.has(a.loc) && !(genOf(a) && genOf(a).trait === 'log')); if (a.oos) { for (const d of a.divs) d.str = Math.max(0.05, d.str - 0.05); if (!was && c.tag === G.player) UIH.notify(`${a.name} is cut off from supply at ${P(a.loc).name}!`, 'bad'); } }
   } else for (const a of mine) a.oos = false;
   // reinforcement
   for (const a of mine) { if (a.oos) continue; const p = P(a.loc), cap = (8 + (p.b.railway || 0) * 3 + p.dev * 2 + (p.b.port ? 3 : 0)) * (1 + M(c, 'supply')); const over = armiesAt(a.loc).reduce((n, x) => n + (x.owner === c.tag ? x.divs.length : 0), 0) > cap * 1.5;

@@ -8,6 +8,7 @@ function frBreak(c) { const F = c.fr ? c.fr.conf : 45; return clamp(0.3 + Math.m
 const CN_INTERIOR = ['Chongqing', 'Chengdu', 'Kunming', 'Guiyang', "Xi'an", 'Lanzhou', 'Changsha', 'Nanning', 'Hengyang', 'Yan\'an', 'Hanzhong', 'Guilin'];
 const cnHoldsInterior = () => CN_INTERIOR.some(n => { const p = PN(n); return p && (p.ctrl === 'CHI' || (friendly('CHI', p.ctrl) && !atWar('CHI', p.ctrl))); });
 { const _cc = checkCapitulation; checkCapitulation = function (tag) { const c = C(tag); if (!c || !c.exists || c.capitulated || !isAtWar(tag)) return _cc(tag);
+  if (tag === 'CHI' && G.historical && year() < 1946 && G.P.filter(p => p.owner === 'CHI' && p.ctrl === 'CHI').length >= 3) return; // 2.5: in the historical course Chongqing never gives in
   if (tag === 'CHI' && cnHoldsInterior() && capInfo('CHI').prog < 0.9) return;
   if (tag === 'FRA') { const paris = PN('Paris'); if (paris && atWar('FRA', paris.ctrl) && capInfo('FRA').prog >= frBreak(c)) { logMsg('With Paris fallen and the armies broken, the French government asks for an armistice.', 'world', ['FRA']); return capitulate(tag); } }
   return _cc(tag); }; }
@@ -25,7 +26,10 @@ const WEST = ['FRA', 'BEL', 'HOL', 'LUX', 'ENG'];
     if (WEST.includes(q.owner) || (o && WEST.includes(o.overlord))) { if (a.battle) leaveBattle(a); a.path = []; a.prog = 0; } } }; }
 // and the Allies sit behind the Maginot Line: no AI offensive into Germany before Fall Gelb (the Saar offensive of 1939
 // went eight kilometres and came back)
-{ const _aa = aiArmies; aiArmies = function (tag) { _aa(tag); const k = C(tag); if (!G.historical || G.flags.gelb || !k || !k.ai || !WEST.includes(tag.slice(0, 3)) || G.day < mjDay(1939, 1)) return;
+// (2.5: and after it they still do not set foot on German soil before the middle of 1942: a failed Fall Gelb ends in a
+// stalemate on the frontier, not in the fall of Berlin in 1940)
+const WEST_ALLIES = WEST.concat(['CAN', 'AST', 'NZL', 'SAF', 'RAJ']);
+{ const _aa = aiArmies; aiArmies = function (tag) { _aa(tag); const k = C(tag); if (!G.historical || G.day >= mjDay(1942, 6) || !k || !k.ai || !WEST_ALLIES.includes(tag.slice(0, 3)) || G.day < mjDay(1939, 1)) return;
   for (const a of armiesOf(tag)) { if (!a.auto || !a.path.length) continue; const q = P(a.path[0]); if (!atWar(tag, q.ctrl) || q.owner === tag || q.cores.includes(tag)) continue; if (q.owner === 'GER' || q.cores.includes('GER')) { if (a.battle) leaveBattle(a); a.path = []; a.prog = 0; } } }; }
 // Fall Weiss: in historical games the war on Poland begins on the first of September 1939, whatever the focus tree's pace
 { const _pd = playDaily; playDaily = function () { _pd(); if (!G.historical || G.day < mjDay(1939, 9) || G.day > mjDay(1940, 6) || !ok('GER') || !ok('POL') || !C('GER').ai || atWar('GER', 'POL') || C('POL').overlord || G.flags.fallWeiss) return;
@@ -81,3 +85,11 @@ const WEST_WAR = ['POL', 'FRA', 'ENG', 'BEL', 'HOL', 'LUX'];
     && (side === 'att' ? w.def : w.att).some(x => WEST_WAR.includes(x.slice(0, 3)))) return; return _jw(w, t, side); }; }
 { const _aa = aiArmies; aiArmies = function (tag) { _aa(tag); const k = C(tag); if (!G.historical || G.flags.gelb || !k || !k.ai || tag === 'GER' || !ok('GER') || !friendly(tag, 'GER')) return;
   for (const a of armiesOf(tag)) { if (!a.path.length) continue; const q = P(a.path[0]), o = C(q.owner); if (!atWar(tag, q.ctrl) || q.owner === tag) continue; if (WEST.includes(q.owner) || (o && WEST.includes(o.overlord))) { if (a.battle) leaveBattle(a); a.path = []; a.prog = 0; } } }; }
+// 2.5 The British Expeditionary Force: in historical games Britain sends no more than sixteen divisions to the continent
+// before France has fallen (thirteen stood there in May 1940); the rest of its army guards the islands and the empire.
+const BEF_CAP = 16, BEF_CONT = ['FRA', 'BEL', 'HOL', 'LUX'];
+function befCap() { if (!G.historical || !ok('ENG') || !C('ENG').ai || !ok('FRA') || C('FRA').capitulated || G.day >= mjDay(1941, 1)) return;
+  const cont = p => BEF_CONT.includes(p.orig) && p.cores.includes(p.orig), mine = armiesOf('ENG'); let n = sum(mine.filter(a => cont(P(a.loc))), a => a.divs.length);
+  for (const a of mine) { if (!a.path.length || cont(P(a.loc))) continue; if (!cont(P(a.path[a.path.length - 1]))) continue; if (n + a.divs.length > BEF_CAP) { a.path = []; a.prog = 0; delete a.order; } else n += a.divs.length; } }
+{ const _aa = aiArmies; aiArmies = function (tag) { _aa(tag); if (tag === 'ENG') befCap(); }; }
+{ const _pd = playDaily; playDaily = function () { _pd(); befCap(); }; }
