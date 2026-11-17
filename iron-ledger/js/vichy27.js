@@ -40,9 +40,13 @@ const frHost = () => { const fr = C('FRA'); if (fr && fr.exists && !fr.capitulat
 function armisticeDue() { const fr = C('FRA'), paris = PN('Paris'); if (!fr || !fr.exists || fr.capitulated || G.flags.armistice || G.C.VIC || fr.overlord || fr.flags.algiers || !ok('GER') || !atWar('FRA', 'GER') || !paris || year() > 1943) return false;
   const k = C(paris.ctrl); return paris.ctrl === 'GER' || (!!k && atWar('FRA', paris.ctrl) && (k.overlord === 'GER' || friendly('GER', paris.ctrl))); }
 let ARM_BUSY = false;
-{ const _cap = capitulate; capitulate = function (tag) { if (tag !== 'FRA' || ARM_BUSY || !armisticeDue()) return _cap(tag); ARM_BUSY = true; try { armisticeAsk(() => _cap('FRA')); } finally { ARM_BUSY = false; } }; }
+// (France capitulates once a day at most: a war that ends with the armistice makes peace and clears the flag, and the
+// next check the same day must not capitulate the government in exile a second time)
+{ const _cap = capitulate; capitulate = function (tag) { if (tag === 'FRA' && !ARM_BUSY && G.flags.fraCap === G.day) return; if (tag !== 'FRA' || ARM_BUSY || !armisticeDue()) { const r = _cap(tag); if (tag === 'FRA') G.flags.fraCap = G.day; return r; }
+  ARM_BUSY = true; try { armisticeAsk(() => _cap('FRA')); } finally { ARM_BUSY = false; } G.flags.fraCap = G.day; }; }
 function armisticeAsk(cap) { const fr = C('FRA'), hum = t => t === G.player && C(t) && !C(t).ai;
-  const grant = (harsh, play) => { const ships0 = fr.stock.ships || 0; ARM_BUSY = true; try { cap(); armistice({ harsh, ships0 }); } finally { ARM_BUSY = false; } if (play && vichy()) { switchPlayer('VIC'); vichy().ai = false; if (typeof renderAll === 'function') renderAll(); } };
+  // the armistice is signed first, then France capitulates: a peace that ends the war at once must not hand the Empire to the victor
+  const grant = (harsh, play) => { const ships0 = fr.stock.ships || 0; ARM_BUSY = true; try { armistice({ harsh, ships0 }); cap(); armisticeAfter(ships0); } finally { ARM_BUSY = false; } if (play && vichy()) { vichy().pp = Math.max(vichy().pp, fr.pp); switchPlayer('VIC'); vichy().ai = false; if (typeof renderAll === 'function') renderAll(); } };
   const none = () => { G.flags.armistice = -1; ARM_BUSY = true; try { cap(); } finally { ARM_BUSY = false; } logMsg('There is no armistice. The German army occupies the whole of France; the Empire and the fleet fight on beside Britain.', 'world', ['FRA', 'GER']); };
   if (hum('FRA')) return UIH.popup({ title: 'The Hour of Decision', icon: '⚖️', desc: 'Paris has fallen. The armies are cut to pieces and eight million people are on the roads. At Bordeaux the cabinet is split: Marshal Pétain says the fighting must stop; General de Gaulle has a seat on an aeroplane to London; the Empire, the fleet and the gold are untouched; and Mr Churchill offers something no one has heard of before.',
     options: [{ name: 'Ask for an armistice. I stay with the Marshal.', tip: 'The north and the Atlantic coast are occupied; the south and the Empire become the French State. <b>You play on as Vichy France</b>, with its own national focus tree.', fn: () => grant(false, true) },
@@ -74,11 +78,11 @@ function armistice(o) { const fr = C('FRA'), cap = PN('Vichy'); if (!cap) return
   for (const n of VZ_REICH) { const p = PN(n); if (p && ours(p) && (p.ctrl === 'GER' || friendly('GER', p.ctrl))) { p.owner = 'GER'; p.ctrl = 'GER'; if (!p.claims.includes('FRA')) p.claims.push('FRA'); } }
   for (const r of alive()) if (r.collabOf === 'FRA' && r.overlord === 'GER' && r.stype === 'collab') { r.stype = 'milgov'; r.name = 'Military Administration in France'; }
   viExpel(); addPact('nap', 'VIC', 'GER'); if (ok('ITA')) addPact('nap', 'VIC', 'ITA'); addRel('VIC', 'GER', -10); if (ok('ENG')) addRel('VIC', 'ENG', -10); addRel('VIC', 'FRA', -50);
-  // the fleet stays with the Marshal; a handful of ships and men reach England
-  const host = frHost(); if (host && host !== 'FRA') { const h = C(host); h.stock.ships = Math.max(0, h.stock.ships - (o.ships0 || 0) * 0.3); for (const a of armiesOf(host)) if (a.exileOf === 'FRA' && a.divs.length > 1) a.divs.length = 1; }
   fr.stock.ships = 0; G._wc = null; claimCache(); UIH.mapDirty();
   logMsg('The armistice is signed at Compiègne, in the railway carriage of 1918. Three fifths of France are occupied; Marshal Pétain governs the rest from the spa town of Vichy.', 'world', ['FRA', 'VIC', 'GER']);
   if (typeof worldNews === 'function') worldNews('Armistice at Compiègne', 'France has laid down its arms. The north and the Atlantic coast are occupied by Germany; Alsace and the Moselle are annexed to the Reich. In the south a new French State under Marshal Pétain keeps the Empire and the fleet, and declares itself neutral. In London a general named de Gaulle says France has lost a battle, not the war.', '🚂', []); }
+// the fleet stays with the Marshal; a handful of ships and men reach England
+function armisticeAfter(ships0) { const host = frHost(); if (host && host !== 'FRA') { const h = C(host); h.stock.ships = Math.max(0, h.stock.ships - (ships0 || 0) * 0.3); for (const a of armiesOf(host)) if (a.exileOf === 'FRA' && a.divs.length > 1) a.divs.length = 1; } C('FRA').stock.ships = 0; viExpel(); UIH.mapDirty(); }
 // armies that have no business on the French State's ground go back to the nearest ground of their own
 function viExpel() { for (const id in G.armies) { const a = G.armies[id], p = P(a.loc); if (p.owner !== 'VIC' || a.owner === 'VIC') continue; const seen = new Set([a.loc]); let cur = [a.loc], to = null;
     for (let d = 0; d < 12 && to === null && cur.length; d++) { const nx = []; for (const x of cur) for (const e of NB[x]) { if (seen.has(e.to)) continue; seen.add(e.to); const q = P(e.to); if (q.owner !== 'VIC' && (q.ctrl === a.owner || (friendly(a.owner, q.ctrl) && !atWar(a.owner, q.ctrl)))) { to = e.to; break; } nx.push(e.to); } cur = nx; }

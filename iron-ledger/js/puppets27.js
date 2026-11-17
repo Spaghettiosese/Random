@@ -84,3 +84,6 @@ for (const d of DYNP) DECISIONS['dynp_' + d[0]] = D(`Proclaim ${dynThe(d)}`, 'Pu
 { const _gt = genericTree; genericTree = function (c) { const t = _gt(c); const f = t.find(x => x.id === 'n_indep'); if (f) f.req = f.req ? both(f.req, [k => !k.dynp || autonomyOf(k) >= 60, 'Our masters would allow it']) : [k => !k.dynp || autonomyOf(k) >= 60, 'Our masters would allow it']; return t; }; }
 // Japan's coup in Indochina opens the way to the three kingdoms
 if (typeof FNS !== 'undefined') FNS.indoCoup = [c => { G.flags.indoCoup = G.day; }, 'Japan ends French rule in Indochina'];
+// a puppet state far from its master (Italian East Africa, Burma, Indochina, Azad Hind) keeps its army at home: the
+// Askari of the Duke of Aosta never saw Russia
+{ const _se = sendExpedition; sendExpedition = function (c, a, to) { if (c.dynp && C(to) && kmBetween(c.capital, C(to).capital) > 3000) return 'Too far from home'; return _se(c, a, to); }; }

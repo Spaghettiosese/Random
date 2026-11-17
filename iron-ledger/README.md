@@ -8,6 +8,17 @@ Open `index.html` in a browser. No build step, no server.
 
 ## Updates
 
+### 2.7 "The French State"
+
+- **The armistice and Vichy France**: when Paris falls and the armies break, France asks for an armistice. The north and the coast are occupied, Alsace-Moselle goes to the Reich, the south and the Empire become the French State. A player France chooses: the Marshal, London, Algiers or the Franco-British Union; a player Germany chooses the terms.
+- **The French State**: collaboration, German pressure, the Marshal's standing, the prisoners of war, the occupation costs, the fleet at Toulon, hidden arms; Case Anton when Berlin loses patience, the Allies land in Africa, or in November 1942.
+- **The Empire divided**: nine colonial regions whose loyalty wears away; colonies rally to de Gaulle one by one; Mers-el-Kébir, Dakar, the Levant, Madagascar and Torch.
+- **A 237-focus tree for the French State**, from the vote of full powers to Sigmaringen, through collaboration, the double game, the Empire, the fleet, shortage, youth and faith, and matters of conscience.
+- **Seventeen puppet states** that appear as the war redraws the map (Italian East Africa, Bohemia-Moravia, Slovakia, Mengjiang, Burma, Azad Hind, Vietnam, Croatia, the Hellenic State and more), with a new Colonial Government status.
+- **Twenty-one formable nations** whose names follow their government (an Iberian Federation, an Iberian Empire, a Union of Iberian Socialist Republics...), with region requirements and unions offered to like-minded neighbours.
+- **106 new events and 87 new decisions** across the world.
+- **Fixed**: in historical games an early AI Danzig crisis could lock Germany's road to the wars in the West and the East; France no longer capitulates twice on the day of the armistice; far-off puppet states keep their armies at home.
+
 ### 2.6 "The Arsenal"
 
 - **The Arsenal tab**: every arms factory, artillery foundry, tank plant, aircraft plant and shipyard works on a production line. Add and remove plants, open and close lines, change the model; each line shows its efficiency, its weekly output and the inputs it is short of.
