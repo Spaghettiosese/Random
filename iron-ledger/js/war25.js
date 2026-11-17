@@ -13,7 +13,10 @@ const ENC_SIZE = 5, ENC_HOME = 3, ENC_GRACE = 3;
 const W25 = { flank: 0.07, surrounded: 0.9, rail: 0.33, axis: 1 };
 let ENC = { day: -1, list: [] };
 const encFriendly = (tag, p) => p.ctrl === tag || (friendly(tag, p.ctrl) && !atWar(tag, p.ctrl));
-function encSource(c, p) { const k = C(p.ctrl); return p.id === c.capital || (!!k && k.capital === p.id && !k.capitulated) || (p.coastal && !((c.blockade || 0) > 0.3)) || (c.depots || []).includes(p.id); }
+// supply by sea reaches a coast as long as the nation still has the ships to carry it: a blockade alone does not
+// starve an army overseas, the loss of the merchant fleet does
+function seaSupplyOK(c) { if (typeof seaOf !== 'function') return !((c.blockade || 0) > 0.3); const s = seaOf(c); return !(s.ton0 > 0) || s.ton >= s.ton0 * 0.45; }
+function encSource(c, p) { const k = C(p.ctrl); return p.id === c.capital || (!!k && k.capital === p.id && !k.capitulated) || (p.coastal && seaSupplyOK(c)) || (c.depots || []).includes(p.id); }
 function encCompute() { const list = [], tags = new Set(); for (const id in G.armies) { const a = G.armies[id]; if (a.divs.length) tags.add(a.owner); }
   for (const tag of tags) { const c = C(tag); if (!c || !c.exists) continue; const mine = armiesOf(tag);
     if (!isAtWar(tag)) { for (const a of mine) if (a.enc) { a.enc = 0; a.airsup = false; } continue; } const lab = new Map();

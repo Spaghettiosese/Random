@@ -26,12 +26,12 @@ const WEST = ['FRA', 'BEL', 'HOL', 'LUX', 'ENG'];
     if (WEST.includes(q.owner) || (o && WEST.includes(o.overlord))) { if (a.battle) leaveBattle(a); a.path = []; a.prog = 0; } } }; }
 // and the Allies sit behind the Maginot Line: no AI offensive into Germany before Fall Gelb (the Saar offensive of 1939
 // went eight kilometres and came back)
-// (2.5: and after it they still do not set foot on German soil before the middle of 1942: a failed Fall Gelb ends in a
-// stalemate on the frontier, not in the fall of Berlin in 1940)
-const WEST_ALLIES = WEST.concat(['CAN', 'AST', 'NZL', 'SAF', 'RAJ']);
+// (2.5: and after it the Western Allies' AI does not set foot on German soil before September 1944, when the Americans
+// reached Aachen: a failed Fall Gelb ends in a stalemate on the frontier, not in the fall of Berlin in 1940)
+const WEST_ALLIES = WEST.concat(['CAN', 'AST', 'NZL', 'SAF', 'RAJ', 'USA']);
 // (and off Italian soil until the summer of 1943: the French army of the Alps never came down into Piedmont)
-{ const _aa = aiArmies; aiArmies = function (tag) { _aa(tag); const k = C(tag); if (!G.historical || G.day >= mjDay(1943, 7) || !k || !k.ai || !WEST_ALLIES.includes(tag.slice(0, 3)) || G.day < mjDay(1939, 1)) return; const ger = G.day < mjDay(1942, 6);
-  for (const a of armiesOf(tag)) { if (!a.auto || !a.path.length) continue; const q = P(a.path[0]); if (!atWar(tag, q.ctrl) || q.owner === tag || q.cores.includes(tag)) continue; if ((ger && (q.owner === 'GER' || q.cores.includes('GER'))) || q.cores.includes('ITA')) { if (a.battle) leaveBattle(a); a.path = []; a.prog = 0; } } }; }
+{ const _aa = aiArmies; aiArmies = function (tag) { _aa(tag); const k = C(tag); if (!G.historical || G.day >= mjDay(1944, 9) || !k || !k.ai || !WEST_ALLIES.includes(tag.slice(0, 3)) || G.day < mjDay(1939, 1)) return; const ger = G.day < mjDay(1944, 9);
+  for (const a of armiesOf(tag)) { if (!a.auto || !a.path.length) continue; const q = P(a.path[0]); if (!atWar(tag, q.ctrl) || q.owner === tag || q.cores.includes(tag)) continue; if ((ger && (q.owner === 'GER' || q.cores.includes('GER'))) || (G.day < mjDay(1943, 7) && q.cores.includes('ITA'))) { if (a.battle) leaveBattle(a); a.path = []; a.prog = 0; } } }; }
 // Fall Weiss: in historical games the war on Poland begins on the first of September 1939, whatever the focus tree's pace
 { const _pd = playDaily; playDaily = function () { _pd(); if (!G.historical || G.day < mjDay(1939, 9) || G.day > mjDay(1940, 6) || !ok('GER') || !ok('POL') || !C('GER').ai || atWar('GER', 'POL') || C('POL').overlord || G.flags.fallWeiss) return;
   G.flags.fallWeiss = G.day; G.plays = (G.plays || []).filter(pl => !(pl.a === 'GER' && pl.b === 'POL'));
@@ -105,6 +105,13 @@ const japLimit = () => _japLim || (_japLim = [new Set(JAP_LIMIT.map(n => PNAME[n
 const japSideTag = t => t === 'JAP' || (!!C(t) && C(t).overlord === 'JAP');
 const cnSoil = q => q.cores.some(t => CN_FAM.includes(t)) && q.orig !== 'MAN' && q.orig !== 'JAP';
 // ground the AI of this nation does not attack in a historical game
-function aiNoGo(tag, q) { if (!G.historical || !japSideTag(tag) || !C('JAP') || !C('JAP').ai || !cnSoil(q) || year() >= 1946) return false; const [a, b] = japLimit(); return !(a.has(q.id) || (b.has(q.id) && G.day >= mjDay(1944, 4))); }
+// (and the Red Army does not carry the war beyond the Soviet Union's own ground before 1944: a Barbarossa that fails ends
+// in a stalemate on the frontier, not in Berlin by Christmas 1941)
+const sovSideTag = t => t === 'SOV' || (!!C(t) && C(t).overlord === 'SOV');
+function aiNoGo(tag, q) { if (!G.historical) return false;
+  if (sovSideTag(tag) && C('SOV') && C('SOV').ai && G.day < mjDay(1944, 1) && typeof axisHeld === 'function' && axisHeld(q.ctrl) && q.owner !== 'SOV' && !q.cores.includes('SOV') && !(C(q.owner) && C(q.owner).collabOf === 'SOV')) return true;
+  // and while Japan follows its history, China's AI does not storm the ground Japan held before 1945: the war in China was a stalemate
+  if (CN_FAM.includes(tag.slice(0, 3)) && C('JAP') && C('JAP').ai && C(tag).ai && year() < 1945 && japSideTag(q.ctrl) && cnSoil(q) && japLimit()[0].has(q.id)) return true;
+  if (!japSideTag(tag) || !C('JAP') || !C('JAP').ai || !cnSoil(q) || year() >= 1946) return false; const [a, b] = japLimit(); return !(a.has(q.id) || (b.has(q.id) && G.day >= mjDay(1944, 4))); }
 { const _am = aiAtkMul; aiAtkMul = function (tag, q) { const m = _am(tag, q); if (!G.historical || year() >= 1945 || !CN_FAM.includes(tag.slice(0, 3)) || !japSideTag(q.ctrl) || !cnSoil(q) || !C(tag).ai) return m; return m * 2.2; }; }
-{ const _aa = aiArmies; aiArmies = function (tag) { _aa(tag); if (!G.historical || !japSideTag(tag)) return; for (const a of armiesOf(tag)) { if (!a.auto || !a.path.length) continue; const q = P(a.path[0]); if (atWar(tag, q.ctrl) && aiNoGo(tag, q)) { if (a.battle) leaveBattle(a); a.path = []; a.prog = 0; } } }; }
+{ const _aa = aiArmies; aiArmies = function (tag) { _aa(tag); if (!G.historical || !(japSideTag(tag) || sovSideTag(tag) || CN_FAM.includes(tag.slice(0, 3)))) return; for (const a of armiesOf(tag)) { if (!a.auto || !a.path.length) continue; const q = P(a.path[0]); if (atWar(tag, q.ctrl) && aiNoGo(tag, q)) { if (a.battle) leaveBattle(a); a.path = []; a.prog = 0; } } }; }

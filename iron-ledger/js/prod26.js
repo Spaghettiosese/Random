@@ -4,7 +4,7 @@
 // the arms industry of every nation in 1936.
 'use strict';
 const PLANT = { arms: 'arms', artyf: 'artillery', tankp: 'tanks', aircraftp: 'aircraft', shipyard: 'ships' };
-const PLANT_IDS = Object.keys(PLANT), PROD_NORM = 0.8;
+const PLANT_IDS = Object.keys(PLANT), PROD_NORM = 0.9;
 // ---------- what the plants can build: [id, name, technology, quality, rate, text, flag] ----------
 const MODELS = {
   arms: [['a_rifle', 'Bolt-Action Rifles', null, 1, 1, 'The rifle of the last war and the machine gun on its tripod.'],

@@ -11,7 +11,7 @@ Open `index.html` in a browser. No build step, no server.
 ### 2.6 "The Arsenal"
 
 - **The Arsenal tab**: every arms factory, artillery foundry, tank plant, aircraft plant and shipyard works on a production line. Add and remove plants, open and close lines, change the model; each line shows its efficiency, its weekly output and the inputs it is short of.
-- **The learning curve**: plants learn the model they build (30% for a new plant, 80% for an established plant of 1936, up to 100% with assembly lines and automation); retooling costs almost half of it.
+- **The learning curve**: plants learn the model they build (30% for a new plant, 90% for an established plant of 1936, up to 100% and a little more with assembly lines and automation); retooling costs almost half of it.
 - **Models and quality**: rifles to assault rifles, field guns to rockets, light to heavy tanks, biplanes to jets, escorts to carriers, and emergency arms. The quality of what the army carries is the average of everything in store and in service, and it counts in battle, in the air and at sea.
 - **Labour**: men under arms are missing from the factories; reserved occupations, women in the factories and foreign labour answer it, each at a price.
 - **The works of 1936**: 182 named arms works on the map (Krupp, Škoda, Bofors, FN, Tula, Kharkov, Kure, Vickers, Schneider...), the famous ones with a bonus, captured ones working for the occupier; and the arms industry every nation had in 1936, where only 35 nations had one written for them before.
