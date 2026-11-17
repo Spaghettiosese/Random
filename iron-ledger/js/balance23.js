@@ -115,3 +115,42 @@ function aiNoGo(tag, q) { if (!G.historical) return false;
   if (!japSideTag(tag) || !C('JAP') || !C('JAP').ai || !cnSoil(q) || year() >= 1946) return false; const [a, b] = japLimit(); return !(a.has(q.id) || (b.has(q.id) && G.day >= mjDay(1944, 4))); }
 { const _am = aiAtkMul; aiAtkMul = function (tag, q) { const m = _am(tag, q); if (!G.historical || year() >= 1945 || !CN_FAM.includes(tag.slice(0, 3)) || !japSideTag(q.ctrl) || !cnSoil(q) || !C(tag).ai) return m; return m * 2.2; }; }
 { const _aa = aiArmies; aiArmies = function (tag) { _aa(tag); if (!G.historical || !(japSideTag(tag) || sovSideTag(tag) || CN_FAM.includes(tag.slice(0, 3)))) return; for (const a of armiesOf(tag)) { if (!a.auto || !a.path.length) continue; const q = P(a.path[0]); if (atWar(tag, q.ctrl) && aiNoGo(tag, q)) { if (a.battle) leaveBattle(a); a.path = []; a.prog = 0; } } }; }
+// 2.5 The Soviet–Japanese Neutrality Pact (April 1941 to August 1945): in historical games the Soviet Union (and
+// Mongolia) and Japan (and its client states) do not fight each other before 8 August 1945, even when they stand on
+// opposite sides of the same world war, and neither AI declares war on the other; and the Western Allies' AI does not campaign in Japanese-held China before 1945: the war
+// in China was China's war, fought with Lend-Lease and the Hump, and the Allies took Japan's empire from the sea.
+const SOV_FAM = t => !!t && (t === 'SOV' || t === 'MON' || (!!C(t) && C(t).overlord === 'SOV'));
+const JAP_FAM = t => !!t && (t === 'JAP' || t === 'MAN' || (!!C(t) && C(t).overlord === 'JAP'));
+const sjPact = () => G.historical && G.day < mjDay(1945, 8) + 7 && ok('SOV') && ok('JAP') && C('SOV').ai && C('JAP').ai;
+{ const _wcache = warCache; warCache = function () { _wcache(); if (!sjPact()) return; const m = G._wc; for (const k of Object.keys(m)) { const i = k.indexOf('|'), a = k.slice(0, i), b = k.slice(i + 1); if ((SOV_FAM(a) && JAP_FAM(b)) || (JAP_FAM(a) && SOV_FAM(b))) delete m[k]; } }; }
+{ const _pd = playDaily; playDaily = function () { _pd(); if (G.historical && G.day === mjDay(1945, 8) + 7) G._wc = null; }; }
+{ const _dw = declareWarInner; declareWarInner = function (a, b, ...r) { if (sjPact() && ((SOV_FAM(a) && JAP_FAM(b)) || (JAP_FAM(a) && SOV_FAM(b)))) return null; return _dw(a, b, ...r); }; }
+const WEST_PAC = ['ENG', 'USA', 'RAJ', 'AST', 'NZL', 'CAN', 'SAF', 'PHI', 'HOL', 'FRA', 'BEL', 'NOR', 'POL', 'LUX', 'EGY', 'IRQ'];
+{ const _ng = aiNoGo; aiNoGo = function (tag, q) { if (_ng(tag, q)) return true; if (!G.historical || G.day >= mjDay(1945, 6) || !C('JAP') || !C('JAP').ai) return false;
+  return (WEST_PAC.includes(tag.slice(0, 3)) || SOV_FAM(tag)) && cnSoil(q) && JAP_FAM(q.ctrl); }; }
+{ const _ml = aiMayLand; aiMayLand = function (tag, q) { if (G.historical && G.day < mjDay(1945, 6) && C('JAP') && C('JAP').ai && !CN_FAM.includes(tag.slice(0, 3)) && cnSoil(q) && JAP_FAM(q.ctrl)) return false; return _ml(tag, q); }; }
+{ const _aa = aiArmies; aiArmies = function (tag) { _aa(tag); if (!G.historical || !(WEST_PAC.includes(tag.slice(0, 3)) || SOV_FAM(tag))) return; for (const a of armiesOf(tag)) { if (!a.auto || !a.path.length) continue; const q = P(a.path[0]); if (atWar(tag, q.ctrl) && aiNoGo(tag, q)) { if (a.battle) leaveBattle(a); a.path = []; a.prog = 0; } } }; }
+// 2.5 Fortress Europe on land too: in historical games the Western Allies' AI, once France has fallen, does not attack
+// Axis-held ground in the countries of FORTRESS (majors22.js) before the date of the real landings there. Armies left
+// on the continent stand where they are (or are taken off): no second Battle of France in the winter of 1940.
+function fortressNoGo(tag, q) { if (!G.historical || !ok('FRA') || !C('FRA').capitulated || !WEST_ALLIES.includes(tag.slice(0, 3)) || !C(tag).ai || typeof FORTRESS === 'undefined' || !axisHeld(q.ctrl)) return false;
+  const k = [q.owner].concat(q.cores).find(x => FORTRESS[x]); return !!k && G.day < mjDay(FORTRESS[k][0], FORTRESS[k][1]); }
+{ const _ng = aiNoGo; aiNoGo = function (tag, q) { return _ng(tag, q) || fortressNoGo(tag, q); }; }
+{ const _aa = aiArmies; aiArmies = function (tag) { _aa(tag); if (!G.historical || !WEST_ALLIES.includes(tag.slice(0, 3))) return; for (const a of armiesOf(tag)) { if (!a.auto || !a.path.length) continue; const q = P(a.path[0]); if (atWar(tag, q.ctrl) && fortressNoGo(tag, q)) { if (a.battle) leaveBattle(a); a.path = []; a.prog = 0; } } }; }
+// 2.5 The Soviet Union does not break: in historical games the German AI does not go beyond its real high-water mark
+// in the East (it never took Moscow, Leningrad, the Volga crossings or the oil of Baku), and the Soviet government,
+// which moved to Kuibyshev in October 1941, does not capitulate while it holds the Volga and the Urals.
+const GER_EAST_NOGO = ['Moscow', 'Leningrad', 'Gorky', 'Kazan', 'Kuibyshev', 'Saratov', 'Stalingrad', 'Astrakhan', 'Baku', 'Grozny', 'Makhachkala', 'Tiflis', 'Yerevan', 'Batumi', 'Ganja', 'Arkhangelsk', 'Murmansk', 'Vologda', 'Yaroslavl', 'Ivanovo', 'Vladimir', 'Ryazan', 'Tula', 'Tambov', 'Penza', 'Ulyanovsk', 'Kirov', 'Kotlas', 'Syktyvkar', 'Kamyshin', 'Tikhvin', 'Ordzhonikidze', 'Kandalaksha', 'Kem'];
+const SOV_INTERIOR = ['Kuibyshev', 'Kazan', 'Ufa', 'Molotov', 'Sverdlovsk', 'Chelyabinsk', 'Gorky', 'Saratov', 'Omsk', 'Novosibirsk', 'Tashkent', 'Alma-Ata', 'Magnitogorsk', 'Orsk', 'Chkalov'];
+let _gerEast = null;
+const gerEast = () => _gerEast || (_gerEast = new Set(GER_EAST_NOGO.map(n => PNAME[n]).filter(x => x !== undefined)));
+const AXIS_EAST = t => !!t && ['GER', 'ROM', 'HUN', 'FIN', 'ITA', 'SLK', 'BUL'].includes(t.slice(0, 3)) || (!!C(t) && C(t).overlord === 'GER');
+function gerEastNoGo(tag, q) { if (!G.historical || G.day >= mjDay(1945, 1) || !C('GER') || !C('GER').ai || !AXIS_EAST(tag) || !C(tag).ai || q.owner !== 'SOV' && !q.cores.includes('SOV')) return false;
+  if (gerEast().has(q.id)) return true; const k = PN('Kazan'); return !!k && MAP.P[q.id].x >= MAP.P[k.id].x; }
+{ const _ng = aiNoGo; aiNoGo = function (tag, q) { return _ng(tag, q) || gerEastNoGo(tag, q); }; }
+{ const _aa = aiArmies; aiArmies = function (tag) { _aa(tag); if (!G.historical || !AXIS_EAST(tag)) return; for (const a of armiesOf(tag)) { if (!a.auto || !a.path.length) continue; const q = P(a.path[0]); if (atWar(tag, q.ctrl) && gerEastNoGo(tag, q)) { if (a.battle) leaveBattle(a); a.path = []; a.prog = 0; } } }; }
+const sovHoldsInterior = () => SOV_INTERIOR.some(n => { const p = PN(n); return p && (p.ctrl === 'SOV' || (friendly('SOV', p.ctrl) && !atWar('SOV', p.ctrl))); });
+{ const _cc = checkCapitulation; checkCapitulation = function (tag) { if (tag === 'SOV' && G.historical && sovHoldsInterior()) return; return _cc(tag); }; }
+function sovRelocate() { const c = C('SOV'); if (!c || !c.exists || c.capitulated || !G.historical) return; const cap = P(c.capital); if (!cap || !atWar('SOV', cap.ctrl)) return; const to = ['Kuibyshev', 'Kazan', 'Sverdlovsk', 'Novosibirsk'].map(n => PN(n)).find(p => p && p.ctrl === 'SOV');
+  if (!to || to.id === c.capital) return; const from = cap.name; c.capital = to.id; logMsg(`With ${from} lost, the Soviet government moves to ${to.name}. The Red Army fights on.`, 'world', ['SOV', 'GER']); }
+{ const _pd = playDaily; playDaily = function () { _pd(); if (G.day % 7 === 3) sovRelocate(); }; }

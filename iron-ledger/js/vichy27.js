@@ -29,6 +29,9 @@ SPIRITS.vi_occupied = ['Under the Boot', 'The whole of France is occupied. The g
 SPIRITS.fr_fightson = ['France Fights On', 'The Republic has left the mainland, not the war. The Empire, the fleet and the gold are in Algiers.', { ws: 10, caplimit: 0.3, stab: -4 }];
 SPIRITS.fb_union = ['The Franco-British Union', 'One cabinet, one parliament, one citizenship: France and Great Britain shall no longer be two nations.', { ws: 6, stab: -3, research: 0.03 }];
 const vichy = () => { const v = G.C.VIC; return v && v.exists ? v : null; };
+// a nation made from another (newNation copies its parent) must not inherit its parent's standing, envoys, fleet of
+// merchantmen, army groups, cooldowns or production lines
+function freshState(r, o = {}) { Object.assign(r, { major: false, envoys: [], dcd: {}, agroups: [], pp: o.pp || 30, infl: o.infl || 10, manpower: o.manpower || 20 }); for (const k of ['sea', 'prod', 'gpRank', 'gpStatus', 'gpScore', 'deployTo', 'formed', 'dynp', 'fr', 'reform']) delete r[k]; if (o.money !== undefined) r.money = o.money; return r; }
 const viOf = () => { const v = vichy(); return v ? v.vi : null; };
 const viProvs = k => VEMP[k][2].map(n => PN(n)).filter(Boolean);
 const viHolds = k => viProvs(k).filter(p => p.owner === 'VIC');
@@ -57,7 +60,7 @@ function armistice(o) { const fr = C('FRA'), cap = PN('Vichy'); if (!cap) return
   for (const k in VEMP) for (const p of viProvs(k)) if (p.owner === 'FRA') emp.push(p);
   if (!zone.includes(cap)) return; const v = newNation('FRA', 'VIC', 'French State', 'French', '#6f8fb5', [cap, ...zone.filter(p => p !== cap), ...emp], 'aut');
   for (const p of emp) p.cores = p.cores.filter(t => t !== 'VIC'); for (const a of armiesOf('VIC')) removeArmy(a);
-  Object.assign(v, { leader: 'Philippe Pétain', party: 'National Revolution', capital: cap.id, major: false, ai: true, manpower: 120, money: 6 * wkInc(fr), pp: 60, stab: 62, ws: 20, warExh: 0, infamy: 0, exists: true, capitulated: false });
+  freshState(v, { pp: 60, infl: 20, manpower: 120, money: 6 * wkInc(fr) }); Object.assign(v, { leader: 'Philippe Pétain', party: 'National Revolution', capital: cap.id, ai: true, stab: 62, ws: 20, warExh: 0, infamy: 0, exists: true, capitulated: false });
   try { setLaw(v, 'autocracy'); } catch (e) { /* the form of government keeps what it had */ }
   v.stock.ships = (o.ships0 || 0) * 0.8; v.stock.arms = 500; v.stock.artillery = 50; v.stock.aircraft = Math.min(300, (fr.stock.aircraft || 0) * 0.5);
   v.vi = { collab: o.harsh ? 55 : 25, press: 8, marshal: 86, pow: 1500, cost: 3, fleet: 1, emp: {}, since: G.day, axis: false };
@@ -102,8 +105,10 @@ function viRally(k, how, defect) { const v = vichy(), ps = viHolds(k); if (!v ||
   logMsg(how || `${VEMP[k][0]} rallies to Free France.`, 'world', ['VIC', 'FRA']); if (!Object.keys(v.vi.emp).length && !VZ_FREE.some(n => PN(n) && PN(n).owner === 'VIC')) viEnd('The French State has nothing left to govern.'); return true; }
 function empMonthly(v) { const V = v.vi, ex = typeof exiles === 'function' ? exiles().FRA : null, gl = ok('GER') && capInfo('GER').prog > 0.1, usa = ok('USA') && ok('GER') && atWar('USA', 'GER');
   for (const k of Object.keys(V.emp)) { const ps = viHolds(k); if (!ps.length) { delete V.emp[k]; continue; } const ids = new Set(ps.map(p => p.id)), gar = sum(armiesOf('VIC').filter(a => ids.has(a.loc)), a => a.divs.length);
-    V.emp[k] = clamp(V.emp[k] + (V.marshal - 62) / 40 - (ex ? ex.legit / 110 : 0.4) - (gl ? 0.7 : 0) - (usa ? 0.5 : 0) + Math.min(0.5, gar * 0.08) + (V.catapult && G.day - V.catapult < 300 ? 0.6 : 0) - (V.collab > 60 ? 0.3 : 0), 0, 100);
-    if (V.emp[k] < 30 && k !== 'indochina') viRally(k); } }
+    V.emp[k] = clamp(V.emp[k] + (V.marshal - 70) / 60 - (ex ? ex.legit / 90 : 0.5) - (gl ? 0.7 : 0) - (usa ? 0.5 : 0) + Math.min(0.5, gar * 0.08) - (V.collab > 60 ? 0.3 : 0), 0, 100);
+    if (V.emp[k] < 30 && k !== 'indochina') viRally(k); }
+  // the Three Glorious Days: Chad, Cameroon and the Congo rally to de Gaulle at the end of August 1940
+  if (G.historical && V.emp.equatorial !== undefined && G.day >= mjDay(1940, 8) + 25) viRally('equatorial', 'Les Trois Glorieuses: Félix Éboué brings Chad over to Free France, and Leclerc and a dozen men take Douala and Brazzaville. French Equatorial Africa is in the war again.', 0.7); }
 // ---------- the Allies' operations against the French State (no war is declared) ----------
 const VOPS = {
   catapult: ['Operation Catapult', 'Mers-el-Kébir', 'The French fleet must not fall into German hands. Our battleships offer it four choices at Oran, and open fire when the hour runs out.', 0],
@@ -172,7 +177,7 @@ function viAct(v, a, arg) { const V = v.vi, d = VI_ACT[a]; if (!V || !d) return 
   v.pp -= d[1]; return ''; }
 function viMonthly() { const v = vichy(); if (!v || !v.vi) return; const V = v.vi, ge = C('GER'), gl = ok('GER') && capInfo('GER').prog > 0.1, usa = ok('USA') && ok('GER') && atWar('USA', 'GER');
   if (V.rump) { // Indochina alone, under Japan's eye, until Tokyo ends the pretence
-    if (ok('JAP') && (G.day >= mjDay(1945, 3) || (!G.historical && isAtWar('JAP') && Math.random() < 0.04)) && viHolds('indochina').length) { const ps = viHolds('indochina'); for (const a of armiesOf('VIC')) removeArmy(a); for (const p of ps) { p.owner = 'JAP'; p.ctrl = 'JAP'; } logMsg('The Japanese army disarms the French garrisons of Indochina in a single night. Eighty years of French rule end at Lang Son.', 'world', ['JAP', 'FRA']); viEnd('French Indochina is no more.'); if (typeof dynPuppetCheck === 'function') dynPuppetCheck('JAP'); } return; }
+    if (ok('JAP') && (G.day >= mjDay(1945, 3) || (!G.historical && isAtWar('JAP') && Math.random() < 0.04)) && viHolds('indochina').length) { const ps = viHolds('indochina'); G.flags.indoCoup = G.day; for (const a of armiesOf('VIC')) removeArmy(a); for (const p of ps) { p.owner = 'JAP'; p.ctrl = 'JAP'; } logMsg('The Japanese army disarms the French garrisons of Indochina in a single night. Eighty years of French rule end at Lang Son.', 'world', ['JAP', 'FRA']); viEnd('French Indochina is no more.'); if (typeof dynPuppetCheck === 'function') dynPuppetCheck('JAP'); } return; }
   if (!ok('GER') || ge.capitulated) { viLiberation(); return; }
   if (!V.axis && !V.anton) { const pay = wkInc(v) * VI_COST[V.cost]; v.money -= pay; ge.money += pay * 0.8; V.paid = pay;
     V.press = clamp(V.press + 1 + (gl ? 1.5 : 0) + (usa ? 0.8 : 0) - V.collab / 30 + (V.fleet === 2 ? 0.3 : 0), 0, 100); }

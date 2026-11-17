@@ -16,6 +16,7 @@ Open `index.html` in a browser. No build step, no server.
 - **Labour**: men under arms are missing from the factories; reserved occupations, women in the factories and foreign labour answer it, each at a price.
 - **The works of 1936**: 182 named arms works on the map (Krupp, Škoda, Bofors, FN, Tula, Kharkov, Kure, Vickers, Schneider...), the famous ones with a bonus, captured ones working for the occupier; and the arms industry every nation had in 1936, where only 35 nations had one written for them before.
 - **Bombing, dispersal, conversion, merchant ships**: bombs put plants out of action until they are repaired; dispersed industry takes half the damage; automobile plants become tank plants in war; shipyards can build for the merchant fleet.
+- **The historical course** (historical games, AI only): Japan holds about two fifths of China until 1945; the Soviet–Japanese neutrality pact holds until August 1945; the Western Allies leave China to the Chinese, stay out of occupied Western Europe until the real landings and off German soil until September 1944; the Red Army keeps to Soviet ground until 1944.
 
 ### 2.5 "The Art of War"
 

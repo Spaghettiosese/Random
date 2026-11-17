@@ -28,7 +28,7 @@ function exileAct(c, a) { const ex = exiles()[c.tag], d = EXILE_ACT[a]; if (!ex)
 function exileMonthly() { const E = exiles();
   for (const t of Object.keys(E)) { const ex = E[t], X = C(t); if (!X || !X.exists || !X.capitulated) { delete E[t]; continue; }
     let h = C(ex.host); if (!h || !h.exists || h.capitulated) { const nh = exileHostFor(t); if (!nh) { logMsg(`The ${X.adj} government in exile is dissolved.`, 'world', [t]); delete E[t]; continue; } ex.host = nh.tag; h = nh; logMsg(`The ${X.adj} government in exile moves to ${nh.name}.`, 'world', [t]); }
-    const core = G.P.filter(p => p.owner === t && p.cores.includes(t)), freeV = sum(core, p => p.ctrl === t || (friendly(ex.host, p.ctrl) && !atWar(t, p.ctrl)) ? p.vp : 0), totV = sum(core, p => p.vp) || 1, r = G.res && G.res[t];
+    const core = G.P.filter(p => p.cores.includes(t) && (p.owner === t || (typeof lostToRegime === 'function' && lostToRegime(t, p)))), freeV = sum(core, p => p.ctrl === t || (friendly(ex.host, p.ctrl) && !atWar(t, p.ctrl)) ? p.vp : 0), totV = sum(core, p => p.vp) || 1, r = G.res && G.res[t];
     ex.legit = clamp(ex.legit - 0.3 + (r ? r.str / 150 : 0) + freeV / totV * 3, 0, 100); ex.funds += 2 + ex.legit / 25 + (ex.fleet ? 2 : 0);
     const cap = P(X.capital), near = cap ? [cap.id, ...NB[cap.id].filter(e => !e.sea).map(e => e.to)] : [], near2 = [...new Set(near.flatMap(id => [id, ...NB[id].filter(e => !e.sea).map(e => e.to)]))], safe = cap && !near2.some(id => armiesAt(id).some(x => atWar(t, x.owner) || atWar(ex.host, x.owner)));
     if (cap && isAtWar(t) && G.day - ex.since > 90 && freeV / totV >= 0.75 && safe && (cap.ctrl === t || (friendly(ex.host, cap.ctrl) && !atWar(t, cap.ctrl)))) { exileReturn(t); continue; }
